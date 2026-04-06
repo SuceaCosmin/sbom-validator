@@ -48,12 +48,14 @@ def validate(file_path: str | Path) -> ValidationResult:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(ValidationIssue(
-                severity=IssueSeverity.ERROR,
-                field_path="",
-                message=str(e),
-                rule="",
-            ),),
+            issues=(
+                ValidationIssue(
+                    severity=IssueSeverity.ERROR,
+                    field_path="",
+                    message=str(e),
+                    rule="",
+                ),
+            ),
             format_detected=None,
         )
 
@@ -64,12 +66,14 @@ def validate(file_path: str | Path) -> ValidationResult:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(ValidationIssue(
-                severity=IssueSeverity.ERROR,
-                field_path="",
-                message=str(e),
-                rule="",
-            ),),
+            issues=(
+                ValidationIssue(
+                    severity=IssueSeverity.ERROR,
+                    field_path="",
+                    message=str(e),
+                    rule="",
+                ),
+            ),
             format_detected=format_name,
         )
 
@@ -93,12 +97,14 @@ def validate(file_path: str | Path) -> ValidationResult:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(ValidationIssue(
-                severity=IssueSeverity.ERROR,
-                field_path="",
-                message=str(e),
-                rule="",
-            ),),
+            issues=(
+                ValidationIssue(
+                    severity=IssueSeverity.ERROR,
+                    field_path="",
+                    message=str(e),
+                    rule="",
+                ),
+            ),
             format_detected=format_name,
         )
 

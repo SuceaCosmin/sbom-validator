@@ -89,9 +89,9 @@ class TestValidateSchemaSPDX:
         result = validate_schema(doc, "spdx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert issue.severity == IssueSeverity.ERROR, (
-                f"Expected severity ERROR, got {issue.severity!r} for issue: {issue}"
-            )
+            assert (
+                issue.severity == IssueSeverity.ERROR
+            ), f"Expected severity ERROR, got {issue.severity!r} for issue: {issue}"
 
     def test_invalid_spdx_issues_have_non_empty_message(self, spdx_fixtures: Path) -> None:
         """Every issue reported for a schema-invalid SPDX document must carry a
@@ -100,12 +100,10 @@ class TestValidateSchemaSPDX:
         result = validate_schema(doc, "spdx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert isinstance(issue.message, str), (
-                f"issue.message must be a str, got {type(issue.message)}"
-            )
-            assert issue.message.strip() != "", (
-                "issue.message must not be empty or whitespace-only"
-            )
+            assert isinstance(
+                issue.message, str
+            ), f"issue.message must be a str, got {type(issue.message)}"
+            assert issue.message.strip() != "", "issue.message must not be empty or whitespace-only"
 
     def test_invalid_spdx_issues_have_rule_fr02(self, spdx_fixtures: Path) -> None:
         """Every issue reported for a schema-invalid SPDX document must reference FR-02."""
@@ -113,9 +111,9 @@ class TestValidateSchemaSPDX:
         result = validate_schema(doc, "spdx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert issue.rule == "FR-02", (
-                f"Expected rule 'FR-02', got {issue.rule!r} for issue: {issue}"
-            )
+            assert (
+                issue.rule == "FR-02"
+            ), f"Expected rule 'FR-02', got {issue.rule!r} for issue: {issue}"
 
     def test_invalid_spdx_issues_have_field_path(self, spdx_fixtures: Path) -> None:
         """Every issue reported for a schema-invalid SPDX document must carry a
@@ -124,12 +122,12 @@ class TestValidateSchemaSPDX:
         result = validate_schema(doc, "spdx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert isinstance(issue.field_path, str), (
-                f"issue.field_path must be a str, got {type(issue.field_path)}"
-            )
-            assert issue.field_path.strip() != "", (
-                "issue.field_path must not be empty or whitespace-only"
-            )
+            assert isinstance(
+                issue.field_path, str
+            ), f"issue.field_path must be a str, got {type(issue.field_path)}"
+            assert (
+                issue.field_path.strip() != ""
+            ), "issue.field_path must not be empty or whitespace-only"
 
 
 # ---------------------------------------------------------------------------
@@ -166,25 +164,21 @@ class TestValidateSchemaCycloneDX:
         result = validate_schema(doc, "cyclonedx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert issue.severity == IssueSeverity.ERROR, (
-                f"Expected severity ERROR, got {issue.severity!r} for issue: {issue}"
-            )
+            assert (
+                issue.severity == IssueSeverity.ERROR
+            ), f"Expected severity ERROR, got {issue.severity!r} for issue: {issue}"
 
-    def test_invalid_cyclonedx_issues_have_non_empty_message(
-        self, cdx_fixtures: Path
-    ) -> None:
+    def test_invalid_cyclonedx_issues_have_non_empty_message(self, cdx_fixtures: Path) -> None:
         """Every issue reported for a schema-invalid CycloneDX document must carry a
         non-empty, human-readable message string."""
         doc = _load(cdx_fixtures / "invalid-schema.cdx.json")
         result = validate_schema(doc, "cyclonedx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert isinstance(issue.message, str), (
-                f"issue.message must be a str, got {type(issue.message)}"
-            )
-            assert issue.message.strip() != "", (
-                "issue.message must not be empty or whitespace-only"
-            )
+            assert isinstance(
+                issue.message, str
+            ), f"issue.message must be a str, got {type(issue.message)}"
+            assert issue.message.strip() != "", "issue.message must not be empty or whitespace-only"
 
     def test_invalid_cyclonedx_issues_have_rule_fr03(self, cdx_fixtures: Path) -> None:
         """Every issue reported for a schema-invalid CycloneDX document must reference FR-03."""
@@ -192,9 +186,9 @@ class TestValidateSchemaCycloneDX:
         result = validate_schema(doc, "cyclonedx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert issue.rule == "FR-03", (
-                f"Expected rule 'FR-03', got {issue.rule!r} for issue: {issue}"
-            )
+            assert (
+                issue.rule == "FR-03"
+            ), f"Expected rule 'FR-03', got {issue.rule!r} for issue: {issue}"
 
     def test_invalid_cyclonedx_issues_have_field_path(self, cdx_fixtures: Path) -> None:
         """Every issue reported for a schema-invalid CycloneDX document must carry a
@@ -203,12 +197,12 @@ class TestValidateSchemaCycloneDX:
         result = validate_schema(doc, "cyclonedx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for issue in result:
-            assert isinstance(issue.field_path, str), (
-                f"issue.field_path must be a str, got {type(issue.field_path)}"
-            )
-            assert issue.field_path.strip() != "", (
-                "issue.field_path must not be empty or whitespace-only"
-            )
+            assert isinstance(
+                issue.field_path, str
+            ), f"issue.field_path must be a str, got {type(issue.field_path)}"
+            assert (
+                issue.field_path.strip() != ""
+            ), "issue.field_path must not be empty or whitespace-only"
 
 
 # ---------------------------------------------------------------------------
@@ -224,25 +218,19 @@ class TestValidateSchemaReturnType:
         iterable) even when the document is valid."""
         doc = _load(spdx_fixtures / "valid-minimal.spdx.json")
         result = validate_schema(doc, "spdx")
-        assert isinstance(result, list), (
-            f"Expected list, got {type(result).__name__}"
-        )
+        assert isinstance(result, list), f"Expected list, got {type(result).__name__}"
 
     def test_returns_list_for_valid_cyclonedx(self, cdx_fixtures: Path) -> None:
         """validate_schema must return a list for a valid CycloneDX document."""
         doc = _load(cdx_fixtures / "valid-minimal.cdx.json")
         result = validate_schema(doc, "cyclonedx")
-        assert isinstance(result, list), (
-            f"Expected list, got {type(result).__name__}"
-        )
+        assert isinstance(result, list), f"Expected list, got {type(result).__name__}"
 
     def test_returns_list_for_invalid_spdx(self, spdx_fixtures: Path) -> None:
         """validate_schema must return a list even when the document is invalid."""
         doc = _load(spdx_fixtures / "invalid-schema.spdx.json")
         result = validate_schema(doc, "spdx")
-        assert isinstance(result, list), (
-            f"Expected list, got {type(result).__name__}"
-        )
+        assert isinstance(result, list), f"Expected list, got {type(result).__name__}"
 
     def test_issues_are_validation_issue_instances(self, spdx_fixtures: Path) -> None:
         """Each item in the returned list must be a ValidationIssue instance."""
@@ -250,9 +238,9 @@ class TestValidateSchemaReturnType:
         result = validate_schema(doc, "spdx")
         assert len(result) > 0, "Expected at least one issue for invalid-schema fixture"
         for item in result:
-            assert isinstance(item, ValidationIssue), (
-                f"Expected ValidationIssue instance, got {type(item).__name__}: {item!r}"
-            )
+            assert isinstance(
+                item, ValidationIssue
+            ), f"Expected ValidationIssue instance, got {type(item).__name__}: {item!r}"
 
     def test_unknown_format_raises_value_error(self) -> None:
         """Passing an unrecognised format_name must raise ValueError."""
@@ -310,9 +298,9 @@ class TestValidateSchemaCollectsAll:
         }
         result = validate_schema(doc, "spdx")
         assert isinstance(result, list)
-        assert len(result) >= 2, (
-            f"Expected >= 2 schema issues (collect-all), got {len(result)}: {result}"
-        )
+        assert (
+            len(result) >= 2
+        ), f"Expected >= 2 schema issues (collect-all), got {len(result)}: {result}"
 
     def test_cyclonedx_multiple_violations_all_reported(self) -> None:
         """A document missing multiple required CycloneDX root properties must
@@ -328,9 +316,9 @@ class TestValidateSchemaCollectsAll:
         }
         result = validate_schema(doc, "cyclonedx")
         assert isinstance(result, list)
-        assert len(result) >= 2, (
-            f"Expected >= 2 schema issues (collect-all), got {len(result)}: {result}"
-        )
+        assert (
+            len(result) >= 2
+        ), f"Expected >= 2 schema issues (collect-all), got {len(result)}: {result}"
 
     def test_spdx_invalid_fixture_all_issues_use_fr02(self, spdx_fixtures: Path) -> None:
         """When multiple schema issues are collected for an SPDX document, all
@@ -339,32 +327,22 @@ class TestValidateSchemaCollectsAll:
         result = validate_schema(doc, "spdx")
         assert len(result) > 0
         rules = {issue.rule for issue in result}
-        assert rules == {"FR-02"}, (
-            f"Expected only FR-02 issues for SPDX, got rules: {rules}"
-        )
+        assert rules == {"FR-02"}, f"Expected only FR-02 issues for SPDX, got rules: {rules}"
 
-    def test_cyclonedx_invalid_fixture_all_issues_use_fr03(
-        self, cdx_fixtures: Path
-    ) -> None:
+    def test_cyclonedx_invalid_fixture_all_issues_use_fr03(self, cdx_fixtures: Path) -> None:
         """When multiple schema issues are collected for a CycloneDX document,
         all of them must use FR-03 (not a mix)."""
         doc = _load(cdx_fixtures / "invalid-schema.cdx.json")
         result = validate_schema(doc, "cyclonedx")
         assert len(result) > 0
         rules = {issue.rule for issue in result}
-        assert rules == {"FR-03"}, (
-            f"Expected only FR-03 issues for CycloneDX, got rules: {rules}"
-        )
+        assert rules == {"FR-03"}, f"Expected only FR-03 issues for CycloneDX, got rules: {rules}"
 
-    def test_spdx_no_issues_for_different_format_name(
-        self, cdx_fixtures: Path
-    ) -> None:
+    def test_spdx_no_issues_for_different_format_name(self, cdx_fixtures: Path) -> None:
         """A valid CycloneDX document passed as "spdx" must NOT return an
         empty list — it should fail schema validation because it lacks required
         SPDX fields such as spdxVersion and dataLicense."""
         doc = _load(cdx_fixtures / "valid-minimal.cdx.json")
         result = validate_schema(doc, "spdx")
         assert isinstance(result, list)
-        assert len(result) > 0, (
-            "A CycloneDX document validated as SPDX must produce schema errors"
-        )
+        assert len(result) > 0, "A CycloneDX document validated as SPDX must produce schema errors"

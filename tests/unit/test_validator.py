@@ -276,9 +276,7 @@ class TestValidatorErrorScenarios:
         except Exception as exc:  # noqa: BLE001
             pytest.fail(f"validate() raised unexpectedly: {exc}")
 
-    def test_error_result_format_detected_is_none_for_unknown_format(
-        self, tmp_path: Path
-    ) -> None:
+    def test_error_result_format_detected_is_none_for_unknown_format(self, tmp_path: Path) -> None:
         unknown = tmp_path / "unknown.json"
         unknown.write_text('{"neither": "spdx nor cyclonedx"}', encoding="utf-8")
         result = validate(unknown)
