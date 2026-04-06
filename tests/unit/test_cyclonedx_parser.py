@@ -27,7 +27,6 @@ from sbom_validator.models import (
 )
 from sbom_validator.parsers.cyclonedx_parser import parse_cyclonedx
 
-
 # ---------------------------------------------------------------------------
 # Shared fixture
 # ---------------------------------------------------------------------------

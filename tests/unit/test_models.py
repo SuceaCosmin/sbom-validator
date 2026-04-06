@@ -7,8 +7,9 @@ for each. Enum string values, default field values, and equality semantics are
 also exercised.
 """
 
-import pytest
 from dataclasses import FrozenInstanceError
+
+import pytest
 
 from sbom_validator.models import (
     IssueSeverity,
@@ -19,7 +20,6 @@ from sbom_validator.models import (
     ValidationResult,
     ValidationStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # ValidationStatus

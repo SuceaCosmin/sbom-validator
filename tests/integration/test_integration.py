@@ -199,7 +199,7 @@ class TestLargeFixturePipeline:
     def test_large_spdx_validates_within_five_seconds(self, runner):
         """NFR-03: 100-component SBOM must validate in < 5 seconds."""
         start = time.time()
-        result = runner.invoke(main, ["validate", str(INTEGRATION_FIXTURES / "real-world-spdx.spdx.json")])
+        runner.invoke(main, ["validate", str(INTEGRATION_FIXTURES / "real-world-spdx.spdx.json")])
         elapsed = time.time() - start
         assert elapsed < 5.0, f"Validation took {elapsed:.2f}s, expected < 5s"
 
@@ -209,7 +209,7 @@ class TestLargeFixturePipeline:
     )
     def test_large_cyclonedx_validates_within_five_seconds(self, runner):
         start = time.time()
-        result = runner.invoke(main, ["validate", str(INTEGRATION_FIXTURES / "real-world-cdx.cdx.json")])
+        runner.invoke(main, ["validate", str(INTEGRATION_FIXTURES / "real-world-cdx.cdx.json")])
         elapsed = time.time() - start
         assert elapsed < 5.0
 

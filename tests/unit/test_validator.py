@@ -12,7 +12,6 @@ from pathlib import Path
 import pytest
 
 from sbom_validator.models import ValidationResult, ValidationStatus
-
 from sbom_validator.validator import validate
 
 # ---------------------------------------------------------------------------

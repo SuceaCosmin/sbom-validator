@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class ValidationStatus(str, Enum):
+class ValidationStatus(StrEnum):
     """Overall validation outcome."""
 
     PASS = "PASS"
@@ -14,7 +14,7 @@ class ValidationStatus(str, Enum):
     ERROR = "ERROR"
 
 
-class IssueSeverity(str, Enum):
+class IssueSeverity(StrEnum):
     """Severity level of a validation issue."""
 
     ERROR = "ERROR"

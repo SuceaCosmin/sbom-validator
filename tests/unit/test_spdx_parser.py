@@ -16,7 +16,6 @@ from sbom_validator.exceptions import ParseError
 from sbom_validator.models import NormalizedComponent, NormalizedRelationship, NormalizedSBOM
 from sbom_validator.parsers.spdx_parser import parse_spdx
 
-
 # ---------------------------------------------------------------------------
 # Shared fixture
 # ---------------------------------------------------------------------------
