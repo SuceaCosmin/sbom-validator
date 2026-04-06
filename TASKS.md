@@ -175,6 +175,18 @@
 
 ---
 
+## Branching Strategy
+
+| Branch | Purpose |
+|--------|---------|
+| `master` | Stable releases only — merge from `develop` via PR when a phase is complete and reviewed |
+| `develop` | Active development — all phase work happens here |
+| `feature/*` | Optional — for larger isolated features within a phase |
+
+> All work from Phase 4 onward is committed to `develop`. Merge to `master` after Phase 4 review passes.
+
+---
+
 ## Resumption Guide
 
 If continuing in a new session, do the following:
