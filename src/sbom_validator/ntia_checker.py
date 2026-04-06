@@ -76,7 +76,7 @@ def _check_identifiers(sbom: NormalizedSBOM) -> list[ValidationIssue]:
     """FR-07: Every component must have at least one unique identifier."""
     issues: list[ValidationIssue] = []
     for i, component in enumerate(sbom.components):
-        if len(component.identifiers) == 0:
+        if not component.identifiers:
             issues.append(
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
@@ -93,7 +93,7 @@ def _check_identifiers(sbom: NormalizedSBOM) -> list[ValidationIssue]:
 
 def _check_relationships(sbom: NormalizedSBOM) -> list[ValidationIssue]:
     """FR-08: The SBOM must declare at least one dependency relationship."""
-    if len(sbom.relationships) == 0:
+    if not sbom.relationships:
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,

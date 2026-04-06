@@ -7,76 +7,69 @@ from pathlib import Path
 
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
 from sbom_validator.format_detector import detect_format
-from sbom_validator.models import ValidationResult, ValidationStatus
+from sbom_validator.models import (
+    IssueSeverity,
+    ValidationIssue,
+    ValidationResult,
+    ValidationStatus,
+)
 from sbom_validator.ntia_checker import check_ntia
 from sbom_validator.parsers.cyclonedx_parser import parse_cyclonedx
 from sbom_validator.parsers.spdx_parser import parse_spdx
 from sbom_validator.schema_validator import validate_schema
 
 
-def _infer_format_from_extension(file_path: Path) -> str | None:
-    """Return 'spdx' or 'cyclonedx' based on file name extension, or None."""
-    name = file_path.name.lower()
-    if ".spdx." in name or name.endswith(".spdx"):
-        return "spdx"
-    if ".cdx." in name or name.endswith(".cdx"):
-        return "cyclonedx"
-    return None
-
-
-def validate(file_path: Path) -> ValidationResult:
+def validate(file_path: str | Path) -> ValidationResult:
     """Validate an SBOM file through the full pipeline.
 
     Pipeline: format detection -> schema validation -> parsing -> NTIA checking.
 
     Args:
-        file_path: Path to the SBOM JSON file.
+        file_path: Path to the SBOM JSON file (str or Path).
 
     Returns:
         ValidationResult with status and any issues found.
     """
+    file_path = Path(file_path)
     str_path = str(file_path)
     format_name: str | None = None
 
     # Stage 0: Format detection
     try:
         format_name = detect_format(file_path)
-    except ParseError:
+    except (ParseError, UnsupportedFormatError):
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
             issues=(),
             format_detected=None,
         )
-    except UnsupportedFormatError:
-        # Try to infer format from file extension as a fallback so that
-        # schema-invalid files (which may be missing the format marker key)
-        # can still be schema-validated and produce FAIL rather than ERROR.
-        inferred = _infer_format_from_extension(file_path)
-        if inferred is None:
-            return ValidationResult(
-                status=ValidationStatus.ERROR,
-                file_path=str_path,
-                issues=(),
-                format_detected=None,
-            )
-        format_name = inferred
-    except Exception:
+    except Exception as e:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(),
+            issues=(ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path="",
+                message=str(e),
+                rule="",
+            ),),
             format_detected=None,
         )
 
     # Stage 1: Read raw JSON
     try:
         raw_doc = json.loads(file_path.read_text(encoding="utf-8"))
-    except Exception:
+    except Exception as e:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(),
+            issues=(ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path="",
+                message=str(e),
+                rule="",
+            ),),
             format_detected=format_name,
         )
 
@@ -96,11 +89,16 @@ def validate(file_path: Path) -> ValidationResult:
             sbom = parse_spdx(file_path)
         else:
             sbom = parse_cyclonedx(file_path)
-    except ParseError:
+    except ParseError as e:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(),
+            issues=(ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path="",
+                message=str(e),
+                rule="",
+            ),),
             format_detected=format_name,
         )
 

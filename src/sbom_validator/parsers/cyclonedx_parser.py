@@ -57,7 +57,7 @@ def _parse_component(component: dict[str, Any], index: int) -> NormalizedCompone
 
     return NormalizedComponent(
         component_id=component_id,
-        name=name or None,  # type: ignore[arg-type]
+        name=name or "",
         version=version,
         supplier=supplier,
         identifiers=tuple(identifiers),

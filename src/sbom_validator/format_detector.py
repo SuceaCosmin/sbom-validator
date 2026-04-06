@@ -34,9 +34,18 @@ def detect_format(file_path: Path) -> str:
         )
 
     if "spdxVersion" in data:
+        if data["spdxVersion"] != "SPDX-2.3":
+            raise UnsupportedFormatError(
+                f"Unsupported SPDX version: {data['spdxVersion']!r}. Only SPDX-2.3 is supported."
+            )
         return "spdx"
 
     if data.get("bomFormat") == "CycloneDX":
+        spec = data.get("specVersion")
+        if spec != "1.6":
+            raise UnsupportedFormatError(
+                f"Unsupported CycloneDX version: {spec!r}. Only 1.6 is supported."
+            )
         return "cyclonedx"
 
     raise UnsupportedFormatError(

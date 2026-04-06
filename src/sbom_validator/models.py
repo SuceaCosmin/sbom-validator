@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
-class ValidationStatus(Enum):
+class ValidationStatus(str, Enum):
     """Overall validation outcome."""
 
     PASS = "PASS"
@@ -14,7 +14,7 @@ class ValidationStatus(Enum):
     ERROR = "ERROR"
 
 
-class IssueSeverity(Enum):
+class IssueSeverity(str, Enum):
     """Severity level of a validation issue."""
 
     ERROR = "ERROR"

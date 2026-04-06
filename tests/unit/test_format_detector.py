@@ -101,6 +101,38 @@ class TestDetectFormatEdgeCases:
         with pytest.raises(UnsupportedFormatError):
             detect_format(f)
 
+    def test_spdx_version_22_raises_unsupported_format_error(self, tmp_path: Path):
+        """SPDX 2.2 is not supported; only SPDX-2.3 is accepted."""
+        f = tmp_path / "spdx22.json"
+        f.write_text(
+            json.dumps({"spdxVersion": "SPDX-2.2", "name": "test"}), encoding="utf-8"
+        )
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_cyclonedx_spec_version_15_raises_unsupported_format_error(
+        self, tmp_path: Path
+    ):
+        """CycloneDX 1.5 is not supported; only 1.6 is accepted."""
+        f = tmp_path / "cdx15.json"
+        f.write_text(
+            json.dumps({"bomFormat": "CycloneDX", "specVersion": "1.5"}),
+            encoding="utf-8",
+        )
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_cyclonedx_missing_spec_version_raises_unsupported_format_error(
+        self, tmp_path: Path
+    ):
+        """CycloneDX without specVersion is not supported."""
+        f = tmp_path / "cdx_no_spec.json"
+        f.write_text(
+            json.dumps({"bomFormat": "CycloneDX"}), encoding="utf-8"
+        )
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
 
 # ---------------------------------------------------------------------------
 # Error cases
