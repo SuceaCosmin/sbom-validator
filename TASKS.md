@@ -152,20 +152,20 @@
 
 ---
 
-## Phase 5 — Documentation & Release ⏳
+## Phase 5 — Documentation & Release 🔄
 
 **Goal:** User-facing docs, finalized changelog, v0.1.0 release.
-**Status:** Ready — Phase 4 complete.
+**Status:** Tasks 5.1–5.6 complete. Task 5.7 (release) pending.
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 5.1 | Write user guide | Documentation Writer | 🔒 | `docs/user-guide.md` |
-| 5.2 | Write architecture overview | Documentation Writer | 🔒 | `docs/architecture/architecture-overview.md` |
-| 5.3 | Finalize `README.md` | Documentation Writer | 🔒 | `README.md` with badges, quick start, links |
-| 5.4 | Write `CHANGELOG.md` v0.1.0 entry | Documentation Writer | 🔒 | `CHANGELOG.md` |
-| 5.5 | Add `LICENSE` file (Apache 2.0) | Developer | 🔒 | `LICENSE`, updated `pyproject.toml` |
-| 5.6 | Pre-release validation checklist | Reviewer | 🔒 | `docs/release-checklist-v0.1.0.md` |
-| 5.7 | Tag v0.1.0 and create GitHub Release | Developer | 🔒 | Git tag `v0.1.0`, GitHub Release page |
+| 5.1 | Write user guide | Documentation Writer | ✅ | `docs/user-guide.md` |
+| 5.2 | Write architecture overview | Documentation Writer | ✅ | `docs/architecture/architecture-overview.md` |
+| 5.3 | Finalize `README.md` | Documentation Writer | ✅ | `README.md` with badges, quick start, links |
+| 5.4 | Write `CHANGELOG.md` v0.1.0 entry | Documentation Writer | ✅ | `CHANGELOG.md` |
+| 5.5 | Add `LICENSE` file (Apache 2.0) | Developer | ✅ | `LICENSE` (Apache 2.0) |
+| 5.6 | Pre-release validation checklist | Reviewer | ✅ | `docs/release-checklist-v0.1.0.md` |
+| 5.7 | Tag v0.1.0 and create GitHub Release | Developer | ⏳ | Git tag `v0.1.0`, GitHub Release page |
 
 > Tasks 5.1, 5.2, 5.4, 5.5 can run in parallel. 5.3 follows 5.1. 5.6 follows all. 5.7 follows 5.6.
 
@@ -200,7 +200,7 @@ If continuing in a new session, do the following:
 5. Check `src/sbom_validator/models.py` for the current data model state
 6. Use the agent definitions in `.claude/agents/` to dispatch the correct agent for each task
 
-**Next task to execute:** `5.1 + 5.2 + 5.4 + 5.5` in parallel — user guide, architecture overview, CHANGELOG, LICENSE (Documentation Writer + Developer).
+**Next task to execute:** `5.7` — push `develop` to GitHub, open PR `develop → master`, merge after CI passes, tag `v0.1.0`, create GitHub Release.
 
 ---
 
