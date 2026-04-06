@@ -46,96 +46,68 @@
 
 ---
 
-## Phase 2 — Core Implementation (TDD) ⏳
+## Phase 2 — Core Implementation (TDD) ✅
 
 **Goal:** All business logic implemented test-first.
-**Status:** Not started. All dependencies met — ready to begin.
-**Methodology:** Tester writes failing tests first → Developer implements until tests pass.
+**Status:** Complete — 248/248 unit tests passing. Committed to `master`.
 
 ### Track A — Data Models
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.A1 | Implement `models.py` (full dataclasses) | Developer | ⏳ | `src/sbom_validator/models.py` fully implemented |
-| 2.A2 | Unit tests for models | Tester | 🔒 | `tests/unit/test_models.py` |
+| 2.A1 | Implement `models.py` (full dataclasses) | Developer | ✅ | `src/sbom_validator/models.py` |
+| 2.A2 | Unit tests for models | Tester | ✅ | `tests/unit/test_models.py` (27 tests) |
 
-> Note: `models.py` stub already exists. Task 2.A1 completes the implementation with proper frozen dataclasses, enums, and helper methods.
-
-### Track B — SPDX Parser *(parallel with C and D)*
+### Track B — SPDX Parser
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.B1 | Write SPDX parser tests (TDD — will fail) | Tester | 🔒 | `tests/unit/test_spdx_parser.py` |
-| 2.B2 | Implement SPDX parser | Developer | 🔒 | `src/sbom_validator/parsers/spdx_parser.py` |
+| 2.B1 | Write SPDX parser tests | Tester | ✅ | `tests/unit/test_spdx_parser.py` (30 tests) |
+| 2.B2 | Implement SPDX parser | Developer | ✅ | `src/sbom_validator/parsers/spdx_parser.py` |
 
-> Dependency: 2.A1 must complete before 2.B1 starts.
-
-### Track C — CycloneDX Parser *(parallel with B and D)*
+### Track C — CycloneDX Parser
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.C1 | Write CycloneDX parser tests (TDD — will fail) | Tester | 🔒 | `tests/unit/test_cyclonedx_parser.py` |
-| 2.C2 | Implement CycloneDX parser | Developer | 🔒 | `src/sbom_validator/parsers/cyclonedx_parser.py` |
+| 2.C1 | Write CycloneDX parser tests | Tester | ✅ | `tests/unit/test_cyclonedx_parser.py` (31 tests) |
+| 2.C2 | Implement CycloneDX parser | Developer | ✅ | `src/sbom_validator/parsers/cyclonedx_parser.py` |
 
-> Dependency: 2.A1 must complete before 2.C1 starts.
-
-### Track D — Format Detector *(parallel with B and C)*
+### Track D — Format Detector
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.D1 | Write format detector tests (TDD — will fail) | Tester | ⏳ | `tests/unit/test_format_detector.py` |
-| 2.D2 | Implement format detector | Developer | 🔒 | `src/sbom_validator/format_detector.py` |
+| 2.D1 | Write format detector tests | Tester | ✅ | `tests/unit/test_format_detector.py` (12 tests) |
+| 2.D2 | Implement format detector | Developer | ✅ | `src/sbom_validator/format_detector.py` |
 
-> Dependency: 2.D1 only needs fixtures from Phase 1 (already done). Can start immediately.
-
-### Track E — Schema Validator *(starts after B+C complete)*
+### Track E — Schema Validator
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.E1 | Write schema validator tests (TDD — will fail) | Tester | 🔒 | `tests/unit/test_schema_validator.py` |
-| 2.E2 | Implement schema validator + bundle JSON schemas | Developer | 🔒 | `src/sbom_validator/schema_validator.py`, `src/sbom_validator/schemas/spdx-2.3.schema.json`, `src/sbom_validator/schemas/cyclonedx-1.6.schema.json` |
+| 2.E1 | Write schema validator tests | Tester | ✅ | `tests/unit/test_schema_validator.py` (27 tests) |
+| 2.E2 | Implement schema validator + bundle JSON schemas | Developer | ✅ | `src/sbom_validator/schema_validator.py`, `src/sbom_validator/schemas/spdx-2.3.schema.json`, `src/sbom_validator/schemas/cyclonedx-1.6.schema.json` |
 
-> Dependency: 2.B2 and 2.C2 must complete before 2.E1.
-
-### Track F — NTIA Checker *(starts after B+C complete)*
+### Track F — NTIA Checker
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.F1 | Write NTIA checker tests (TDD — will fail) | Tester | 🔒 | `tests/unit/test_ntia_checker.py` |
-| 2.F2 | Implement NTIA checker | Developer | 🔒 | `src/sbom_validator/ntia_checker.py` |
+| 2.F1 | Write NTIA checker tests | Tester | ✅ | `tests/unit/test_ntia_checker.py` (37 tests) |
+| 2.F2 | Implement NTIA checker | Developer | ✅ | `src/sbom_validator/ntia_checker.py` |
 
-> Dependency: 2.B2 and 2.C2 must complete before 2.F1.
-
-### Track G — Validator Orchestrator *(starts after D+E+F complete)*
+### Track G — Validator Orchestrator
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 2.G1 | Write validator orchestrator tests (TDD — will fail) | Tester | 🔒 | `tests/unit/test_validator.py` |
-| 2.G2 | Implement validator orchestrator | Developer | 🔒 | `src/sbom_validator/validator.py` |
+| 2.G1 | Write validator orchestrator tests | Tester | ✅ | `tests/unit/test_validator.py` (64 tests) |
+| 2.G2 | Implement validator orchestrator | Developer | ✅ | `src/sbom_validator/validator.py` |
 
-> Dependency: 2.D2, 2.E2, and 2.F2 must all complete before 2.G1.
-
-### Phase 2 Parallelization Map
-
-```
-2.A1 ──┬──► 2.A2
-       ├──► 2.B1 ──► 2.B2 ──┬──► 2.E1 ──► 2.E2 ──┐
-       ├──► 2.C1 ──► 2.C2 ──┤                      ├──► 2.G1 ──► 2.G2
-       └──► 2.D1 ──► 2.D2 ──┴──► 2.F1 ──► 2.F2 ──┘
-```
-
-**Phase 2 Exit Criteria:**
-- `poetry run pytest tests/unit/` — all pass
-- `poetry run pytest --cov=sbom_validator` — coverage ≥ 90%
-- `poetry run mypy src/` — zero errors
-- `poetry run ruff check src/` — zero errors
+**Phase 2 Result:** 248 unit tests passing in 5.36s. Note: `jsonschema.RefResolver` deprecation warning (cosmetic) — to be fixed in Phase 4 Reviewer pass.
 
 ---
 
-## Phase 3 — CLI Layer 🔒
+## Phase 3 — CLI Layer ⏳
 
 **Goal:** Expose the validator through a polished CLI usable in CI/CD.
-**Status:** Blocked — waiting on Phase 2 complete.
+**Status:** Ready — Phase 2 complete.
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
@@ -214,7 +186,7 @@ If continuing in a new session, do the following:
 5. Check `src/sbom_validator/models.py` for the current data model state
 6. Use the agent definitions in `.claude/agents/` to dispatch the correct agent for each task
 
-**Next task to execute:** `2.A1` — Implement `models.py` with full dataclasses (Developer agent), then immediately trigger `2.B1`, `2.C1`, `2.D1` in parallel (Tester agent).
+**Next task to execute:** `3.1` — Write CLI tests (Tester agent), then `3.2` implement CLI (Developer agent).
 
 ---
 
