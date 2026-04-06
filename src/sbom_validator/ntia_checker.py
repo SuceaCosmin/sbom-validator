@@ -49,9 +49,7 @@ def _check_component_name(sbom: NormalizedSBOM) -> list[ValidationIssue]:
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
                     field_path=f"components[{i}].name",
-                    message=(
-                        f"Component at index {i} is missing a component name (NTIA FR-05)"
-                    ),
+                    message=(f"Component at index {i} is missing a component name (NTIA FR-05)"),
                     rule="FR-05",
                 )
             )
@@ -67,9 +65,7 @@ def _check_version(sbom: NormalizedSBOM) -> list[ValidationIssue]:
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
                     field_path=f"components[{i}].version",
-                    message=(
-                        f"Component '{component.name}' is missing a version (NTIA FR-06)"
-                    ),
+                    message=(f"Component '{component.name}' is missing a version (NTIA FR-06)"),
                     rule="FR-06",
                 )
             )
@@ -102,9 +98,7 @@ def _check_relationships(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
                 field_path="relationships",
-                message=(
-                    "SBOM declares no dependency relationships (NTIA FR-08)"
-                ),
+                message=("SBOM declares no dependency relationships (NTIA FR-08)"),
                 rule="FR-08",
             )
         ]
@@ -118,9 +112,7 @@ def _check_author(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
                 field_path="author",
-                message=(
-                    "SBOM is missing author information (NTIA FR-09)"
-                ),
+                message=("SBOM is missing author information (NTIA FR-09)"),
                 rule="FR-09",
             )
         ]
@@ -134,9 +126,7 @@ def _check_timestamp(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
                 field_path="timestamp",
-                message=(
-                    "SBOM is missing a creation timestamp (NTIA FR-10)"
-                ),
+                message=("SBOM is missing a creation timestamp (NTIA FR-10)"),
                 rule="FR-10",
             )
         ]

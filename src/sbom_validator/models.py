@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 
 class ValidationStatus(Enum):
@@ -39,8 +38,8 @@ class NormalizedComponent:
 
     component_id: str
     name: str
-    version: Optional[str] = None
-    supplier: Optional[str] = None
+    version: str | None = None
+    supplier: str | None = None
     identifiers: tuple[str, ...] = field(default_factory=tuple)
 
 
@@ -58,8 +57,8 @@ class NormalizedSBOM:
     """Format-agnostic internal representation of an SBOM."""
 
     format: str  # "spdx" or "cyclonedx"
-    author: Optional[str] = None
-    timestamp: Optional[str] = None
+    author: str | None = None
+    timestamp: str | None = None
     components: tuple[NormalizedComponent, ...] = field(default_factory=tuple)
     relationships: tuple[NormalizedRelationship, ...] = field(default_factory=tuple)
 
@@ -71,4 +70,4 @@ class ValidationResult:
     status: ValidationStatus
     file_path: str
     issues: tuple[ValidationIssue, ...] = field(default_factory=tuple)
-    format_detected: Optional[str] = None
+    format_detected: str | None = None

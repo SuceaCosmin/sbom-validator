@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from sbom_validator.exceptions import ParseError
 from sbom_validator.models import NormalizedComponent, NormalizedRelationship, NormalizedSBOM
@@ -32,11 +32,11 @@ def _strip_spdx_prefix(value: str) -> str:
     """Strip a known SPDX actor prefix from *value* and return the bare name."""
     for prefix in _STRIP_PREFIXES:
         if value.startswith(prefix):
-            return value[len(prefix):]
+            return value[len(prefix) :]
     return value
 
 
-def _parse_author(creation_info: dict[str, Any]) -> Optional[str]:
+def _parse_author(creation_info: dict[str, Any]) -> str | None:
     """Derive the author string from *creation_info*.
 
     Collects all entries from ``creators`` that start with ``"Tool: "`` or
@@ -48,7 +48,7 @@ def _parse_author(creation_info: dict[str, Any]) -> Optional[str]:
     for creator in creators:
         for prefix in _STRIP_PREFIXES:
             if creator.startswith(prefix):
-                parts.append(creator[len(prefix):])
+                parts.append(creator[len(prefix) :])
                 break
     return ", ".join(parts) if parts else None
 
@@ -58,15 +58,16 @@ def _parse_component(package: dict[str, Any]) -> NormalizedComponent:
     component_id: str = package["SPDXID"]
     name: str = package["name"]
 
-    raw_version: Optional[str] = package.get("versionInfo")
-    version: Optional[str] = (
-        None if (raw_version is None or raw_version == "" or raw_version == "NOASSERTION")
+    raw_version: str | None = package.get("versionInfo")
+    version: str | None = (
+        None
+        if (raw_version is None or raw_version == "" or raw_version == "NOASSERTION")
         else raw_version
     )
 
-    raw_supplier: Optional[str] = package.get("supplier")
+    raw_supplier: str | None = package.get("supplier")
     if raw_supplier is None or raw_supplier == "" or raw_supplier == "NOASSERTION":
-        supplier: Optional[str] = None
+        supplier: str | None = None
     else:
         supplier = _strip_spdx_prefix(raw_supplier)
 
@@ -121,18 +122,16 @@ def parse_spdx(file_path: Path) -> NormalizedSBOM:
         creation_info: dict[str, Any] = document.get("creationInfo", {})
 
         # author
-        author: Optional[str] = _parse_author(creation_info)
+        author: str | None = _parse_author(creation_info)
 
         # timestamp
-        raw_ts: Optional[str] = creation_info.get("created")
-        timestamp: Optional[str] = raw_ts if raw_ts else None
+        raw_ts: str | None = creation_info.get("created")
+        timestamp: str | None = raw_ts if raw_ts else None
 
         # components — exclude the document pseudo-package
         raw_packages: list[dict[str, Any]] = document.get("packages", [])
         components: tuple[NormalizedComponent, ...] = tuple(
-            _parse_component(pkg)
-            for pkg in raw_packages
-            if pkg.get("SPDXID") != "SPDXRef-DOCUMENT"
+            _parse_component(pkg) for pkg in raw_packages if pkg.get("SPDXID") != "SPDXRef-DOCUMENT"
         )
 
         # relationships — keep only qualifying types

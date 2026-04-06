@@ -30,8 +30,7 @@ def detect_format(file_path: Path) -> str:
 
     if not isinstance(data, dict):
         raise UnsupportedFormatError(
-            f"Expected a JSON object at the root of {file_path}, "
-            f"got {type(data).__name__}"
+            f"Expected a JSON object at the root of {file_path}, " f"got {type(data).__name__}"
         )
 
     if "spdxVersion" in data:

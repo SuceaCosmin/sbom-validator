@@ -1,0 +1,17 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "empty-app-1.0.0",
+  "documentNamespace": "https://example.com/sbom/empty-app-1.0.0-00000000",
+  "creationInfo": {
+    "created": "2026-03-15T08:30:00Z",
+    "creators": [
+      "Tool: sbom-generator-1.0",
+      "Organization: TestOrg"
+    ],
+    "licenseListVersion": "3.22"
+  },
+  "packages": [],
+  "relationships": []
+}
