@@ -127,18 +127,20 @@
 
 ---
 
-## Phase 4 — Integration & Testing ⏳
+## Phase 4 — Integration & Testing ✅
 
 **Goal:** End-to-end validation, ≥90% coverage, code review.
-**Status:** Ready — Phase 3 complete.
+**Status:** Complete — 358/358 tests passing, 97% coverage. Committed to `develop`.
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 4.1 | Write integration tests | Tester | 🔒 | `tests/integration/test_integration.py` |
-| 4.2 | Create realistic integration fixtures (20+ components) | Developer | 🔒 | `tests/fixtures/integration/` (4 files) |
-| 4.3 | Run full test suite + coverage report | Tester | 🔒 | `docs/coverage-report.md`, `htmlcov/` |
-| 4.4 | Static analysis pass (mypy + ruff) | Reviewer | 🔒 | Zero errors confirmed |
-| 4.5 | Code review | Reviewer | 🔒 | `docs/code-review-notes.md` |
+| 4.1 | Write integration tests | Tester | ✅ | `tests/integration/test_integration.py` (30 tests) |
+| 4.2 | Create realistic integration fixtures (20+ components) | Developer | ✅ | `tests/fixtures/integration/` (4 files, 24-component SBOMs) |
+| 4.3 | Run full test suite + coverage report | Tester | ✅ | 358/358 passing, 97% overall coverage |
+| 4.4 | Static analysis pass (mypy + ruff + black) | Reviewer | ✅ | Zero errors; 25 ruff fixes, 5 black reformats, RefResolver deprecated API removed |
+| 4.5 | Code review + fixes | Reviewer + Developer | ✅ | `docs/code-review-notes.md`; 7 findings fixed (R-01 to R-13) |
+
+**Deferred to future release:** R-04/R-05 (parser signature refactor), R-08 (format-specific NTIA field paths), R-09 (ISO 8601 validation), R-12 (click.Path exists=True).
 
 > Tasks 4.1, 4.2, and 4.4 can run in parallel. 4.3 depends on 4.1+4.2. 4.5 depends on 4.4.
 
@@ -150,10 +152,10 @@
 
 ---
 
-## Phase 5 — Documentation & Release 🔒
+## Phase 5 — Documentation & Release ⏳
 
 **Goal:** User-facing docs, finalized changelog, v0.1.0 release.
-**Status:** Blocked — waiting on Phase 4 complete.
+**Status:** Ready — Phase 4 complete.
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
@@ -198,7 +200,7 @@ If continuing in a new session, do the following:
 5. Check `src/sbom_validator/models.py` for the current data model state
 6. Use the agent definitions in `.claude/agents/` to dispatch the correct agent for each task
 
-**Next task to execute:** `4.1 + 4.2 + 4.4` in parallel — integration tests (Tester), integration fixtures (Developer), static analysis (Reviewer).
+**Next task to execute:** `5.1 + 5.2 + 5.4 + 5.5` in parallel — user guide, architecture overview, CHANGELOG, LICENSE (Documentation Writer + Developer).
 
 ---
 
