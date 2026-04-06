@@ -1,0 +1,130 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:9f3a2b1c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "authors": [
+      {
+        "name": "AcmeCorp SBOM Team"
+      }
+    ],
+    "manufacture": {
+      "name": "AcmeCorp"
+    },
+    "component": {
+      "type": "application",
+      "bom-ref": "app-webapp-2.5.0",
+      "name": "acmecorp-webapp",
+      "version": "2.5.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      }
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/requests@2.31.0",
+      "name": "requests",
+      "version": "2.31.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      },
+      "description": "Python HTTP library for humans",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/requests@2.31.0",
+      "cpe": "cpe:2.3:a:python-requests:requests:2.31.0:*:*:*:*:*:*:*"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/urllib3@2.1.0",
+      "name": "urllib3",
+      "version": "2.1.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      },
+      "description": "HTTP library with thread-safe connection pooling",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/urllib3@2.1.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/certifi@2024.2.2",
+      "name": "certifi",
+      "version": "2024.2.2",
+      "supplier": {
+        "name": "ExampleSoft Ltd"
+      },
+      "description": "Python package for providing Mozilla CA Bundle",
+      "licenses": [
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/certifi@2024.2.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash@4.17.21",
+      "name": "lodash",
+      "version": "4.17.21",
+      "supplier": {
+        "name": "ExampleSoft Ltd"
+      },
+      "description": "A modern JavaScript utility library delivering modularity and performance",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.17.21",
+      "cpe": "cpe:2.3:a:lodash:lodash:4.17.21:*:*:*:*:node.js:*:*"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-webapp-2.5.0",
+      "dependsOn": [
+        "pkg:pypi/requests@2.31.0",
+        "pkg:npm/lodash@4.17.21"
+      ]
+    },
+    {
+      "ref": "pkg:pypi/requests@2.31.0",
+      "dependsOn": [
+        "pkg:pypi/urllib3@2.1.0",
+        "pkg:pypi/certifi@2024.2.2"
+      ]
+    },
+    {
+      "ref": "pkg:pypi/urllib3@2.1.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:pypi/certifi@2024.2.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:npm/lodash@4.17.21",
+      "dependsOn": []
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "authors": [
+      {
+        "name": "AcmeCorp SBOM Team"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app-ref",
+      "name": "MyApp",
+      "version": "1.0.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      }
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "comp-requests-2.31.0",
+      "name": "requests",
+      "version": "2.31.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "comp-urllib3-2.1.0",
+      "name": "urllib3",
+      "version": "2.1.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      }
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-ref",
+      "dependsOn": [
+        "comp-requests-2.31.0"
+      ]
+    },
+    {
+      "ref": "comp-requests-2.31.0",
+      "dependsOn": [
+        "comp-urllib3-2.1.0"
+      ]
+    }
+  ]
+}

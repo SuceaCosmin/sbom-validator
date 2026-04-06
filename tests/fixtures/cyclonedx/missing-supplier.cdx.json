@@ -1,0 +1,56 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:7c8d9e0f-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "authors": [
+      {
+        "name": "AcmeCorp SBOM Team"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app-ref",
+      "name": "MyApp",
+      "version": "1.0.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      }
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/requests@2.31.0",
+      "name": "requests",
+      "version": "2.31.0",
+      "purl": "pkg:pypi/requests@2.31.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/urllib3@2.1.0",
+      "name": "urllib3",
+      "version": "2.1.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      },
+      "purl": "pkg:pypi/urllib3@2.1.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-ref",
+      "dependsOn": [
+        "pkg:pypi/requests@2.31.0"
+      ]
+    },
+    {
+      "ref": "pkg:pypi/requests@2.31.0",
+      "dependsOn": [
+        "pkg:pypi/urllib3@2.1.0"
+      ]
+    }
+  ]
+}

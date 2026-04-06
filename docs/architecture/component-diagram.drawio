@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-04-06T00:00:00.000Z" agent="Claude" version="24.0.0">
+  <diagram id="component-diagram" name="Component Diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- INTERNAL COMPONENTS GROUP (blue border swimlane)   -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="grp-internal" value="sbom-validator (Internal Components)" style="swimlane;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1020" height="680" as="geometry" />
+        </mxCell>
+
+        <!-- CLI -->
+        <mxCell id="cli" value="&lt;b&gt;CLI&lt;/b&gt;&lt;br&gt;cli.py&lt;br&gt;&lt;font color='#666666'&gt;Entry point, argument parsing,&lt;br&gt;output formatting, exit codes&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="40" y="70" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Validator Orchestrator -->
+        <mxCell id="validator" value="&lt;b&gt;Validator Orchestrator&lt;/b&gt;&lt;br&gt;validator.py&lt;br&gt;&lt;font color='#666666'&gt;Coordinates the two-stage&lt;br&gt;validation pipeline&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="320" y="70" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Format Detector -->
+        <mxCell id="format-detector" value="&lt;b&gt;Format Detector&lt;/b&gt;&lt;br&gt;format_detector.py&lt;br&gt;&lt;font color='#666666'&gt;Detects SPDX 2.3 vs&lt;br&gt;CycloneDX 1.6 from content&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="600" y="70" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Schema Validator -->
+        <mxCell id="schema-validator" value="&lt;b&gt;Schema Validator&lt;/b&gt;&lt;br&gt;schema_validator.py&lt;br&gt;&lt;font color='#666666'&gt;Stage 1: JSON schema&lt;br&gt;validation (FR-02, FR-03)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="600" y="230" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- SPDX Parser -->
+        <mxCell id="spdx-parser" value="&lt;b&gt;SPDX Parser&lt;/b&gt;&lt;br&gt;parsers/spdx_parser.py&lt;br&gt;&lt;font color='#666666'&gt;Parses SPDX 2.3 JSON&lt;br&gt;into NormalizedSBOM&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="320" y="390" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- CycloneDX Parser -->
+        <mxCell id="cdx-parser" value="&lt;b&gt;CycloneDX Parser&lt;/b&gt;&lt;br&gt;parsers/cyclonedx_parser.py&lt;br&gt;&lt;font color='#666666'&gt;Parses CycloneDX 1.6 JSON&lt;br&gt;into NormalizedSBOM&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="600" y="390" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- NTIA Checker -->
+        <mxCell id="ntia-checker" value="&lt;b&gt;NTIA Checker&lt;/b&gt;&lt;br&gt;ntia_checker.py&lt;br&gt;&lt;font color='#666666'&gt;Stage 2: Checks 7 NTIA&lt;br&gt;minimum elements (FR-04–10)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="780" y="390" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Models -->
+        <mxCell id="models" value="&lt;b&gt;Models&lt;/b&gt;&lt;br&gt;models.py&lt;br&gt;&lt;font color='#666666'&gt;NormalizedSBOM, ValidationResult,&lt;br&gt;ValidationIssue data structures&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;arcSize=10;" vertex="1" parent="grp-internal">
+          <mxGeometry x="600" y="555" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Schemas (storage) -->
+        <mxCell id="schemas" value="&lt;b&gt;Schemas&lt;/b&gt;&lt;br&gt;schemas/&lt;br&gt;&lt;font color='#666666'&gt;Bundled JSON schema files&lt;br&gt;(SPDX 2.3, CycloneDX 1.6)&lt;/font&gt;" style="shape=mxgraph.flowchart.stored_data;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="grp-internal">
+          <mxGeometry x="820" y="230" width="160" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- EXTERNAL LIBRARIES GROUP (gray border swimlane)    -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="grp-external" value="External Libraries" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontStyle=1;fontSize=14;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="280" width="200" height="360" as="geometry" />
+        </mxCell>
+
+        <!-- spdx-tools -->
+        <mxCell id="spdx-tools" value="&lt;b&gt;spdx-tools&lt;/b&gt;&lt;br&gt;&lt;font color='#666666'&gt;PyPI library for&lt;br&gt;SPDX support&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=13;arcSize=10;" vertex="1" parent="grp-external">
+          <mxGeometry x="20" y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- cyclonedx-bom -->
+        <mxCell id="cdx-lib" value="&lt;b&gt;cyclonedx-bom&lt;/b&gt;&lt;br&gt;&lt;font color='#666666'&gt;PyPI library for&lt;br&gt;CycloneDX support&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=13;arcSize=10;" vertex="1" parent="grp-external">
+          <mxGeometry x="20" y="155" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- jsonschema -->
+        <mxCell id="jsonschema-lib" value="&lt;b&gt;jsonschema&lt;/b&gt;&lt;br&gt;&lt;font color='#666666'&gt;PyPI library for&lt;br&gt;JSON schema validation&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=13;arcSize=10;" vertex="1" parent="grp-external">
+          <mxGeometry x="20" y="260" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- EDGES (internal)                                   -->
+        <!-- ═══════════════════════════════════════════════════ -->
+
+        <!-- CLI → Validator Orchestrator -->
+        <mxCell id="e-cli-val" value="calls" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="cli" target="validator" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validator → Format Detector -->
+        <mxCell id="e-val-fd" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="validator" target="format-detector" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validator → Schema Validator -->
+        <mxCell id="e-val-sv" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="validator" target="schema-validator" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validator → SPDX Parser -->
+        <mxCell id="e-val-spdx" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="validator" target="spdx-parser" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validator → CycloneDX Parser -->
+        <mxCell id="e-val-cdx" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="validator" target="cdx-parser" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validator → NTIA Checker -->
+        <mxCell id="e-val-ntia" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="validator" target="ntia-checker" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="540" y="435" />
+              <mxPoint x="540" y="435" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Schema Validator → Schemas -->
+        <mxCell id="e-sv-schemas" value="reads" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="schema-validator" target="schemas" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SPDX Parser → Models -->
+        <mxCell id="e-spdx-models" value="produces" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="spdx-parser" target="models" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CycloneDX Parser → Models -->
+        <mxCell id="e-cdx-models" value="produces" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="cdx-parser" target="models" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NTIA Checker → Models -->
+        <mxCell id="e-ntia-models" value="consumes" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;" edge="1" source="ntia-checker" target="models" parent="grp-internal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- EDGES (to external libraries)                      -->
+        <!-- ═══════════════════════════════════════════════════ -->
+
+        <!-- Schema Validator → jsonschema -->
+        <mxCell id="e-sv-jsonschema" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;fontSize=12;" edge="1" source="schema-validator" target="jsonschema-lib" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SPDX Parser → spdx-tools -->
+        <mxCell id="e-spdxp-spdxlib" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;fontSize=12;" edge="1" source="spdx-parser" target="spdx-tools" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CycloneDX Parser → cyclonedx-bom -->
+        <mxCell id="e-cdxp-cdxlib" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;fontSize=12;" edge="1" source="cdx-parser" target="cdx-lib" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

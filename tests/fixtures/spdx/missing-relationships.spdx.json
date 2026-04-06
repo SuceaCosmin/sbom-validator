@@ -1,0 +1,32 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "acmecorp-myapp-1.0.0",
+  "documentNamespace": "https://example.com/sbom/acmecorp-myapp-1.0.0-no-rels",
+  "creationInfo": {
+    "created": "2024-01-15T10:00:00Z",
+    "creators": [
+      "Tool: sbom-generator-1.0",
+      "Organization: AcmeCorp"
+    ]
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-requests",
+      "name": "requests",
+      "versionInfo": "2.31.0",
+      "supplier": "Organization: AcmeCorp",
+      "downloadLocation": "https://pypi.org/project/requests/2.31.0/",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/requests@2.31.0"
+        }
+      ]
+    }
+  ],
+  "relationships": []
+}

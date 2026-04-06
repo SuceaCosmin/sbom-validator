@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "sbom-validator"
+version = "0.1.0"
+description = "CLI tool to validate SBOM files against schema and NTIA minimum elements"
+authors = []
+license = "Apache-2.0"
+readme = "README.md"
+packages = [{include = "sbom_validator", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+click = ">=8.1"
+jsonschema = ">=4.21"
+spdx-tools = ">=0.8"
+cyclonedx-bom = ">=4.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+pytest-cov = ">=5.0"
+black = ">=24.0"
+ruff = ">=0.4"
+mypy = ">=1.9"
+types-jsonschema = "*"
+
+[tool.poetry.scripts]
+sbom-validator = "sbom_validator.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"

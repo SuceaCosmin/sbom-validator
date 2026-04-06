@@ -1,0 +1,29 @@
+{
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "authors": [
+      {
+        "name": "AcmeCorp SBOM Team"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "pkg:pypi/requests@2.31.0",
+      "version": "2.31.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      },
+      "purl": "pkg:pypi/requests@2.31.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:pypi/requests@2.31.0",
+      "dependsOn": []
+    }
+  ]
+}
