@@ -104,16 +104,16 @@
 
 ---
 
-## Phase 3 — CLI Layer ⏳
+## Phase 3 — CLI Layer ✅
 
 **Goal:** Expose the validator through a polished CLI usable in CI/CD.
-**Status:** Ready — Phase 2 complete.
+**Status:** Complete — 325/325 unit tests passing. Committed to `master`.
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
-| 3.1 | Write CLI tests (TDD — will fail) | Tester | 🔒 | `tests/unit/test_cli.py` |
-| 3.2 | Implement CLI (`cli.py`) | Developer | 🔒 | `src/sbom_validator/cli.py` fully implemented |
-| 3.3 | Smoke test all fixture files via CLI | Developer | 🔒 | `docs/smoke-test-notes.md` |
+| 3.1 | Write CLI tests | Tester | ✅ | `tests/unit/test_cli.py` (77 tests) |
+| 3.2 | Implement CLI (`cli.py`) | Developer | ✅ | `src/sbom_validator/cli.py` — text + JSON output, exit codes 0/1/2 |
+| 3.3 | Smoke test all fixture files via CLI | Developer | ✅ | All 14 fixtures verified — correct status and exit codes |
 
 **CLI Contract:**
 - `sbom-validator validate <FILE> [--format text|json]`
@@ -127,10 +127,10 @@
 
 ---
 
-## Phase 4 — Integration & Testing 🔒
+## Phase 4 — Integration & Testing ⏳
 
 **Goal:** End-to-end validation, ≥90% coverage, code review.
-**Status:** Blocked — waiting on Phase 3 complete.
+**Status:** Ready — Phase 3 complete.
 
 | ID | Task | Agent | Status | Output |
 |----|------|-------|--------|--------|
@@ -186,7 +186,7 @@ If continuing in a new session, do the following:
 5. Check `src/sbom_validator/models.py` for the current data model state
 6. Use the agent definitions in `.claude/agents/` to dispatch the correct agent for each task
 
-**Next task to execute:** `3.1` — Write CLI tests (Tester agent), then `3.2` implement CLI (Developer agent).
+**Next task to execute:** `4.1 + 4.2 + 4.4` in parallel — integration tests (Tester), integration fixtures (Developer), static analysis (Reviewer).
 
 ---
 
