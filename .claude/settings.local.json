@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/.github/workflows\")",
+      "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/docs/architecture\")",
+      "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/src/sbom_validator/parsers\")",
+      "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/src/sbom_validator/schemas\")",
+      "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/tests/unit\")",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)"
+    ]
+  }
+}
