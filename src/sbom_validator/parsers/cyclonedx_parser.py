@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from sbom_validator.exceptions import ParseError
 from sbom_validator.models import (
@@ -14,7 +14,7 @@ from sbom_validator.models import (
 )
 
 
-def _extract_author(metadata: dict[str, Any]) -> Optional[str]:
+def _extract_author(metadata: dict[str, Any]) -> str | None:
     """Extract the author string from a CycloneDX metadata object.
 
     Priority:
@@ -29,35 +29,35 @@ def _extract_author(metadata: dict[str, Any]) -> Optional[str]:
             return ", ".join(names)
 
     manufacture: dict[str, Any] = metadata.get("manufacture", {})
-    manufacture_name: Optional[str] = manufacture.get("name") or None
+    manufacture_name: str | None = manufacture.get("name") or None
     return manufacture_name
 
 
 def _parse_component(component: dict[str, Any], index: int) -> NormalizedComponent:
     """Map a single CycloneDX component dict to a NormalizedComponent."""
     name: str = component.get("name", "")
-    version: Optional[str] = component.get("version") or None
+    version: str | None = component.get("version") or None
 
-    bom_ref: Optional[str] = component.get("bom-ref")
+    bom_ref: str | None = component.get("bom-ref")
     if bom_ref:
         component_id = bom_ref
     else:
         component_id = f"{name}@{version if version is not None else 'unknown'}"
 
     supplier_obj: dict[str, Any] = component.get("supplier", {})
-    supplier: Optional[str] = supplier_obj.get("name") or None
+    supplier: str | None = supplier_obj.get("name") or None
 
     identifiers: list[str] = []
-    purl: Optional[str] = component.get("purl")
+    purl: str | None = component.get("purl")
     if purl:
         identifiers.append(purl)
-    cpe: Optional[str] = component.get("cpe")
+    cpe: str | None = component.get("cpe")
     if cpe:
         identifiers.append(cpe)
 
     return NormalizedComponent(
         component_id=component_id,
-        name=name or None,  # type: ignore[arg-type]
+        name=name or "",
         version=version,
         supplier=supplier,
         identifiers=tuple(identifiers),
@@ -103,13 +103,11 @@ def parse_cyclonedx(file_path: Path) -> NormalizedSBOM:
 
     metadata: dict[str, Any] = document.get("metadata", {})
 
-    author: Optional[str] = _extract_author(metadata)
-    timestamp: Optional[str] = metadata.get("timestamp") or None
+    author: str | None = _extract_author(metadata)
+    timestamp: str | None = metadata.get("timestamp") or None
 
     raw_components: list[dict[str, Any]] = document.get("components", [])
-    components = tuple(
-        _parse_component(comp, idx) for idx, comp in enumerate(raw_components)
-    )
+    components = tuple(_parse_component(comp, idx) for idx, comp in enumerate(raw_components))
 
     raw_dependencies: list[dict[str, Any]] = document.get("dependencies", [])
     relationships = _parse_relationships(raw_dependencies)

@@ -30,9 +30,7 @@ def _load_schema(format_name: str) -> dict[str, Any]:
     """Load and cache the bundled JSON schema for the given format."""
     if format_name not in _loaded_schemas:
         schema_path = _SCHEMAS_DIR / _SCHEMA_FILES[format_name]
-        _loaded_schemas[format_name] = json.loads(
-            schema_path.read_text(encoding="utf-8")
-        )
+        _loaded_schemas[format_name] = json.loads(schema_path.read_text(encoding="utf-8"))
     return _loaded_schemas[format_name]
 
 
@@ -50,24 +48,12 @@ def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[Validatio
         ValueError: If format_name is not 'spdx' or 'cyclonedx'.
     """
     if format_name not in _SCHEMA_FILES:
-        raise ValueError(
-            f"Unknown format: {format_name!r}. Expected one of: {list(_SCHEMA_FILES)}"
-        )
+        raise ValueError(f"Unknown format: {format_name!r}. Expected one of: {list(_SCHEMA_FILES)}")
 
     schema = _load_schema(format_name)
     rule = _FORMAT_RULES[format_name]
-    schema_path = _SCHEMAS_DIR / _SCHEMA_FILES[format_name]
 
-    try:
-        resolver = jsonschema.RefResolver(
-            base_uri=schema_path.as_uri(),
-            referrer=schema,
-        )
-        validator_cls = jsonschema.Draft7Validator
-        validator = validator_cls(schema, resolver=resolver)
-    except Exception:
-        # Fall back to basic validator without resolver
-        validator = jsonschema.Draft7Validator(schema)
+    validator = jsonschema.Draft7Validator(schema)
 
     issues: list[ValidationIssue] = []
     for error in validator.iter_errors(raw_doc):

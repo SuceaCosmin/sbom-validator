@@ -407,9 +407,9 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         rules_found = {i.rule for i in issues}
         for expected_rule in ("FR-04", "FR-06", "FR-07", "FR-08", "FR-09", "FR-10"):
-            assert expected_rule in rules_found, (
-                f"{expected_rule} not reported; rules found: {rules_found}"
-            )
+            assert (
+                expected_rule in rules_found
+            ), f"{expected_rule} not reported; rules found: {rules_found}"
 
     def test_each_issue_has_severity_error(self) -> None:
         """Every issue returned by check_ntia must carry ERROR severity."""
@@ -417,9 +417,9 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         assert len(issues) > 0, "Expected at least one issue from a broken SBOM"
         for issue in issues:
-            assert issue.severity == IssueSeverity.ERROR, (
-                f"Issue {issue.rule!r} has severity {issue.severity!r}; expected ERROR"
-            )
+            assert (
+                issue.severity == IssueSeverity.ERROR
+            ), f"Issue {issue.rule!r} has severity {issue.severity!r}; expected ERROR"
 
     def test_each_issue_has_non_empty_message(self) -> None:
         """Every issue must carry a non-empty human-readable message."""
@@ -427,26 +427,22 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         assert len(issues) > 0, "Expected at least one issue from a broken SBOM"
         for issue in issues:
-            assert issue.message != "", (
-                f"Issue {issue.rule!r} has an empty message"
-            )
+            assert issue.message != "", f"Issue {issue.rule!r} has an empty message"
 
     def test_returns_list_type(self) -> None:
         """check_ntia must return a plain list, not a tuple or generator."""
         sbom = _make_valid_sbom()
         result = check_ntia(sbom)
-        assert isinstance(result, list), (
-            f"Expected list, got {type(result).__name__}"
-        )
+        assert isinstance(result, list), f"Expected list, got {type(result).__name__}"
 
     def test_returns_list_of_validation_issue_instances(self) -> None:
         """Every element in the returned list must be a ValidationIssue."""
         sbom = self._make_maximally_broken_sbom()
         issues = check_ntia(sbom)
         for item in issues:
-            assert isinstance(item, ValidationIssue), (
-                f"Expected ValidationIssue, got {type(item).__name__}"
-            )
+            assert isinstance(
+                item, ValidationIssue
+            ), f"Expected ValidationIssue, got {type(item).__name__}"
 
     def test_each_issue_has_non_empty_rule(self) -> None:
         """Every issue must carry a non-empty rule identifier (e.g., 'FR-04')."""
@@ -454,9 +450,7 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         assert len(issues) > 0, "Expected at least one issue from a broken SBOM"
         for issue in issues:
-            assert issue.rule != "", (
-                f"An issue has an empty rule field: {issue}"
-            )
+            assert issue.rule != "", f"An issue has an empty rule field: {issue}"
 
     def test_no_duplicate_rules_for_document_level_checks(self) -> None:
         """FR-08, FR-09, FR-10 are document-level: each should appear at most once."""
@@ -464,19 +458,23 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         for doc_level_rule in ("FR-08", "FR-09", "FR-10"):
             count = sum(1 for i in issues if i.rule == doc_level_rule)
-            assert count <= 1, (
-                f"{doc_level_rule} appeared {count} times; expected at most 1"
-            )
+            assert count <= 1, f"{doc_level_rule} appeared {count} times; expected at most 1"
 
     def test_per_component_rules_reported_once_per_component(self) -> None:
         """FR-04, FR-06, FR-07 are per-component: two broken components → two issues each."""
         c1 = NormalizedComponent(
-            component_id="c1", name="pkg-a", version=None,
-            supplier=None, identifiers=(),
+            component_id="c1",
+            name="pkg-a",
+            version=None,
+            supplier=None,
+            identifiers=(),
         )
         c2 = NormalizedComponent(
-            component_id="c2", name="pkg-b", version=None,
-            supplier=None, identifiers=(),
+            component_id="c2",
+            name="pkg-b",
+            version=None,
+            supplier=None,
+            identifiers=(),
         )
         sbom = NormalizedSBOM(
             format="spdx",

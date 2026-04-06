@@ -16,7 +16,6 @@ from sbom_validator.exceptions import ParseError
 from sbom_validator.models import NormalizedComponent, NormalizedRelationship, NormalizedSBOM
 from sbom_validator.parsers.spdx_parser import parse_spdx
 
-
 # ---------------------------------------------------------------------------
 # Shared fixture
 # ---------------------------------------------------------------------------
@@ -151,9 +150,7 @@ class TestParseSpdxBasic:
         result = parse_spdx(fixtures_path / "valid-minimal.spdx.json")
         # The only qualifying relationship in the minimal fixture:
         # DEPENDS_ON: SPDXRef-DOCUMENT → SPDXRef-Package-requests
-        depends_on_rels = [
-            r for r in result.relationships if r.relationship_type == "DEPENDS_ON"
-        ]
+        depends_on_rels = [r for r in result.relationships if r.relationship_type == "DEPENDS_ON"]
         assert len(depends_on_rels) >= 1
         rel = depends_on_rels[0]
         assert rel.from_id == "SPDXRef-DOCUMENT"
@@ -267,9 +264,7 @@ class TestParseSpdxMissingFields:
         spdx_file = tmp_path / "noassertion.spdx.json"
         spdx_file.write_text(json.dumps(fixture))
         result = parse_spdx(spdx_file)
-        pkg = next(
-            c for c in result.components if c.component_id == "SPDXRef-pkg-noassert"
-        )
+        pkg = next(c for c in result.components if c.component_id == "SPDXRef-pkg-noassert")
         assert pkg.version is None
 
     def test_noassertion_supplier_returns_none(self, tmp_path: Path) -> None:
@@ -299,14 +294,10 @@ class TestParseSpdxMissingFields:
         spdx_file = tmp_path / "noassertion-supplier.spdx.json"
         spdx_file.write_text(json.dumps(fixture))
         result = parse_spdx(spdx_file)
-        pkg = next(
-            c for c in result.components if c.component_id == "SPDXRef-pkg-noassert"
-        )
+        pkg = next(c for c in result.components if c.component_id == "SPDXRef-pkg-noassert")
         assert pkg.supplier is None
 
-    def test_only_security_external_ref_included_in_identifiers(
-        self, tmp_path: Path
-    ) -> None:
+    def test_only_security_external_ref_included_in_identifiers(self, tmp_path: Path) -> None:
         """externalRefs with SECURITY category (CPEs) must appear in identifiers."""
         fixture = {
             "spdxVersion": "SPDX-2.3",
@@ -344,9 +335,7 @@ class TestParseSpdxMissingFields:
         spdx_file = tmp_path / "cpe-only.spdx.json"
         spdx_file.write_text(json.dumps(fixture))
         result = parse_spdx(spdx_file)
-        pkg = next(
-            c for c in result.components if c.component_id == "SPDXRef-pkg-cpe"
-        )
+        pkg = next(c for c in result.components if c.component_id == "SPDXRef-pkg-cpe")
         assert "cpe:2.3:a:acme:pkg:1.0.0:*:*:*:*:*:*:*" in pkg.identifiers
         # The OTHER-category ref must not be included
         assert "https://example.com" not in pkg.identifiers

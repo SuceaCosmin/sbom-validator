@@ -1,0 +1,60 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "metadata": {
+    "timestamp": "2026-03-15T08:30:00Z",
+    "authors": [
+      {
+        "name": "TestOrg SBOM Team"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app-nodeps-1.0.0",
+      "name": "nodeps-app",
+      "version": "1.0.0",
+      "supplier": {
+        "name": "TestOrg"
+      },
+      "purl": "pkg:pypi/nodeps-app@1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/requests@2.31.0",
+      "name": "requests",
+      "version": "2.31.0",
+      "supplier": {
+        "name": "PyPI Community"
+      },
+      "description": "Python HTTP library for humans",
+      "purl": "pkg:pypi/requests@2.31.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/flask@3.0.2",
+      "name": "flask",
+      "version": "3.0.2",
+      "supplier": {
+        "name": "Pallets Projects"
+      },
+      "description": "A simple framework for building complex web applications",
+      "purl": "pkg:pypi/flask@3.0.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/sqlalchemy@2.0.27",
+      "name": "sqlalchemy",
+      "version": "2.0.27",
+      "supplier": {
+        "name": "SQLAlchemy Authors"
+      },
+      "description": "Database Abstraction Library",
+      "purl": "pkg:pypi/sqlalchemy@2.0.27"
+    }
+  ],
+  "dependencies": []
+}

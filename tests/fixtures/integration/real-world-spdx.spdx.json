@@ -1,0 +1,586 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "mywebapp-1.0.0",
+  "documentNamespace": "https://example.com/sbom/mywebapp-1.0.0-a1b2c3d4e5f6",
+  "creationInfo": {
+    "created": "2026-03-15T08:30:00Z",
+    "creators": [
+      "Tool: syft-1.0.1",
+      "Organization: MyWebApp Corp"
+    ],
+    "licenseListVersion": "3.22"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-requests",
+      "name": "requests",
+      "versionInfo": "2.31.0",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/requests/2.31.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/requests@2.31.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-urllib3",
+      "name": "urllib3",
+      "versionInfo": "2.1.0",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/urllib3/2.1.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/urllib3@2.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-certifi",
+      "name": "certifi",
+      "versionInfo": "2024.2.2",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/certifi/2024.2.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MPL-2.0",
+      "licenseDeclared": "MPL-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/certifi@2024.2.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-charset-normalizer",
+      "name": "charset-normalizer",
+      "versionInfo": "3.3.2",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/charset-normalizer/3.3.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/charset-normalizer@3.3.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-idna",
+      "name": "idna",
+      "versionInfo": "3.6",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/idna/3.6/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/idna@3.6"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-flask",
+      "name": "flask",
+      "versionInfo": "3.0.2",
+      "supplier": "Organization: Pallets Projects",
+      "downloadLocation": "https://pypi.org/project/flask/3.0.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/flask@3.0.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-werkzeug",
+      "name": "werkzeug",
+      "versionInfo": "3.0.1",
+      "supplier": "Organization: Pallets Projects",
+      "downloadLocation": "https://pypi.org/project/werkzeug/3.0.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/werkzeug@3.0.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-jinja2",
+      "name": "jinja2",
+      "versionInfo": "3.1.3",
+      "supplier": "Organization: Pallets Projects",
+      "downloadLocation": "https://pypi.org/project/jinja2/3.1.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/jinja2@3.1.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-markupsafe",
+      "name": "markupsafe",
+      "versionInfo": "2.1.5",
+      "supplier": "Organization: Pallets Projects",
+      "downloadLocation": "https://pypi.org/project/markupsafe/2.1.5/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/markupsafe@2.1.5"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-click",
+      "name": "click",
+      "versionInfo": "8.1.7",
+      "supplier": "Organization: Pallets Projects",
+      "downloadLocation": "https://pypi.org/project/click/8.1.7/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/click@8.1.7"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-itsdangerous",
+      "name": "itsdangerous",
+      "versionInfo": "2.1.2",
+      "supplier": "Organization: Pallets Projects",
+      "downloadLocation": "https://pypi.org/project/itsdangerous/2.1.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/itsdangerous@2.1.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sqlalchemy",
+      "name": "sqlalchemy",
+      "versionInfo": "2.0.27",
+      "supplier": "Organization: SQLAlchemy Authors",
+      "downloadLocation": "https://pypi.org/project/sqlalchemy/2.0.27/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/sqlalchemy@2.0.27"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-alembic",
+      "name": "alembic",
+      "versionInfo": "1.13.1",
+      "supplier": "Organization: SQLAlchemy Authors",
+      "downloadLocation": "https://pypi.org/project/alembic/1.13.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/alembic@1.13.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pydantic",
+      "name": "pydantic",
+      "versionInfo": "2.6.1",
+      "supplier": "Organization: Pydantic Contributors",
+      "downloadLocation": "https://pypi.org/project/pydantic/2.6.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pydantic@2.6.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-fastapi",
+      "name": "fastapi",
+      "versionInfo": "0.109.2",
+      "supplier": "Organization: Tiangolo Ltd",
+      "downloadLocation": "https://pypi.org/project/fastapi/0.109.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/fastapi@0.109.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-uvicorn",
+      "name": "uvicorn",
+      "versionInfo": "0.27.1",
+      "supplier": "Organization: Encode OSS Ltd",
+      "downloadLocation": "https://pypi.org/project/uvicorn/0.27.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/uvicorn@0.27.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-starlette",
+      "name": "starlette",
+      "versionInfo": "0.36.3",
+      "supplier": "Organization: Encode OSS Ltd",
+      "downloadLocation": "https://pypi.org/project/starlette/0.36.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/starlette@0.36.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-httpx",
+      "name": "httpx",
+      "versionInfo": "0.26.0",
+      "supplier": "Organization: Encode OSS Ltd",
+      "downloadLocation": "https://pypi.org/project/httpx/0.26.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/httpx@0.26.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-anyio",
+      "name": "anyio",
+      "versionInfo": "4.3.0",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/anyio/4.3.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/anyio@4.3.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sniffio",
+      "name": "sniffio",
+      "versionInfo": "1.3.0",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/sniffio/1.3.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/sniffio@1.3.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-typing-extensions",
+      "name": "typing-extensions",
+      "versionInfo": "4.9.0",
+      "supplier": "Organization: Python Software Foundation",
+      "downloadLocation": "https://pypi.org/project/typing-extensions/4.9.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "PSF-2.0",
+      "licenseDeclared": "PSF-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/typing-extensions@4.9.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-greenlet",
+      "name": "greenlet",
+      "versionInfo": "3.0.3",
+      "supplier": "Organization: PyPI Community",
+      "downloadLocation": "https://pypi.org/project/greenlet/3.0.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/greenlet@3.0.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-mako",
+      "name": "mako",
+      "versionInfo": "1.3.2",
+      "supplier": "Organization: SQLAlchemy Authors",
+      "downloadLocation": "https://pypi.org/project/mako/1.3.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/mako@1.3.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pydantic-core",
+      "name": "pydantic-core",
+      "versionInfo": "2.16.2",
+      "supplier": "Organization: Pydantic Contributors",
+      "downloadLocation": "https://pypi.org/project/pydantic-core/2.16.2/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pydantic-core@2.16.2"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-flask"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-fastapi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flask",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-werkzeug"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flask",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-jinja2"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flask",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-click"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flask",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-itsdangerous"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jinja2",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-markupsafe"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-werkzeug",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-markupsafe"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-requests",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-urllib3"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-requests",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-certifi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-requests",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-charset-normalizer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-requests",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-idna"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-fastapi",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-starlette"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-fastapi",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pydantic"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-starlette",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-anyio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-httpx",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-anyio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-httpx",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-certifi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-anyio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sniffio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pydantic",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pydantic-core"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pydantic",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typing-extensions"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pydantic-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typing-extensions"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlalchemy",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-greenlet"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlalchemy",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typing-extensions"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-alembic",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sqlalchemy"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-alembic",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-mako"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-uvicorn",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-click"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-uvicorn",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-anyio"
+    }
+  ]
+}

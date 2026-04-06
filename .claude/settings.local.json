@@ -7,7 +7,9 @@
       "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/src/sbom_validator/schemas\")",
       "Bash(mkdir -p \"C:/Users/Sucea/source/repos/sbom-validator/tests/unit\")",
       "Bash(gh auth:*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(python -c ':*)",
+      "Bash(poetry install:*)"
     ]
   }
 }

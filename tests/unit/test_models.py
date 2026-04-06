@@ -7,8 +7,9 @@ for each. Enum string values, default field values, and equality semantics are
 also exercised.
 """
 
-import pytest
 from dataclasses import FrozenInstanceError
+
+import pytest
 
 from sbom_validator.models import (
     IssueSeverity,
@@ -19,7 +20,6 @@ from sbom_validator.models import (
     ValidationResult,
     ValidationStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # ValidationStatus
@@ -224,23 +224,17 @@ class TestNormalizedSBOM:
 
 class TestValidationResult:
     def test_instantiation_with_status_and_file_path(self):
-        result = ValidationResult(
-            status=ValidationStatus.PASS, file_path="/path/to/sbom.json"
-        )
+        result = ValidationResult(status=ValidationStatus.PASS, file_path="/path/to/sbom.json")
         assert result.status == ValidationStatus.PASS
         assert result.file_path == "/path/to/sbom.json"
 
     def test_issues_defaults_to_empty_tuple(self):
-        result = ValidationResult(
-            status=ValidationStatus.PASS, file_path="/path/to/sbom.json"
-        )
+        result = ValidationResult(status=ValidationStatus.PASS, file_path="/path/to/sbom.json")
         assert result.issues == ()
         assert isinstance(result.issues, tuple)
 
     def test_format_detected_defaults_to_none(self):
-        result = ValidationResult(
-            status=ValidationStatus.FAIL, file_path="/path/to/sbom.json"
-        )
+        result = ValidationResult(status=ValidationStatus.FAIL, file_path="/path/to/sbom.json")
         assert result.format_detected is None
 
     def test_instantiation_with_all_fields(self):
@@ -259,8 +253,6 @@ class TestValidationResult:
         assert result.format_detected == "spdx"
 
     def test_immutability_raises_frozen_instance_error(self):
-        result = ValidationResult(
-            status=ValidationStatus.PASS, file_path="/path/to/sbom.json"
-        )
+        result = ValidationResult(status=ValidationStatus.PASS, file_path="/path/to/sbom.json")
         with pytest.raises(FrozenInstanceError):
             result.status = ValidationStatus.FAIL  # type: ignore[misc]

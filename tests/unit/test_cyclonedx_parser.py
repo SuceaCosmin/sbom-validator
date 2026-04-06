@@ -27,7 +27,6 @@ from sbom_validator.models import (
 )
 from sbom_validator.parsers.cyclonedx_parser import parse_cyclonedx
 
-
 # ---------------------------------------------------------------------------
 # Shared fixture
 # ---------------------------------------------------------------------------
@@ -104,9 +103,7 @@ class TestParseCycloneDXBasic:
         assert isinstance(result.relationships, tuple)
         assert len(result.relationships) >= 1
 
-    def test_each_depends_on_entry_becomes_relationship(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_each_depends_on_entry_becomes_relationship(self, fixtures_path: Path) -> None:
         """Each dependsOn entry must produce one NormalizedRelationship.
 
         valid-minimal has one dependency: app-ref -> pkg:pypi/requests@2.31.0.
@@ -139,9 +136,7 @@ class TestParseCycloneDXMissingFields:
         """
         result = parse_cyclonedx(fixtures_path / "missing-supplier.cdx.json")
         # Find the requests component (first component, which has no supplier)
-        requests_component = next(
-            c for c in result.components if c.name == "requests"
-        )
+        requests_component = next(c for c in result.components if c.name == "requests")
         assert requests_component.supplier is None
 
     def test_missing_timestamp_returns_none(self, fixtures_path: Path) -> None:
@@ -149,16 +144,12 @@ class TestParseCycloneDXMissingFields:
         result = parse_cyclonedx(fixtures_path / "missing-timestamp.cdx.json")
         assert result.timestamp is None
 
-    def test_missing_relationships_returns_empty_tuple(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_missing_relationships_returns_empty_tuple(self, fixtures_path: Path) -> None:
         """relationships must be an empty tuple when dependencies array is empty."""
         result = parse_cyclonedx(fixtures_path / "missing-relationships.cdx.json")
         assert result.relationships == ()
 
-    def test_missing_identifiers_returns_empty_tuple(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_missing_identifiers_returns_empty_tuple(self, fixtures_path: Path) -> None:
         """identifiers must be an empty tuple when both purl and cpe are absent.
 
         missing-identifiers.cdx.json has components with no purl or cpe fields.
@@ -258,9 +249,7 @@ class TestParseCycloneDXFull:
         valid-full has a CPE on the 'requests' component.
         """
         result = parse_cyclonedx(fixtures_path / "valid-full.cdx.json")
-        requests_component = next(
-            c for c in result.components if c.name == "requests"
-        )
+        requests_component = next(c for c in result.components if c.name == "requests")
         assert "cpe:2.3:a:python-requests:requests:2.31.0:*:*:*:*:*:*:*" in (
             requests_component.identifiers
         )
@@ -268,17 +257,13 @@ class TestParseCycloneDXFull:
     def test_purl_and_cpe_both_in_identifiers(self, fixtures_path: Path) -> None:
         """A component with both purl and cpe must include both in identifiers."""
         result = parse_cyclonedx(fixtures_path / "valid-full.cdx.json")
-        requests_component = next(
-            c for c in result.components if c.name == "requests"
-        )
+        requests_component = next(c for c in result.components if c.name == "requests")
         assert "pkg:pypi/requests@2.31.0" in requests_component.identifiers
         assert "cpe:2.3:a:python-requests:requests:2.31.0:*:*:*:*:*:*:*" in (
             requests_component.identifiers
         )
 
-    def test_relationships_expanded_from_multi_depends_on(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_relationships_expanded_from_multi_depends_on(self, fixtures_path: Path) -> None:
         """A dependsOn list with two entries must produce two NormalizedRelationships.
 
         valid-full: app-webapp-2.5.0 dependsOn [requests, lodash] → 2 relationships.
@@ -312,9 +297,7 @@ class TestParseCycloneDXFull:
         leaf_rels = [r for r in result.relationships if r.from_id in leaf_refs]
         assert leaf_rels == []
 
-    def test_total_relationship_count_in_full_fixture(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_total_relationship_count_in_full_fixture(self, fixtures_path: Path) -> None:
         """valid-full must produce exactly 4 relationships in total.
 
         app->requests, app->lodash, requests->urllib3, requests->certifi.
@@ -322,17 +305,13 @@ class TestParseCycloneDXFull:
         result = parse_cyclonedx(fixtures_path / "valid-full.cdx.json")
         assert len(result.relationships) == 4
 
-    def test_components_are_tuple_of_normalized_component(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_components_are_tuple_of_normalized_component(self, fixtures_path: Path) -> None:
         """Every entry in components must be a NormalizedComponent instance."""
         result = parse_cyclonedx(fixtures_path / "valid-full.cdx.json")
         for component in result.components:
             assert isinstance(component, NormalizedComponent)
 
-    def test_relationships_are_tuple_of_normalized_relationship(
-        self, fixtures_path: Path
-    ) -> None:
+    def test_relationships_are_tuple_of_normalized_relationship(self, fixtures_path: Path) -> None:
         """Every entry in relationships must be a NormalizedRelationship instance."""
         result = parse_cyclonedx(fixtures_path / "valid-full.cdx.json")
         for rel in result.relationships:
@@ -380,9 +359,7 @@ class TestParseCycloneDXErrors:
         with pytest.raises(ParseError):
             parse_cyclonedx(bad_file)
 
-    def test_parse_error_is_raised_not_not_implemented_error(
-        self, tmp_path: Path
-    ) -> None:
+    def test_parse_error_is_raised_not_not_implemented_error(self, tmp_path: Path) -> None:
         """parse_cyclonedx must not propagate NotImplementedError to callers.
 
         This assertion is intentionally strict: a stub raising NotImplementedError
@@ -396,6 +373,4 @@ class TestParseCycloneDXErrors:
         except ParseError:
             pass  # acceptable
         except NotImplementedError:
-            pytest.fail(
-                "parse_cyclonedx raised NotImplementedError — parser not yet implemented"
-            )
+            pytest.fail("parse_cyclonedx raised NotImplementedError — parser not yet implemented")
