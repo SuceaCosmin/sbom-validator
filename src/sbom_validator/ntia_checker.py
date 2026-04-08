@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+
 from sbom_validator.models import IssueSeverity, NormalizedSBOM, ValidationIssue
+
+logger = logging.getLogger(__name__)
 
 
 def check_ntia(sbom: NormalizedSBOM) -> list[ValidationIssue]:
@@ -11,6 +15,7 @@ def check_ntia(sbom: NormalizedSBOM) -> list[ValidationIssue]:
     Returns:
         List of ValidationIssue objects for any missing elements.
     """
+    logger.debug("Running NTIA minimum elements check")
     issues: list[ValidationIssue] = []
     issues.extend(_check_supplier(sbom))
     issues.extend(_check_component_name(sbom))
@@ -19,6 +24,7 @@ def check_ntia(sbom: NormalizedSBOM) -> list[ValidationIssue]:
     issues.extend(_check_relationships(sbom))
     issues.extend(_check_author(sbom))
     issues.extend(_check_timestamp(sbom))
+    logger.info("NTIA check completed: %d issue(s)", len(issues))
     return issues
 
 
