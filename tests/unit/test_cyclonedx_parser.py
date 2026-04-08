@@ -374,3 +374,14 @@ class TestParseCycloneDXErrors:
             pass  # acceptable
         except NotImplementedError:
             pytest.fail("parse_cyclonedx raised NotImplementedError — parser not yet implemented")
+
+    def test_empty_file_raises_parse_error(self, tmp_path: Path) -> None:
+        """An empty file (zero bytes / whitespace-only) must raise ParseError.
+
+        Covers line 97 of cyclonedx_parser.py: the ``if not raw_text.strip()``
+        guard that rejects empty files before attempting JSON parsing.
+        """
+        empty_file = tmp_path / "empty.cdx.json"
+        empty_file.write_text("", encoding="utf-8")
+        with pytest.raises(ParseError):
+            parse_cyclonedx(empty_file)

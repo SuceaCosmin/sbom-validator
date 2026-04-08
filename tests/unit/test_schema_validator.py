@@ -23,7 +23,9 @@ Contract:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -346,3 +348,29 @@ class TestValidateSchemaCollectsAll:
         result = validate_schema(doc, "spdx")
         assert isinstance(result, list)
         assert len(result) > 0, "A CycloneDX document validated as SPDX must produce schema errors"
+
+
+# ---------------------------------------------------------------------------
+# TestSchemaValidatorFrozenPath
+# ---------------------------------------------------------------------------
+
+
+class TestSchemaValidatorFrozenPath:
+    """_schemas_dir() returns the PyInstaller _MEIPASS path when sys.frozen is set.
+
+    Covers lines 25-26 of schema_validator.py (_schemas_dir frozen branch).
+    """
+
+    def test_frozen_mode_uses_meipass_schemas_dir(self, tmp_path: Path) -> None:
+        """When sys.frozen == True and sys._MEIPASS is set, _schemas_dir() must
+        return Path(_MEIPASS) / 'schemas' rather than the package path."""
+        from sbom_validator.schema_validator import _schemas_dir
+
+        fake_meipass = str(tmp_path / "pyinstaller_bundle")
+        with (
+            patch.object(sys, "frozen", True, create=True),
+            patch.object(sys, "_MEIPASS", fake_meipass, create=True),
+        ):
+            result = _schemas_dir()
+
+        assert result == Path(fake_meipass) / "schemas"

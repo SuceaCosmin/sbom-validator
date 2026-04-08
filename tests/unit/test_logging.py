@@ -19,6 +19,7 @@ import logging
 import sys
 
 import pytest
+
 from sbom_validator.logging_config import LOG_FORMAT, configure_logging
 
 # ---------------------------------------------------------------------------
@@ -96,6 +97,19 @@ class TestConfigureLoggingLevel:
     def test_invalid_level_coerces_to_warning(self):
         """ADR-006: invalid values are silently coerced to WARNING."""
         configure_logging("INVALID_LEVEL")
+        logger = _get_sbom_logger()
+        assert logger.level == logging.WARNING
+
+    def test_non_int_attribute_coerces_to_warning(self, monkeypatch):
+        """When getattr(logging, level.upper()) returns a non-int (e.g. a
+        module attribute that happens to exist but is not a numeric level),
+        configure_logging must fall back to WARNING.
+
+        Covers line 29 of logging_config.py: ``if not isinstance(numeric, int)``.
+        """
+        # Patch logging so that getattr(logging, "FAKE") returns a string, not an int.
+        monkeypatch.setattr(logging, "FAKE", "not-an-integer", raising=False)
+        configure_logging("FAKE")
         logger = _get_sbom_logger()
         assert logger.level == logging.WARNING
 

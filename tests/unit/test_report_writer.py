@@ -14,13 +14,14 @@ TestReturnValue         -- (html_path, json_path) tuple semantics
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import re
 from pathlib import Path
-
-from sbom_validator.report_writer import write_reports  # will cause ImportError until implemented
+from unittest.mock import patch
 
 from sbom_validator.models import IssueSeverity, ValidationIssue, ValidationResult, ValidationStatus
+from sbom_validator.report_writer import write_reports  # will cause ImportError until implemented
 
 # ---------------------------------------------------------------------------
 # Helpers — build ValidationResult objects without touching the real pipeline
@@ -446,3 +447,41 @@ class TestReturnValue:
         result = _pass_result()
         _, json_path = write_reports(result, tmp_path)
         assert json_path.exists()
+
+
+# ===========================================================================
+# TestToolVersionFallback
+# ===========================================================================
+
+
+class TestToolVersionFallback:
+    """_tool_version() returns the fallback string when the package is not installed.
+
+    Covers lines 169-170 of report_writer.py: the PackageNotFoundError branch
+    inside _tool_version().
+    """
+
+    def test_tool_version_fallback_when_package_not_found(self, tmp_path: Path) -> None:
+        """When importlib.metadata.version raises PackageNotFoundError,
+        _tool_version() must return the hardcoded fallback '0.2.0'."""
+        from sbom_validator.report_writer import _tool_version
+
+        with patch(
+            "sbom_validator.report_writer.importlib.metadata.version",
+            side_effect=importlib.metadata.PackageNotFoundError("sbom-validator"),
+        ):
+            version = _tool_version()
+
+        assert version == "0.2.0"
+
+    def test_write_reports_uses_fallback_version_in_json(self, tmp_path: Path) -> None:
+        """When the package is not installed, write_reports must still produce a
+        valid JSON report containing the fallback version string."""
+        with patch(
+            "sbom_validator.report_writer.importlib.metadata.version",
+            side_effect=importlib.metadata.PackageNotFoundError("sbom-validator"),
+        ):
+            _, json_path = write_reports(_pass_result(), tmp_path)
+
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+        assert data["tool_version"] == "0.2.0"

@@ -8,6 +8,7 @@ sbom_validator/validator.py.
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -376,3 +377,112 @@ class TestValidatorResultStructure:
         result = validate(SPDX_FIXTURES / "missing-supplier.spdx.json")
         for issue in result.issues:
             assert hasattr(issue, "field_path")
+
+
+# ===========================================================================
+# TestValidatorUnexpectedExceptions
+# ===========================================================================
+
+
+class TestValidatorUnexpectedExceptions:
+    """validate() converts unexpected (non-domain) exceptions to ERROR results
+    at each pipeline stage, and never lets them propagate to the caller.
+
+    Covers lines 55-57, 75-77, and 111-113 of validator.py.
+    """
+
+    def test_unexpected_exception_in_detect_format_returns_error(self, tmp_path: Path) -> None:
+        """An unexpected exception (not ParseError/UnsupportedFormatError) raised
+        inside detect_format must be caught at lines 55-57 and returned as an
+        ERROR ValidationResult with an issue describing the error.
+        """
+        # Arrange: a valid JSON file so the file-not-found path is not taken,
+        # but patch detect_format to raise a generic RuntimeError.
+        f = tmp_path / "any.json"
+        f.write_text("{}", encoding="utf-8")
+        with patch(
+            "sbom_validator.validator.detect_format",
+            side_effect=RuntimeError("unexpected boom"),
+        ):
+            result = validate(f)
+
+        assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) == 1
+        assert "unexpected boom" in result.issues[0].message
+        assert result.format_detected is None
+
+    def test_unexpected_exception_in_detect_format_does_not_raise(self, tmp_path: Path) -> None:
+        """validate() must not propagate a RuntimeError from detect_format."""
+        f = tmp_path / "any.json"
+        f.write_text("{}", encoding="utf-8")
+        with patch(
+            "sbom_validator.validator.detect_format",
+            side_effect=RuntimeError("boom"),
+        ):
+            try:
+                validate(f)
+            except Exception as exc:  # noqa: BLE001
+                pytest.fail(f"validate() raised unexpectedly: {exc}")
+
+    def test_unexpected_exception_reading_raw_json_returns_error(self, tmp_path: Path) -> None:
+        """An unexpected exception raised while reading the raw JSON (lines 75-77)
+        must be returned as an ERROR ValidationResult with format_detected set.
+
+        Stage 0 (detect_format) reads the file independently; Stage 1 calls
+        file_path.read_text() again to decode the raw JSON.  We patch
+        Path.read_text so the *second* call (inside the validator) raises an
+        OSError, while the first call (inside detect_format) succeeds normally.
+        """
+        valid_spdx = SPDX_FIXTURES / "valid-minimal.spdx.json"
+        original_read_text = Path.read_text
+        call_count = {"n": 0}
+
+        def read_text_side_effect(self, *args, **kwargs):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                # First call is from detect_format — let it succeed.
+                return original_read_text(self, *args, **kwargs)
+            # Second call is Stage 1 inside validate() — raise unexpectedly.
+            raise RuntimeError("read_text boom on second call")
+
+        with patch.object(Path, "read_text", read_text_side_effect):
+            result = validate(valid_spdx)
+
+        assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) == 1
+        assert "read_text boom on second call" in result.issues[0].message
+        # format_detected must be set because Stage 0 already passed
+        assert result.format_detected == "spdx"
+
+    def test_parse_error_from_parser_after_schema_pass_returns_error(self, tmp_path: Path) -> None:
+        """A ParseError raised by parse_spdx / parse_cyclonedx after schema
+        validation passes must be caught at lines 111-113 and returned as an
+        ERROR ValidationResult (covers the ParseError branch in Stage 3).
+        """
+        from sbom_validator.exceptions import ParseError
+
+        valid_spdx = SPDX_FIXTURES / "valid-minimal.spdx.json"
+        with patch(
+            "sbom_validator.validator.parse_spdx",
+            side_effect=ParseError("parser blew up"),
+        ):
+            result = validate(valid_spdx)
+
+        assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) == 1
+        assert "parser blew up" in result.issues[0].message
+        assert result.format_detected == "spdx"
+
+    def test_parse_error_from_parser_does_not_raise(self, tmp_path: Path) -> None:
+        """validate() must not propagate a ParseError from the parser stage."""
+        from sbom_validator.exceptions import ParseError
+
+        valid_spdx = SPDX_FIXTURES / "valid-minimal.spdx.json"
+        with patch(
+            "sbom_validator.validator.parse_spdx",
+            side_effect=ParseError("parser blew up"),
+        ):
+            try:
+                validate(valid_spdx)
+            except Exception as exc:  # noqa: BLE001
+                pytest.fail(f"validate() raised unexpectedly: {exc}")
