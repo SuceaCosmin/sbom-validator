@@ -815,3 +815,191 @@ class TestCliLogLevelOption:
         """--help output must document the --log-level option."""
         result = runner.invoke(main, ["validate", "--help"])
         assert "--log-level" in result.output
+
+
+# ===========================================================================
+# TestCliReportDirOption
+# ===========================================================================
+
+
+class TestCliReportDirOption:
+    """Tests for the ``--report-dir`` option on the ``validate`` subcommand.
+
+    Per ADR-007, ``--report-dir`` is an optional path option that causes both
+    an HTML and a JSON report to be written.  These tests are TDD red-phase:
+    they WILL fail until the Developer wires ``--report-dir`` into cli.py and
+    implements ``report_writer.write_reports``.
+    """
+
+    # -----------------------------------------------------------------------
+    # Option omitted — no side-effects
+    # -----------------------------------------------------------------------
+
+    def test_no_report_dir_does_not_write_files(self, runner: CliRunner, tmp_path: Path) -> None:
+        """When --report-dir is omitted, no report files must be created."""
+        result = runner.invoke(main, ["validate", str(SPDX_FIXTURES / "valid-minimal.spdx.json")])
+        assert result.exit_code == 0
+        # tmp_path is empty — no stray files created anywhere inside it
+        assert list(tmp_path.iterdir()) == []
+
+    def test_no_report_dir_exit_code_zero_for_pass(self, runner: CliRunner) -> None:
+        """Omitting --report-dir must not change the exit code for a passing file."""
+        result = runner.invoke(main, ["validate", str(SPDX_FIXTURES / "valid-minimal.spdx.json")])
+        assert result.exit_code == 0
+
+    # -----------------------------------------------------------------------
+    # --report-dir with an existing directory
+    # -----------------------------------------------------------------------
+
+    def test_report_dir_existing_creates_html_file(self, runner: CliRunner, tmp_path: Path) -> None:
+        """An HTML report file must be created in the specified existing directory."""
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(tmp_path),
+            ],
+        )
+        assert result.exit_code == 0
+        html_files = list(tmp_path.glob("*.html"))
+        assert len(html_files) == 1, f"Expected 1 HTML file, found: {html_files}"
+
+    def test_report_dir_existing_creates_json_file(self, runner: CliRunner, tmp_path: Path) -> None:
+        """A JSON report file must be created in the specified existing directory."""
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(tmp_path),
+            ],
+        )
+        assert result.exit_code == 0
+        json_files = list(tmp_path.glob("*.json"))
+        assert len(json_files) == 1, f"Expected 1 JSON file, found: {json_files}"
+
+    def test_report_dir_existing_creates_both_files(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Both HTML and JSON report files must be present after invocation."""
+        runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(tmp_path),
+            ],
+        )
+        html_files = list(tmp_path.glob("*.html"))
+        json_files = list(tmp_path.glob("*.json"))
+        assert len(html_files) == 1
+        assert len(json_files) == 1
+
+    # -----------------------------------------------------------------------
+    # --report-dir with a non-existent directory
+    # -----------------------------------------------------------------------
+
+    def test_report_dir_nonexistent_is_created(self, runner: CliRunner, tmp_path: Path) -> None:
+        """A non-existent report directory must be created automatically."""
+        new_dir = tmp_path / "reports" / "run1"
+        assert not new_dir.exists()
+        runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(new_dir),
+            ],
+        )
+        assert new_dir.is_dir()
+
+    def test_report_dir_nonexistent_both_files_written(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Both report files must exist inside an auto-created directory."""
+        new_dir = tmp_path / "reports" / "run1"
+        runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(new_dir),
+            ],
+        )
+        assert len(list(new_dir.glob("*.html"))) == 1
+        assert len(list(new_dir.glob("*.json"))) == 1
+
+    def test_report_dir_nonexistent_no_error_exit(self, runner: CliRunner, tmp_path: Path) -> None:
+        """A non-existent --report-dir must not cause a non-zero exit for a PASS file."""
+        new_dir = tmp_path / "auto-created"
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(new_dir),
+            ],
+        )
+        assert result.exit_code == 0
+
+    # -----------------------------------------------------------------------
+    # Exit code stability with --report-dir
+    # -----------------------------------------------------------------------
+
+    def test_report_dir_pass_file_exit_code_zero(self, runner: CliRunner, tmp_path: Path) -> None:
+        """--report-dir must not change exit code 0 for a passing SBOM."""
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--report-dir",
+                str(tmp_path),
+            ],
+        )
+        assert result.exit_code == 0
+
+    def test_report_dir_fail_file_exit_code_one(self, runner: CliRunner, tmp_path: Path) -> None:
+        """--report-dir must not change exit code 1 for a failing SBOM."""
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "missing-supplier.spdx.json"),
+                "--report-dir",
+                str(tmp_path),
+            ],
+        )
+        assert result.exit_code == 1
+
+    def test_report_dir_fail_file_still_creates_reports(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """Reports must be written even when validation fails (exit 1)."""
+        runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "missing-supplier.spdx.json"),
+                "--report-dir",
+                str(tmp_path),
+            ],
+        )
+        assert len(list(tmp_path.glob("*.html"))) == 1
+        assert len(list(tmp_path.glob("*.json"))) == 1
+
+    # -----------------------------------------------------------------------
+    # Help text
+    # -----------------------------------------------------------------------
+
+    def test_validate_help_shows_report_dir_option(self, runner: CliRunner) -> None:
+        """--help output must document the --report-dir option."""
+        result = runner.invoke(main, ["validate", "--help"])
+        assert "--report-dir" in result.output
