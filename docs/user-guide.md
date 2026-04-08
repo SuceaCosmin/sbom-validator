@@ -25,7 +25,7 @@ pipx install sbom-validator
 ### From source with Poetry
 
 ```bash
-git clone https://github.com/your-org/sbom-validator.git
+git clone https://github.com/SuceaCosmin/sbom-validator.git
 cd sbom-validator
 poetry install
 poetry run sbom-validator --help
@@ -123,6 +123,8 @@ sbom-validator validate [OPTIONS] FILE
 |---|---|---|
 | `FILE` | Path to the SBOM JSON file to validate | required |
 | `--format [text\|json]` | Output format: human-readable text or machine-readable JSON | `text` |
+| `--log-level [DEBUG\|INFO\|WARNING\|ERROR]` | Minimum severity of log messages written to stderr | `WARNING` |
+| `--report-dir PATH` | Directory where HTML and JSON reports are written; created if absent | omitted (no reports) |
 | `--help` | Show command help and exit | |
 
 ### Exit Codes
@@ -144,7 +146,7 @@ sbom-validator --version
 ```
 
 ```
-sbom-validator, version 0.1.0
+sbom-validator, version 0.2.0
 ```
 
 ---
@@ -341,7 +343,7 @@ fi
 
 | Error | Cause | Fix |
 |---|---|---|
-| `Status: ERROR` — Unrecognized or unsupported SBOM format | File is SPDX 2.2, CycloneDX 1.5, XML, tag-value, or another format not supported in v0.1.0 | Regenerate the SBOM targeting SPDX 2.3 JSON or CycloneDX 1.6 JSON |
+| `Status: ERROR` — Unrecognized or unsupported SBOM format | File is SPDX 2.2, CycloneDX 1.5, XML, tag-value, or another format not supported in v0.2.0 | Regenerate the SBOM targeting SPDX 2.3 JSON or CycloneDX 1.6 JSON |
 | `Status: ERROR` — file not found | The path passed to `validate` does not exist or is misspelled | Verify the path with `ls` or `dir`; use an absolute path if in doubt |
 | `Status: ERROR` — invalid JSON | The file is not valid JSON (truncated, BOM prefix, encoding issue) | Validate the JSON separately with `python -m json.tool <file>` |
 | `Status: FAIL` — FR-02 or FR-03 schema errors | The SBOM does not conform to the SPDX 2.3 or CycloneDX 1.6 JSON schema | Read the reported field paths and fix the structural errors in the SBOM; NTIA checks are skipped until schema passes |
@@ -350,6 +352,270 @@ fi
 | `Status: FAIL` — FR-07 no unique identifier | One or more components have no PURL or CPE | Add a `purl` (CycloneDX) or an `externalRefs` entry with `referenceCategory` `PACKAGE-MANAGER` or `SECURITY` (SPDX) to every component |
 | `Status: FAIL` — FR-08 no dependency relationships | The SBOM contains no qualifying relationship entries | Add at least one `DEPENDS_ON` relationship (SPDX) or one `dependencies` entry with a non-empty `dependsOn` list (CycloneDX) |
 | `Status: FAIL` — FR-09 no SBOM author | `creationInfo.creators` (SPDX) or `metadata.authors` / `metadata.manufacture` (CycloneDX) is missing or empty | Add at least one creator entry beginning with `"Tool:"` or `"Organization:"` (SPDX), or at least one author with a non-empty `name` (CycloneDX) |
+
+---
+
+## Structured Logging
+
+By default, `sbom-validator` is quiet: it emits validation output to stdout and suppresses all internal log messages except genuine warnings. When you need to diagnose an unexpected result, or when you want full pipeline visibility in a verbose CI run, use the `--log-level` option.
+
+### `--log-level` option
+
+```
+sbom-validator validate <FILE> [--log-level DEBUG|INFO|WARNING|ERROR]
+```
+
+| Value | What is emitted to stderr |
+|---|---|
+| `ERROR` | Only unexpected internal errors |
+| `WARNING` | Genuine warnings from parsing and detection (e.g., deprecated fields encountered) |
+| `INFO` | Pipeline stage transitions: format detected, schema result, NTIA result, validation complete |
+| `DEBUG` | Full internal trace: every parse step, component count, schema run, stage transition |
+
+The default is `WARNING`. Log output is always written to **stderr**, never stdout, so `--format json` output piped to `jq` or `tee` is never contaminated by log lines.
+
+### Log line format
+
+```
+2026-04-08T14:22:01Z INFO     sbom_validator.validator — Validation started for: bom.json
+```
+
+The format is: `<UTC timestamp> <level padded to 8 chars> <logger name> — <message>`.
+
+### Example invocations
+
+**Default (WARNING) — no output on a normal run:**
+
+```bash
+sbom-validator validate sbom.spdx.json
+```
+
+```
+Status:  PASS
+File:    sbom.spdx.json
+Format:  spdx
+Issues:  none
+```
+
+No log lines appear on stderr because no genuine warnings were raised.
+
+**INFO — pipeline stage transitions visible:**
+
+```bash
+sbom-validator validate sbom.spdx.json --log-level INFO 2>validator.log
+cat validator.log
+```
+
+```
+2026-04-08T14:22:01Z INFO     sbom_validator.validator — Validation started for: sbom.spdx.json
+2026-04-08T14:22:01Z INFO     sbom_validator.format_detector — Format detected: spdx (file: sbom.spdx.json)
+2026-04-08T14:22:01Z INFO     sbom_validator.schema_validator — Schema validation passed (0 issues)
+2026-04-08T14:22:01Z INFO     sbom_validator.ntia_checker — NTIA check completed: 0 issue(s)
+2026-04-08T14:22:01Z INFO     sbom_validator.validator — Validation completed: status=PASS, issues=0
+```
+
+**DEBUG — full internal trace:**
+
+```bash
+sbom-validator validate sbom.spdx.json --log-level DEBUG 2>&1 | head -20
+```
+
+At DEBUG level, every component parse, schema keyword evaluation, and stage transition is logged. This is most useful when the tool rejects a file unexpectedly and you need to identify which pipeline stage failed.
+
+### CI usage patterns
+
+**Suppress all log output (default behaviour — no flag needed):**
+
+```yaml
+- name: Validate SBOM
+  run: sbom-validator validate sbom.spdx.json
+```
+
+**Verbose debug run when investigating a failure:**
+
+```bash
+sbom-validator validate sbom.spdx.json --log-level DEBUG 2>debug.log
+# Review debug.log after the run
+```
+
+**Capture logs to a file while keeping stdout clean for JSON parsing:**
+
+```bash
+sbom-validator validate --format json sbom.spdx.json \
+  --log-level INFO 2>validator.log | jq '.status'
+```
+
+Because log output goes to stderr and JSON output goes to stdout, the two streams do not interfere.
+
+---
+
+## Generating Reports
+
+Use `--report-dir` to write durable HTML and JSON reports after a validation run. This is useful for archiving results alongside the SBOM, feeding a dashboard, or sharing a human-readable summary with stakeholders.
+
+### `--report-dir` option
+
+```
+sbom-validator validate <FILE> [--report-dir PATH]
+```
+
+| Parameter | Description |
+|---|---|
+| `PATH` | Directory where reports are written. Created automatically if it does not exist. |
+
+When `--report-dir` is supplied, **both** an HTML report and a JSON report are always written. There is no option to write only one. When `--report-dir` is omitted, no report files are created and the tool behaves identically to v0.1.0.
+
+### Filename convention
+
+Both files share a common stem derived from the validated file's base name and the UTC timestamp at the moment of report generation:
+
+```
+sbom-report-<basename>-<YYYYMMDD-HHMMSS>.html
+sbom-report-<basename>-<YYYYMMDD-HHMMSS>.json
+```
+
+- `<basename>` is the filename without extension (e.g., `bom` for `bom.json`, `my-sbom` for `my-sbom.cdx.json`).
+- `<YYYYMMDD-HHMMSS>` is the UTC time at the moment `write_reports` is called (e.g., `20260408-142201`).
+- Both files always share the identical stem, so the pair is easy to identify.
+
+Example: validating `bom.json` at 2026-04-08 14:22:01 UTC writes:
+
+```
+reports/sbom-report-bom-20260408-142201.html
+reports/sbom-report-bom-20260408-142201.json
+```
+
+### Example invocation
+
+```bash
+sbom-validator validate my-app.spdx.json --report-dir reports/
+```
+
+```
+Status:  PASS
+File:    my-app.spdx.json
+Format:  spdx
+Issues:  none
+```
+
+The two report files are written to `reports/` silently. Validation output continues to go to stdout as normal.
+
+Combined with `--format json` and a log level for CI use:
+
+```bash
+sbom-validator validate my-app.spdx.json \
+  --format json \
+  --report-dir /tmp/sbom-reports \
+  --log-level INFO
+```
+
+### HTML report
+
+The HTML report is self-contained (inline CSS, no external dependencies) and designed to be viewable in any browser offline. It contains:
+
+- **Header:** tool name and version, generation timestamp (UTC), validated file path, detected format, and an overall status badge (`PASS` in green, `FAIL` in red, `ERROR` in orange).
+- **Summary:** counts of errors, warnings, and informational issues.
+- **Issues table:** columns — Severity, Rule, Field Path, Message — sorted with ERROR rows first, then WARNING, then INFO. If there are no issues, the table is replaced by "No issues found."
+- **Footer:** `Generated by sbom-validator vX.Y.Z`.
+
+### JSON report
+
+The JSON report is the machine-readable contract for downstream tools. All fields are present on every run.
+
+**Full schema:**
+
+```json
+{
+  "generated_at": "2026-04-08T14:22:01Z",
+  "tool_version": "0.2.0",
+  "file_path": "/abs/path/to/bom.json",
+  "format_detected": "spdx-2.3",
+  "status": "PASS",
+  "summary": {
+    "error_count": 0,
+    "warning_count": 0,
+    "info_count": 0
+  },
+  "issues": []
+}
+```
+
+**Field definitions:**
+
+| Field | Type | Description |
+|---|---|---|
+| `generated_at` | ISO 8601 UTC string | UTC timestamp at the moment the report was written; format `%Y-%m-%dT%H:%M:%SZ` |
+| `tool_version` | string | Installed version of `sbom-validator` (e.g., `"0.2.0"`) |
+| `file_path` | string | File path as passed to the CLI; may be relative or absolute |
+| `format_detected` | string or null | `"spdx-2.3"`, `"cyclonedx-1.6"`, or `null` if format detection failed |
+| `status` | string | `"PASS"`, `"FAIL"`, or `"ERROR"` |
+| `summary.error_count` | integer | Number of issues with severity `ERROR` |
+| `summary.warning_count` | integer | Number of issues with severity `WARNING` |
+| `summary.info_count` | integer | Number of issues with severity `INFO` |
+| `issues` | array | All issues, sorted ERROR first then WARNING then INFO; empty array on PASS |
+| `issues[*].severity` | string | `"ERROR"`, `"WARNING"`, or `"INFO"` |
+| `issues[*].rule` | string | Functional requirement identifier, e.g., `"FR-04"` |
+| `issues[*].field_path` | string | JSONPath expression identifying the field involved |
+| `issues[*].message` | string | Human-readable description of the issue |
+
+> **Note on `format_detected`:** The JSON report expands the tool's internal format tokens to include the version string. The internal value `"spdx"` becomes `"spdx-2.3"` and `"cyclonedx"` becomes `"cyclonedx-1.6"` in the report. The stdout JSON output from `--format json` uses the shorter internal tokens; only the report file uses the expanded form.
+
+---
+
+## Downloading Pre-built Binaries
+
+Standalone executables are available for Linux (amd64) and Windows (amd64) on the [GitHub Releases page](https://github.com/SuceaCosmin/sbom-validator/releases). These binaries include a bundled Python interpreter and all dependencies — no Python installation is required on the target machine.
+
+Binaries are built automatically by the release workflow whenever a version tag (e.g., `v0.2.0`) is pushed to the repository.
+
+### Linux
+
+```bash
+# Download the binary for the target release
+curl -L https://github.com/SuceaCosmin/sbom-validator/releases/download/v0.2.0/sbom-validator \
+  -o sbom-validator
+
+# Make it executable
+chmod +x sbom-validator
+
+# Verify it starts correctly
+./sbom-validator --version
+```
+
+```
+sbom-validator, version 0.2.0
+```
+
+```bash
+# Validate an SBOM
+./sbom-validator validate my-app.spdx.json
+```
+
+To make the binary available system-wide, move it to a directory on your `PATH`:
+
+```bash
+sudo mv sbom-validator /usr/local/bin/sbom-validator
+```
+
+### Windows
+
+Download `sbom-validator.exe` from the [Releases page](https://github.com/SuceaCosmin/sbom-validator/releases) and run it directly from PowerShell or Command Prompt:
+
+```powershell
+# Verify it starts correctly
+.\sbom-validator.exe --version
+```
+
+```
+sbom-validator, version 0.2.0
+```
+
+```powershell
+# Validate an SBOM
+.\sbom-validator.exe validate my-app.cdx.json
+```
+
+> **Note on Windows antivirus scanning:** The binary uses PyInstaller's `--onefile` mode, which extracts itself to a temporary directory on first run. Antivirus software may slow the first launch while it scans the extracted files. Subsequent launches from the same temporary directory are faster.
 
 ---
 

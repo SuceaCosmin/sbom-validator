@@ -73,6 +73,22 @@ cd sbom-validator
 poetry install
 ```
 
+### Pre-built binaries (no Python required)
+
+Standalone executables for Linux (amd64) and Windows (amd64) are available on the [GitHub Releases page](https://github.com/SuceaCosmin/sbom-validator/releases). Download the binary for your platform, make it executable (Linux), and run it directly — no Python installation needed.
+
+```bash
+# Linux
+curl -L https://github.com/SuceaCosmin/sbom-validator/releases/download/v0.2.0/sbom-validator \
+  -o sbom-validator && chmod +x sbom-validator
+./sbom-validator --version
+```
+
+```powershell
+# Windows
+.\sbom-validator.exe --version
+```
+
 ---
 
 ## CLI Reference
@@ -80,11 +96,20 @@ poetry install
 ```
 Usage: sbom-validator validate [OPTIONS] FILE
 
-  Validate an SBOM file against schema and NTIA minimum elements.
+  Validate an SBOM FILE against schema and NTIA minimum elements.
+
+  Exits with code 0 (PASS), 1 (validation FAIL), or 2 (tool ERROR).
 
 Options:
-  --format [text|json]  Output format (default: text)
-  --help                Show this message and exit.
+  --format [text|json]              Output format (default: text)
+  --log-level [DEBUG|INFO|WARNING|ERROR]
+                                    Set logging verbosity (default: WARNING).
+                                    Log output is written to stderr only,
+                                    keeping stdout clean for --format json.
+  --report-dir PATH                 Directory to write HTML and JSON reports
+                                    into. Both files are always written
+                                    together. Created if it does not exist.
+  --help                            Show this message and exit.
 ```
 
 ### Text output (default)

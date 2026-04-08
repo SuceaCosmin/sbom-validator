@@ -177,6 +177,82 @@
 
 ---
 
+## Phase 6 — Structured Logging ✅
+
+**Goal:** Add `--log-level` option and instrument all pipeline modules with structured log output.
+**Status:** Complete — committed to `feature/v0.2.0`.
+
+| ID | Task | Agent | Status | Output |
+|----|------|-------|--------|--------|
+| 6.1 | Write ADR-006 (structured logging design) | Architect | ✅ | `docs/architecture/ADR-006-structured-logging.md` |
+| 6.2 | Write tests for `logging_config.py` | Tester | ✅ | `tests/unit/test_logging_config.py` |
+| 6.3 | Implement `logging_config.py` | Developer | ✅ | `src/sbom_validator/logging_config.py` |
+| 6.4 | Add `--log-level` option to CLI and wire `configure_logging` | Developer | ✅ | `src/sbom_validator/cli.py` |
+| 6.5 | Add log points to all pipeline modules | Developer | ✅ | `format_detector.py`, `schema_validator.py`, `parsers/`, `ntia_checker.py`, `validator.py` |
+| 6.FIN | Full test suite + static analysis pass | Reviewer | ✅ | All tests passing, zero mypy/ruff errors |
+
+---
+
+## Phase 7 — Report Generation ✅
+
+**Goal:** Add `--report-dir` option and `report_writer.py` to produce HTML and JSON reports.
+**Status:** Complete — committed to `feature/v0.2.0`.
+
+| ID | Task | Agent | Status | Output |
+|----|------|-------|--------|--------|
+| 7.1 | Write ADR-007 (report content contract) | Architect | ✅ | `docs/architecture/ADR-007-report-contract.md` |
+| 7.2 | Write tests for `report_writer.py` | Tester | ✅ | `tests/unit/test_report_writer.py` |
+| 7.3 | Implement `report_writer.py` | Developer | ✅ | `src/sbom_validator/report_writer.py` |
+| 7.4 | Add `--report-dir` option to CLI and wire `write_reports` | Developer | ✅ | `src/sbom_validator/cli.py` |
+| 7.5 | Write integration tests for report output | Tester | ✅ | `tests/integration/test_report_integration.py` |
+| 7.FIN | Full test suite + static analysis pass | Reviewer | ✅ | All tests passing, zero mypy/ruff errors |
+
+---
+
+## Phase 8 — Binary Distribution ✅
+
+**Goal:** Add PyInstaller spec and GitHub Actions release workflow for Linux and Windows binaries.
+**Status:** Complete — committed to `feature/v0.2.0`.
+
+| ID | Task | Agent | Status | Output |
+|----|------|-------|--------|--------|
+| 8.1 | Write ADR-008 (binary distribution toolchain) | Architect | ✅ | `docs/architecture/ADR-008-binary-distribution.md` |
+| 8.2 | Update `schema_validator.py` with PyInstaller-compatible path shim | Developer | ✅ | `src/sbom_validator/schema_validator.py` (`_schemas_dir()`) |
+| 8.3 | Write `sbom_validator.spec` | Developer | ✅ | `sbom_validator.spec` |
+| 8.4 | Write `.github/workflows/release.yml` | Developer | ✅ | `.github/workflows/release.yml` |
+| 8.5 | Add `pyinstaller` to dev dependencies | Developer | ✅ | `pyproject.toml` |
+| 8.FIN | Full test suite + static analysis pass | Reviewer | ✅ | All tests passing, zero mypy/ruff errors |
+
+---
+
+## Phase 9 — Integration & Testing (v0.2.0) ✅
+
+**Goal:** End-to-end tests covering logging and report generation, coverage ≥ 90%, code review.
+**Status:** Complete — committed to `feature/v0.2.0`.
+
+| ID | Task | Agent | Status | Output |
+|----|------|-------|--------|--------|
+| 9.1 | Extend integration tests for `--log-level` and `--report-dir` | Tester | ✅ | `tests/integration/test_integration.py` (extended) |
+| 9.2 | Run full test suite + coverage report | Tester | ✅ | All tests passing, ≥ 97% overall coverage |
+| 9.3 | Static analysis pass (mypy + ruff + black) | Reviewer | ✅ | Zero errors |
+| 9.4 | Code review + fixes | Reviewer + Developer | ✅ | All CRITICAL and MAJOR findings resolved |
+
+---
+
+## Phase 10 — Documentation & Release (v0.2.0) ✅
+
+**Goal:** User-facing docs updated for v0.2.0, finalized changelog, release tag.
+**Status:** Complete — v0.2.0 released. Merged to `master`.
+
+| ID | Task | Agent | Status | Output |
+|----|------|-------|--------|--------|
+| 10.1 | Update user guide with logging, report, and binary sections | Documentation Writer | ✅ | `docs/user-guide.md` |
+| 10.2 | Update `README.md` with new options and binary download section | Documentation Writer | ✅ | `README.md` |
+| 10.3 | Write `CHANGELOG.md` v0.2.0 entry | Documentation Writer | ✅ | `CHANGELOG.md` |
+| 10.4 | Tag v0.2.0 and create GitHub Release | Developer | ✅ | Git tag `v0.2.0`, https://github.com/SuceaCosmin/sbom-validator/releases/tag/v0.2.0 |
+
+---
+
 ## Branching Strategy
 
 | Branch | Purpose |
@@ -200,7 +276,7 @@ If continuing in a new session, do the following:
 5. Check `src/sbom_validator/models.py` for the current data model state
 6. Use the agent definitions in `.claude/agents/` to dispatch the correct agent for each task
 
-**Project status:** All phases complete. v0.1.0 released on 2026-04-06.
+**Project status:** All phases complete. v0.2.0 released on 2026-04-08.
 
 ---
 
@@ -213,6 +289,9 @@ If continuing in a new session, do the following:
 | Validation pipeline | Two-stage: schema first, then NTIA; collect-all errors | ADR-003 |
 | Result model | Frozen dataclasses (not Pydantic) | ADR-004 |
 | CLI framework | Click (not Typer) | ADR-005 |
+| Structured logging | stdlib `logging`; `--log-level` option; output to stderr only | ADR-006 |
+| Report generation | HTML + JSON pair via `--report-dir`; `string.Template`; no new runtime deps | ADR-007 |
+| Binary distribution | PyInstaller `--onefile`; GitHub Actions release workflow on version tags | ADR-008 |
 
 ## Technology Stack
 

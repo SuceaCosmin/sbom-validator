@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-08
+
+### Added
+- Structured logging via `--log-level` option (choices: DEBUG, INFO, WARNING, ERROR; default: WARNING). Log output is written exclusively to stderr, keeping stdout clean for `--format json` consumers.
+- Post-execution HTML and JSON report generation via `--report-dir PATH` option. Both report files are always written together when the option is provided. Filename convention: `sbom-report-<basename>-<YYYYMMDD-HHMMSS>.html/.json`.
+- Standalone binary distribution for Linux (amd64) and Windows (amd64), built with PyInstaller and published to GitHub Releases automatically when a version tag is pushed.
+
 ## [0.1.0] - 2026-04-06
 
 ### Added
@@ -34,5 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SuceaCosmin/sbom-validator/releases/tag/v0.1.0
