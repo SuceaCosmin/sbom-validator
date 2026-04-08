@@ -12,6 +12,7 @@ import click
 from sbom_validator import __version__
 from sbom_validator.logging_config import configure_logging
 from sbom_validator.models import ValidationResult, ValidationStatus
+from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
 
 
@@ -84,7 +85,14 @@ def main() -> None:
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
     help="Set logging verbosity (default: WARNING).",
 )
-def validate_cmd(file: str, output_format: str, log_level: str) -> None:
+@click.option(
+    "--report-dir",
+    "report_dir",
+    default=None,
+    type=click.Path(file_okay=False, writable=True, path_type=Path),
+    help="Directory to write HTML and JSON reports into.",
+)
+def validate_cmd(file: str, output_format: str, log_level: str, report_dir: Path | None) -> None:
     """Validate an SBOM FILE against schema and NTIA minimum elements.
 
     Exits with code 0 (PASS), 1 (validation FAIL), or 2 (tool ERROR).
@@ -97,5 +105,8 @@ def validate_cmd(file: str, output_format: str, log_level: str) -> None:
         click.echo(json.dumps(_result_to_dict(result), indent=2))
     else:
         click.echo(_render_text(result))
+
+    if report_dir is not None:
+        write_reports(result, report_dir)
 
     sys.exit(_exit_code(result))
