@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
+
+logger = logging.getLogger(__name__)
 
 
 def detect_format(file_path: Path) -> str:
@@ -26,29 +29,34 @@ def detect_format(file_path: Path) -> str:
     try:
         data = json.loads(content)
     except json.JSONDecodeError as exc:
+        logger.warning("Failed to parse JSON from %s: %s", file_path, exc)
         raise ParseError(f"Invalid JSON in file: {file_path}") from exc
 
     if not isinstance(data, dict):
-        raise UnsupportedFormatError(
-            f"Expected a JSON object at the root of {file_path}, " f"got {type(data).__name__}"
-        )
+        msg = f"Expected a JSON object at the root of {file_path}, got {type(data).__name__}"
+        logger.warning("Unsupported format in %s: %s", file_path, msg)
+        raise UnsupportedFormatError(msg)
 
     if "spdxVersion" in data:
         if data["spdxVersion"] != "SPDX-2.3":
-            raise UnsupportedFormatError(
-                f"Unsupported SPDX version: {data['spdxVersion']!r}. Only SPDX-2.3 is supported."
-            )
+            msg = f"Unsupported SPDX version: {data['spdxVersion']!r}. Only SPDX-2.3 is supported."
+            logger.warning("Unsupported format in %s: %s", file_path, msg)
+            raise UnsupportedFormatError(msg)
+        logger.info("Format detected: spdx (file: %s)", file_path)
         return "spdx"
 
     if data.get("bomFormat") == "CycloneDX":
         spec = data.get("specVersion")
         if spec != "1.6":
-            raise UnsupportedFormatError(
-                f"Unsupported CycloneDX version: {spec!r}. Only 1.6 is supported."
-            )
+            msg = f"Unsupported CycloneDX version: {spec!r}. Only 1.6 is supported."
+            logger.warning("Unsupported format in %s: %s", file_path, msg)
+            raise UnsupportedFormatError(msg)
+        logger.info("Format detected: cyclonedx (file: %s)", file_path)
         return "cyclonedx"
 
-    raise UnsupportedFormatError(
+    msg = (
         f"Cannot determine SBOM format from {file_path}: "
         "no 'spdxVersion' key and no 'bomFormat: CycloneDX' key found."
     )
+    logger.warning("Unsupported format in %s: %s", file_path, msg)
+    raise UnsupportedFormatError(msg)

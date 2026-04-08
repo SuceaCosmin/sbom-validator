@@ -161,3 +161,14 @@ class TestDetectFormatErrorCases:
         f.write_text(json.dumps("spdxVersion"), encoding="utf-8")
         with pytest.raises((UnsupportedFormatError, ParseError)):
             detect_format(f)
+
+    def test_os_error_on_read_raises_parse_error(self, tmp_path: Path):
+        """An OSError raised by read_text (e.g. permission denied) must be
+        wrapped in a ParseError (covers lines 26-27 of format_detector.py)."""
+        from unittest.mock import patch
+
+        f = tmp_path / "unreadable.json"
+        f.write_text("{}", encoding="utf-8")
+        with patch.object(type(f), "read_text", side_effect=OSError("permission denied")):
+            with pytest.raises(ParseError):
+                detect_format(f)

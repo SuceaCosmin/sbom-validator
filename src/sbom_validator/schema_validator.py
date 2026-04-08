@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +13,19 @@ import jsonschema.exceptions
 
 from sbom_validator.models import IssueSeverity, ValidationIssue
 
-_SCHEMAS_DIR = Path(__file__).parent / "schemas"
+logger = logging.getLogger(__name__)
+
+
+def _schemas_dir() -> Path:
+    """Return the path to the bundled schemas directory.
+
+    Works in both normal (development) and PyInstaller frozen modes.
+    """
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        meipass: str = getattr(sys, "_MEIPASS")
+        return Path(meipass) / "schemas"
+    return Path(__file__).parent / "schemas"
+
 
 _SCHEMA_FILES: dict[str, str] = {
     "spdx": "spdx-2.3.schema.json",
@@ -29,7 +43,7 @@ _loaded_schemas: dict[str, dict[str, Any]] = {}
 def _load_schema(format_name: str) -> dict[str, Any]:
     """Load and cache the bundled JSON schema for the given format."""
     if format_name not in _loaded_schemas:
-        schema_path = _SCHEMAS_DIR / _SCHEMA_FILES[format_name]
+        schema_path = _schemas_dir() / _SCHEMA_FILES[format_name]
         _loaded_schemas[format_name] = json.loads(schema_path.read_text(encoding="utf-8"))
     return _loaded_schemas[format_name]
 
@@ -50,6 +64,7 @@ def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[Validatio
     if format_name not in _SCHEMA_FILES:
         raise ValueError(f"Unknown format: {format_name!r}. Expected one of: {list(_SCHEMA_FILES)}")
 
+    logger.debug("Running schema validation for format %s", format_name)
     schema = _load_schema(format_name)
     rule = _FORMAT_RULES[format_name]
 
@@ -69,5 +84,10 @@ def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[Validatio
                 rule=rule,
             )
         )
+
+    if issues:
+        logger.info("Schema validation found %d error(s)", len(issues))
+    else:
+        logger.info("Schema validation passed (%d issues)", len(issues))
 
     return issues

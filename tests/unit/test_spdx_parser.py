@@ -471,3 +471,68 @@ class TestParseSpdxErrors:
         bad_file.write_text("{ bad json }")
         with pytest.raises(ParseError):
             parse_spdx(bad_file)
+
+    def test_supplier_without_known_prefix_returned_as_is(self, tmp_path: Path) -> None:
+        """A supplier value with no 'Organization: ' or 'Tool: ' prefix must be
+        returned verbatim by _strip_spdx_prefix (covers line 36 of spdx_parser.py).
+        """
+        fixture = {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "test-doc",
+            "documentNamespace": "https://example.com/test",
+            "creationInfo": {
+                "created": "2024-01-01T00:00:00Z",
+                "creators": ["Tool: test-tool"],
+            },
+            "packages": [
+                {
+                    "SPDXID": "SPDXRef-pkg-bare",
+                    "name": "bare-supplier-pkg",
+                    "versionInfo": "1.0.0",
+                    # No 'Organization: ' or 'Tool: ' prefix
+                    "supplier": "BareName Corp",
+                    "downloadLocation": "https://example.com/pkg",
+                    "filesAnalyzed": False,
+                }
+            ],
+            "relationships": [],
+        }
+        spdx_file = tmp_path / "bare-supplier.spdx.json"
+        spdx_file.write_text(json.dumps(fixture), encoding="utf-8")
+        result = parse_spdx(spdx_file)
+        pkg = next(c for c in result.components if c.component_id == "SPDXRef-pkg-bare")
+        # Bare value returned without stripping
+        assert pkg.supplier == "BareName Corp"
+
+    def test_missing_required_package_field_raises_parse_error(self, tmp_path: Path) -> None:
+        """A package dict missing the required 'name' key must raise ParseError.
+
+        This covers the KeyError handler at lines 145-146 of spdx_parser.py,
+        which wraps missing required field access into a ParseError.
+        """
+        fixture = {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "test-doc",
+            "documentNamespace": "https://example.com/test",
+            "creationInfo": {
+                "created": "2024-01-01T00:00:00Z",
+                "creators": ["Tool: test-tool"],
+            },
+            "packages": [
+                {
+                    # Deliberately omit required 'name' key to trigger KeyError
+                    "SPDXID": "SPDXRef-pkg-broken",
+                    "downloadLocation": "https://example.com/pkg",
+                    "filesAnalyzed": False,
+                }
+            ],
+            "relationships": [],
+        }
+        spdx_file = tmp_path / "missing-name.spdx.json"
+        spdx_file.write_text(json.dumps(fixture), encoding="utf-8")
+        with pytest.raises(ParseError):
+            parse_spdx(spdx_file)

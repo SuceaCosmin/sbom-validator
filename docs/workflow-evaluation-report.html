@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Human-in-the-Loop AI Workflow — Evaluation Report</title>
+  <style>
+    /* ── Base ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #1a1a2e;
+      background: #f7f8fc;
+    }
+    a { color: #3b5bdb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ──────────────────────────────────────────────────────── */
+    .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .report-header {
+      background: linear-gradient(135deg, #1c2e6b 0%, #3b5bdb 100%);
+      color: white;
+      padding: 2.5rem 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    .report-header h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .report-header .meta { font-size: 0.9rem; opacity: 0.82; margin-top: 0.6rem; }
+    .report-header .meta span { margin-right: 1.6rem; }
+
+    /* ── Section ─────────────────────────────────────────────────────── */
+    section { margin-bottom: 2.5rem; }
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1c2e6b;
+      border-left: 5px solid #3b5bdb;
+      padding-left: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    h3 { font-size: 1.05rem; font-weight: 600; color: #2c3e7a; margin: 1.2rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+
+    /* ── Cards ───────────────────────────────────────────────────────── */
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 1rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── Badges / Pills ──────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 0.22em 0.75em;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .badge-strong  { background: #d3f9d8; color: #1a6b2f; }
+    .badge-medium  { background: #fff3bf; color: #7c5000; }
+    .badge-weak    { background: #ffe3e3; color: #8b0000; }
+    .badge-high    { background: #ffe3e3; color: #8b0000; }
+    .badge-med     { background: #fff3bf; color: #7c5000; }
+    .badge-low     { background: #d3f9d8; color: #1a6b2f; }
+    .badge-info    { background: #e7f5ff; color: #1565c0; }
+    .badge-warn    { background: #fff9db; color: #7c5000; }
+    .badge-caution { background: #fff3bf; color: #7c5000; }
+
+    /* ── Tables ──────────────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 0.75rem 0 1rem; }
+    th { background: #eef2ff; color: #1c2e6b; font-weight: 700; text-align: left; padding: 0.55rem 0.8rem; }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #e8ecf5; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+
+    /* ── Lists ───────────────────────────────────────────────────────── */
+    ul, ol { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+    li { margin-bottom: 0.35rem; }
+
+    /* ── Callout boxes ────────────────────────────────────────────────── */
+    .callout {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      border-left: 4px solid;
+      font-size: 0.92rem;
+    }
+    .callout-blue   { background: #e7f5ff; border-color: #3b5bdb; }
+    .callout-yellow { background: #fff9db; border-color: #f59f00; }
+    .callout-red    { background: #fff5f5; border-color: #e03131; }
+    .callout-green  { background: #ebfbee; border-color: #2f9e44; }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    /* ── Progress bars ───────────────────────────────────────────────── */
+    .progress-wrap { background: #e8ecf5; border-radius: 8px; height: 10px; margin: 0.3rem 0 0.8rem; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 8px; transition: width 0.3s; }
+    .bar-green  { background: #40c057; }
+    .bar-yellow { background: #fab005; }
+    .bar-red    { background: #fa5252; }
+
+    /* ── Improvement idea cards ──────────────────────────────────────── */
+    .idea-card {
+      background: white;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 0.9rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-left: 5px solid #3b5bdb;
+    }
+    .idea-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .idea-num {
+      background: #3b5bdb;
+      color: white;
+      width: 2rem; height: 2rem;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .idea-title { font-weight: 700; font-size: 1.02rem; color: #1c2e6b; }
+    .impact-row { display: flex; gap: 1rem; margin-top: 0.6rem; font-size: 0.82rem; }
+    .impact-tag { padding: 0.15em 0.6em; border-radius: 4px; font-weight: 600; }
+    .tag-token { background: #ffe8cc; color: #953b00; }
+    .tag-quality { background: #d3f9d8; color: #1a6b2f; }
+    .tag-effort { background: #e7f5ff; color: #1565c0; }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    .report-footer {
+      margin-top: 3rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid #dde2f0;
+      font-size: 0.82rem;
+      color: #6b7280;
+    }
+
+    /* ── Uncertainty note ─────────────────────────────────────────────── */
+    .uncertain { font-style: italic; color: #6b7280; font-size: 0.88rem; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="report-header">
+    <h1>Human-in-the-Loop AI Workflow — Evaluation Report</h1>
+    <p style="opacity:0.88; margin-top:0.5rem; max-width:640px;">
+      Post-project analysis of the multi-agent Specification Driven Development workflow
+      used to build <strong>sbom-validator v0.1.0</strong>. Covers agent maturity,
+      token-efficiency, repetition patterns, and concrete improvement ideas.
+    </p>
+    <div class="meta">
+      <span>📅 Session date: 2026-04-06</span>
+      <span>🚀 Deliverable: sbom-validator v0.1.0</span>
+      <span>🤖 Model: Claude Sonnet 4.6 (Pro subscription)</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       EXECUTIVE SUMMARY
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>Executive Summary</h2>
+    <div class="card">
+      <p>
+        The session successfully delivered a production-quality CLI tool — 6 modules,
+        2 parsers, 2 bundled schemas, 358 tests, 97% coverage, zero static-analysis
+        errors, full documentation, and a tagged GitHub release — in a single working
+        session using a 6-agent multi-agent workflow.
+      </p>
+      <p>
+        The workflow was <strong>effective but not yet efficient</strong>. The Pro
+        subscription 4-hour rate limit was reached comfortably within the session,
+        primarily because of high per-agent cold-start costs and several avoidable
+        rework cycles. The quality bar set by TDD + code review was the right call
+        and contributed directly to catching 3 critical architectural bugs before
+        release. The opportunity is to reach the same quality with significantly
+        fewer tokens.
+      </p>
+      <div style="display:flex; gap:2rem; flex-wrap:wrap; margin-top:1rem;">
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Agent Maturity (avg)</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#f59f00;">Medium</div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Token Efficiency</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#fa5252;">Low–Medium</div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Output Quality</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#40c057;">High</div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Avoidable Rework</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#fa5252;">3 cycles</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SECTION 1: AGENT MATURITY
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>1 — Agent Maturity Benchmark</h2>
+    <p>
+      Each agent is evaluated across four dimensions: <em>Role clarity</em>,
+      <em>Context specificity</em>, <em>Quality gate definition</em>, and
+      <em>Failure handling guidance</em>. Maturity levels are
+      <span class="badge badge-strong">Strong</span>
+      <span class="badge badge-medium">Medium</span>
+      <span class="badge badge-weak">Weak</span>.
+    </p>
+
+    <!-- REVIEWER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">🔍</span>
+        <strong style="font-size:1.05rem;">Reviewer Agent</strong>
+        <span class="badge badge-strong">Strong</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:90%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:95%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-green" style="width:80%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strengths:</strong> Has the most complete definition of any agent. Comprehensive
+        checklist covering architecture adherence, security, code quality, and test coverage.
+        Structured output format (severity-classified table) is unambiguous. The review it
+        produced in Phase 4 found 3 critical bugs that would have shipped otherwise — this is
+        the agent working correctly.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Improvements:</strong>
+        (1) Add guidance on <em>when to defer vs. block</em> — the current agent found 13
+        findings and classified R-04/R-05 as MAJOR but still marked release as "CONDITIONAL
+        APPROVED," which required the orchestrator to interpret; the criteria for deferring
+        should be explicit.
+        (2) Add a performance checklist section (e.g., unnecessary I/O, redundant parsing).
+        (3) No guidance on how to review test quality (only coverage %, not test semantics).
+      </p>
+    </div>
+
+    <!-- TESTER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">🧪</span>
+        <strong style="font-size:1.05rem;">Tester Agent</strong>
+        <span class="badge badge-strong">Strong</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:90%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:80%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:55%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strengths:</strong> TDD discipline section is clear and correctly
+        prohibits testing against stubs. Per-module coverage targets give the agent
+        specific acceptance criteria instead of vague "good coverage." The code
+        structure template (Arrange/Act/Assert) produces consistent, readable tests.
+        The key scenario matrix (valid + each missing element) was followed reliably.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Improvements:</strong>
+        (1) No guidance on <em>import ordering / formatting standards</em> — the I001
+        ruff errors that broke CI were in test files; the agent should run
+        <code>ruff check</code> on its own output before handing off.
+        (2) No edge-case prompt to think about boundary inputs (empty strings vs. None,
+        unicode in component names, etc.).
+        (3) No fixture-reuse guidance — both SPDX and CycloneDX tester invocations
+        re-read the same fixture list independently.
+      </p>
+    </div>
+
+    <!-- DEVELOPER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">👨‍💻</span>
+        <strong style="font-size:1.05rem;">Developer Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:80%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:65%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-red" style="width:35%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strengths:</strong> Good implementation standards section (pathlib, no bare
+        except, mypy strict). Architecture constraints are clearly listed. The "before marking
+        done" checklist is useful in principle.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Improvements:</strong>
+        (1) The "before marking done" checklist says to run ruff and black — but the agent
+        did <em>not</em> do this in practice, producing 3 rounds of CI failures and one
+        re-run of black across all files. The checklist needs to be more emphatic: the task
+        is not done until CI-equivalent checks pass locally.
+        (2) No guidance on <em>ADR cross-check</em>: the agent implemented parsers
+        accepting <code>Path</code> instead of <code>dict</code> (violating ADR-001/002) —
+        something a single "read the ADR signatures before coding" instruction would prevent.
+        (3) No guidance on what to do when a dependency (e.g., the JSON schema) can't be
+        fetched. The schema download failure required special handling mid-session.
+      </p>
+    </div>
+
+    <!-- ARCHITECT -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">🏛️</span>
+        <strong style="font-size:1.05rem;">Architect Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:80%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:65%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-red" style="width:30%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strengths:</strong> Good ADR template with the standard
+        Context / Decision / Consequences structure. DrawIO guidelines (color scheme,
+        routing, font sizes) are unusually detailed and directly actionable. Output
+        quality bar mandating FR/NFR traceability is the right constraint.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Improvements:</strong>
+        (1) No explicit instruction to write <em>concrete type signatures</em> in ADRs.
+        ADR-001 and ADR-002 specified function signatures, but they were ambiguous enough
+        that the Developer implemented different signatures — this caused 2 of the 3 CRITICAL
+        review findings. ADRs should include runnable Python stubs.
+        (2) No guidance on when to create a new ADR vs. amend an existing one, which
+        matters when scope evolves.
+        (3) No guidance on how to resolve conflicting requirements between FRs.
+      </p>
+    </div>
+
+    <!-- DOCUMENTATION WRITER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">📝</span>
+        <strong style="font-size:1.05rem;">Documentation Writer Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:75%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:70%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:50%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strengths:</strong> Required documentation list (README, user-guide, arch-overview,
+        CHANGELOG) is explicitly enumerated with sub-headings — the agent knew exactly what to
+        produce. Audience definition ("DevOps engineers integrating SBOM validation into CI/CD")
+        produced appropriately targeted writing. Quality bar (verify CLI commands, match version numbers) is good.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Improvements:</strong>
+        (1) No guidance on <em>link verification</em> — the user-guide initially contained
+        <code>your-org/sbom-validator</code> placeholders instead of the real GitHub URL.
+        (2) No guidance on keeping examples consistent with the actual output format of
+        <code>_render_text()</code> — this requires the agent to read cli.py carefully
+        rather than guessing.
+        (3) One background agent invocation (5.4+5.5) hit a content filtering block and
+        produced no output. The agent has no fallback or retry guidance.
+      </p>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">📋</span>
+        <strong style="font-size:1.05rem;">Planner Agent</strong>
+        <span class="badge badge-weak">Weak</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:80%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:60%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-red" style="width:40%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-red" style="width:20%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strengths:</strong> Task format (ID, title, agent, dependencies,
+        inputs, outputs, acceptance criteria) is the right structure.
+        TDD pairing rule (test task before implementation task) is explicitly stated.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Improvements:</strong>
+        (1) <strong>This is the most underspecified agent.</strong> It was never actually
+        invoked as a standalone agent — planning was done inline by the orchestrator. The
+        agent definition has no token-budget awareness guidance ("target task sizes that
+        fit a single agent invocation"), no parallelization limit guidance, and no
+        awareness of the 4-hour rate limit.
+        (2) No guidance to flag when tasks have implicit scope (e.g., "implement schema
+        validator" silently includes "download and bundle JSON schemas").
+        (3) No output quality bar — there is no way to tell if a Planner output is good.
+      </p>
+    </div>
+
+    <!-- Maturity Summary Table -->
+    <div class="card">
+      <h3>Summary Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>Maturity</th>
+            <th>Biggest Gap</th>
+            <th>Priority Fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Reviewer</td>
+            <td><span class="badge badge-strong">Strong</span></td>
+            <td>No deferral criteria; no performance checklist</td>
+            <td>Low</td>
+          </tr>
+          <tr>
+            <td>Tester</td>
+            <td><span class="badge badge-strong">Strong</span></td>
+            <td>No self-linting step; no edge-case prompt</td>
+            <td>Low</td>
+          </tr>
+          <tr>
+            <td>Developer</td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Quality checklist not enforced; no ADR cross-check step</td>
+            <td><strong>High</strong></td>
+          </tr>
+          <tr>
+            <td>Architect</td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>ADR signatures not concrete enough; no runnable stubs</td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>Documentation Writer</td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>No placeholder-URL guard; no fallback for content filtering</td>
+            <td>Low</td>
+          </tr>
+          <tr>
+            <td>Planner</td>
+            <td><span class="badge badge-weak">Weak</span></td>
+            <td>Underspecified, never invoked, no token-budget awareness</td>
+            <td><strong>High</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SECTION 2: REPETITIVE TASKS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>2 — Most Repetitive Tasks</h2>
+    <p>
+      Repetition patterns were identified from the session transcript. Each pattern
+      is classified by <em>frequency</em> and <em>whether it was avoidable</em>.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Repetitive Task</th>
+          <th>Occurrences</th>
+          <th>Avoidable?</th>
+          <th>Rational</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Cold-start context loading</strong> — each agent re-read
+            <code>requirements.md</code>, <code>normalized-model.md</code>,
+            <code>ADR-*.md</code>, and <code>models.py</code></td>
+          <td>~14× (once per agent spawn)</td>
+          <td><span class="badge badge-high">Yes</span></td>
+          <td>These 4 files are the stable "shared brain" of the project. Every agent
+          re-read them independently. A single compact briefing document (~400 tokens)
+          could replace these reads for most agents.</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>Static analysis fix cycles</strong> — ruff/black/mypy run, fail,
+            fix, re-run pattern</td>
+          <td>3 distinct cycles (Phase 2 ruff, Phase 4 RefResolver, CI failure at release)</td>
+          <td><span class="badge badge-high">Mostly</span></td>
+          <td>Each cycle cost approximately one full agent invocation to diagnose and fix.
+          If the Developer agent ran these checks before declaring done, the CI failures
+          would not have occurred. The final CI cycle (StrEnum, F841, I001, black) was
+          entirely a Developer agent quality gate failure.</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>Parallel fixture creation</strong> — 7 SPDX fixtures and 7 CycloneDX
+            fixtures with identical logical structure</td>
+          <td>7+7 = 14 files, all following the same template</td>
+          <td><span class="badge badge-med">Partially</span></td>
+          <td>The two fixture sets are structurally parallel (valid-minimal, valid-full,
+          missing-supplier, missing-timestamp, etc.). A single agent with a template could
+          have generated both sets in one pass. Instead, two separate invocations were used.</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>Git commit + push</strong> at end of every phase</td>
+          <td>~10 commit operations</td>
+          <td><span class="badge badge-low">No</span></td>
+          <td>This is inherent to the phase-gate workflow and serves as a natural
+          checkpoint. The git operations themselves are cheap (no LLM tokens used for
+          <code>git add/commit/push</code>). Not a meaningful optimization target.</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong>Test suite re-runs</strong> — full pytest run after every
+            implementation step</td>
+          <td>~8× across all phases</td>
+          <td><span class="badge badge-med">Partially</span></td>
+          <td>Running the full 358-test suite after every change is wasteful. Only the
+          tests for the module just changed (and its dependencies) need to run. Agents
+          should target <code>pytest tests/unit/test_&lt;module&gt;.py</code> first, then
+          run the full suite once at phase end.</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><strong>Rework of invalid-schema fixtures</strong> — fixtures were
+            created without format markers, then fixed</td>
+          <td>1 rework cycle (~3 file edits)</td>
+          <td><span class="badge badge-high">Yes</span></td>
+          <td>The Tester agent created invalid-schema fixtures that lacked the
+          <code>spdxVersion</code> / <code>bomFormat</code> fields needed by the
+          format detector. The Developer agent then added a fallback (violating ADR-001)
+          which the Reviewer correctly flagged. A clearer fixture specification in the
+          Tester agent prompt ("schema-invalid means invalid against the JSON schema, not
+          format-unrecognized") would have prevented this chain.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SECTION 3: TOKEN USAGE EVALUATION
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>3 — Token Usage Evaluation</h2>
+
+    <div class="callout callout-yellow">
+      <strong>⚠️ Uncertainty note</strong>
+      Claude Pro does not expose token-level usage metrics per session, and no external
+      telemetry was collected during the session. The estimates below are derived from:
+      (a) known Claude Sonnet input/output token rates for tasks of this type,
+      (b) the number of agent invocations and file operations reconstructed from the
+      session transcript, and (c) typical token counts for the artifacts produced.
+      Treat these as order-of-magnitude estimates, not precise measurements.
+      All figures in this section are marked with (est.) where uncertain.
+    </div>
+
+    <h3>Estimated Token Budget by Phase</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Main activities</th>
+          <th>Est. tokens consumed</th>
+          <th>Efficiency rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Phase 0 — Foundation</td>
+          <td>Repo scaffold, pyproject.toml, CI workflow, stubs, GitHub push</td>
+          <td>~40–60K (est.)</td>
+          <td><span class="badge badge-strong">Good</span></td>
+        </tr>
+        <tr>
+          <td>Phase 1 — Spec &amp; Architecture</td>
+          <td>14 FRs, 5 ADRs, normalized model, 3 DrawIO diagrams, 14 fixture files</td>
+          <td>~120–160K (est.)</td>
+          <td><span class="badge badge-medium">Acceptable</span></td>
+        </tr>
+        <tr>
+          <td>Phase 2 — Core Implementation (7 tracks)</td>
+          <td>7 Tester + 7 Developer agent pairs, all reading shared context fresh each time</td>
+          <td>~350–450K (est.)</td>
+          <td><span class="badge badge-weak">Inefficient</span></td>
+        </tr>
+        <tr>
+          <td>Phase 3 — CLI</td>
+          <td>CLI tests + implementation + smoke test</td>
+          <td>~80–120K (est.)</td>
+          <td><span class="badge badge-medium">Acceptable</span></td>
+        </tr>
+        <tr>
+          <td>Phase 4 — Integration &amp; Review</td>
+          <td>Integration tests, fixtures, static analysis, code review, 13-finding remediation</td>
+          <td>~150–200K (est.)</td>
+          <td><span class="badge badge-medium">Acceptable</span></td>
+        </tr>
+        <tr>
+          <td>Phase 5 — Documentation &amp; Release</td>
+          <td>3 background doc agents, README, CHANGELOG, LICENSE, release checklist, CI fix</td>
+          <td>~100–150K (est.)</td>
+          <td><span class="badge badge-medium">Acceptable</span></td>
+        </tr>
+        <tr>
+          <td>CI failure debugging &amp; fix cycles</td>
+          <td>3 ruff/black/mypy fix rounds that should have been caught by agents pre-push</td>
+          <td>~60–100K (est.)</td>
+          <td><span class="badge badge-weak">Avoidable waste</span></td>
+        </tr>
+        <tr>
+          <td>Orchestration overhead</td>
+          <td>Main context carrying accumulated conversation history across phases</td>
+          <td>~100–150K (est.)</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:0.85rem; color:#6b7280; margin-bottom:1rem;">
+      Estimated total: <strong>1,000,000–1,300,000 tokens (est.)</strong> across the session.
+      Claude Pro limits are applied per 5-hour rolling window; the 4-hour limit was hit,
+      suggesting substantial volume. This estimate is consistent with a session of this scope.
+    </div>
+
+    <h3>Verdict</h3>
+    <div class="callout callout-red">
+      <strong>🔴 Inefficient — specifically in Phase 2 (core implementation)</strong>
+      <p style="margin-top:0.4rem;">
+        Approximately 35–40% of total token usage (est.) was attributable to Phase 2's
+        14 agent invocations, each independently loading 4–6 shared context files. The
+        files read repeatedly included <code>requirements.md</code> (~3K tokens),
+        <code>normalized-model.md</code> (~2K tokens), 5 ADR files (~8K tokens combined),
+        and <code>models.py</code> (~1.5K tokens) — roughly <strong>14,500 tokens of
+        duplicated input per agent</strong>, or ~200K tokens of repeated context loading
+        across Phase 2 alone.
+      </p>
+      <p style="margin-top:0.4rem;">
+        An additional ~80–100K tokens (est.) were consumed by avoidable rework: the
+        invalid-schema fixture fix, the ADR-001/002 violation remediation in the code
+        review, and the three CI failure rounds.
+      </p>
+      <p style="margin-top:0.4rem;">
+        That said, the token spend produced a high-quality artifact. A less thorough
+        workflow (no TDD, no code review) would have shipped the 3 critical bugs.
+        The question is not whether to spend tokens on quality gates — it is how to
+        front-load quality signals to avoid expensive post-hoc correction.
+      </p>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SECTION 4: IMPROVEMENT IDEAS
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>4 — Improvement Ideas</h2>
+    <p>
+      The following ideas target token efficiency while maintaining or improving
+      the current output quality. Each idea includes an estimated token saving,
+      implementation effort, and quality impact.
+    </p>
+
+    <!-- Idea 1 -->
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">1</div>
+        <div class="idea-title">Create a Compact "Project Briefing" File as Shared Agent Context</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Currently every agent starts cold and reads <code>requirements.md</code>,
+        <code>normalized-model.md</code>, 5 ADRs, and <code>models.py</code> to build
+        its mental model of the project. These files total ~15,000 tokens and are read
+        ~14 times across the session.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Create a single <code>docs/agent-briefing.md</code> file (~500 tokens) that
+        distills only the decision-critical facts each agent needs:
+        the 5 ADR decisions in 1–2 sentences each, the NormalizedSBOM field contract
+        (the table, not the prose), the FR-to-NTIA element mapping table, and the
+        exact function signatures from each module. Every agent prompt includes this
+        file instead of reading the originals.
+      </p>
+      <div class="callout callout-blue" style="font-size:0.88rem;">
+        <strong>Rational:</strong> Agents need the <em>decisions</em>, not the <em>rationale</em>.
+        The rationale is valuable for humans reviewing the ADRs but is wasted tokens for
+        an agent that only needs to know "parsers accept dict, not Path" before coding.
+      </div>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~180K tokens (Phase 2 context loading)</span>
+        <span class="impact-tag tag-quality">✅ Quality: neutral or improved (less noise)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 1–2 hours to write</span>
+      </div>
+    </div>
+
+    <!-- Idea 2 -->
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">2</div>
+        <div class="idea-title">Add a Mandatory Pre-Handoff Lint Gate to Developer and Tester Agents</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Three CI failure rounds occurred because agents declared tasks done without
+        running the full static analysis suite locally. The Developer agent's "before
+        marking done" checklist exists but was not enforced. The Tester agent has
+        no similar checklist at all.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Update both agent definitions to include a non-negotiable terminal step:
+        <em>"Run <code>poetry run ruff check src/ tests/ &amp;&amp; poetry run black --check src/ tests/ &amp;&amp; poetry run mypy src/</code>.
+        If any command exits non-zero, fix the issues before reporting done.
+        This step is mandatory — it is not done until all three pass."</em>
+        Elevate this to the top of the file so it appears early in the agent's context window.
+      </p>
+      <div class="callout callout-blue" style="font-size:0.88rem;">
+        <strong>Rational:</strong> Each CI failure round cost approximately one agent
+        invocation to diagnose + fix (read logs, read source, edit, commit, push, wait).
+        Running lint locally costs ~1 Bash tool call and a few hundred tokens. The
+        cost ratio is 100:1 in favor of local lint.
+      </div>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~80–100K tokens (CI fix cycles)</span>
+        <span class="impact-tag tag-quality">✅ Quality: improved (catches issues earlier)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min (edit 2 agent files)</span>
+      </div>
+    </div>
+
+    <!-- Idea 3 -->
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">3</div>
+        <div class="idea-title">Add Concrete Type Signatures (Runnable Python Stubs) to ADRs</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Two of the three CRITICAL code-review findings (R-01/R-02: version guards missing;
+        R-04/R-05: parser/detector signature mismatch) were caused by ADRs that described
+        the interface in prose rather than in code. The Developer agent implemented
+        plausible but incorrect interfaces.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Each ADR that defines a module interface should include a Python stub block:
+        <pre style="background:#f1f3f9; padding:0.75rem; border-radius:6px; font-size:0.82rem; overflow:auto;">
+# ADR-001 contract — format_detector.py
+def detect_format(document: dict[str, Any]) -> Literal["spdx", "cyclonedx"]:
+    """Raises UnsupportedFormatError if format is unrecognized or wrong version."""
+    ...</pre>
+        The Developer agent's definition should require: <em>"Before implementing any
+        module, read its ADR stub and verify your function signatures match exactly."</em>
+      </p>
+      <div class="callout callout-blue" style="font-size:0.88rem;">
+        <strong>Rational:</strong> The code review (Phase 4) cost ~150K tokens to run
+        and produced 13 findings, of which 7 required a Developer fix pass (~100K tokens).
+        If the ADR stubs had prevented the 2 signature violations, the review would have
+        found only 11 issues and the fix pass would have been shorter. Preventing one
+        CRITICAL finding upstream saves the cost of the entire downstream correction chain.
+      </div>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~50–70K tokens (review + fix)</span>
+        <span class="impact-tag tag-quality">✅ Quality: improved (enforced contracts)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 2–3 hours (update 5 ADRs)</span>
+      </div>
+    </div>
+
+    <!-- Idea 4 -->
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">4</div>
+        <div class="idea-title">Use Targeted Test Runs Instead of Full Suite Runs During Development</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        The full test suite (358 tests, ~6–7s) was run after every individual module
+        implementation. During Phase 2, this means 7 full runs × 358 tests, most of
+        which test modules not yet changed. The tests themselves are fast, but reading
+        and processing the full pytest output (~3K tokens per run) adds up.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Update the Developer and Tester agent definitions to use targeted pytest invocations
+        during implementation:
+        <code>poetry run pytest tests/unit/test_&lt;module&gt;.py -v</code>.
+        Run the full suite only once per phase as the final gate, not after each module.
+      </p>
+      <div class="callout callout-blue" style="font-size:0.88rem;">
+        <strong>Rational:</strong> A targeted run produces ~200 tokens of output vs. ~3,000
+        for a full run. Across 7 development phases × 2–3 intermediate runs each, this
+        saves approximately 35–50K tokens in pytest output processing. It also gives
+        faster feedback, which reduces the cost of fix-and-retry loops.
+      </div>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~35–50K tokens</span>
+        <span class="impact-tag tag-quality">✅ Quality: neutral (same coverage at phase-end)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min (edit 2 agent files)</span>
+      </div>
+    </div>
+
+    <!-- Idea 5 -->
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">5</div>
+        <div class="idea-title">Introduce a Planner "Scope Lock" Step Before Each Phase</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Several scope ambiguities caused invisible token waste during the session:
+        "implement schema validator" silently included downloading and bundling 2 JSON schemas
+        (which failed and needed a separate recovery agent); "create invalid-schema fixtures"
+        was ambiguous about whether the format must still be recognizable.
+        These ambiguities caused downstream rework.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Before dispatching agents for a phase, invoke the Planner agent with a single
+        instruction: <em>"For each task in the upcoming phase, list: (a) every file that
+        will be created or modified, (b) every external resource that will be needed
+        (schemas, downloads, network), and (c) every assumption this task makes about the
+        current state of the codebase. Flag any assumption that is not yet verified."</em>
+        The user reviews this output as the phase approval gate — catching scope issues
+        before tokens are spent implementing them.
+      </p>
+      <div class="callout callout-blue" style="font-size:0.88rem;">
+        <strong>Rational:</strong> The Planner agent is the most underutilized agent in
+        the workflow. Its current definition lists good task attributes (inputs, outputs,
+        acceptance criteria) but it was never actually called as a standalone agent —
+        planning happened inline by the orchestrator. Using the Planner as a structured
+        scope-lock step adds ~20–30K tokens per phase but likely prevents 1–2 rework
+        cycles per project, each of which costs 50–100K tokens.
+      </div>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Net est. saving: ~100K tokens across a project</span>
+        <span class="impact-tag tag-quality">✅ Quality: improved (fewer surprises)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 2–3 hours (rewrite Planner agent + workflow)</span>
+      </div>
+    </div>
+
+    <!-- Summary of potential savings -->
+    <div class="card" style="margin-top:1.2rem;">
+      <h3>Projected Impact Summary</h3>
+      <p class="uncertain">All savings are estimates. Actual results will vary by project scope and agent behavior.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Improvement</th>
+            <th>Est. token saving</th>
+            <th>Effort</th>
+            <th>Recommended order</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Compact agent briefing file</td>
+            <td>~180K tokens</td>
+            <td>1–2 hours</td>
+            <td>Do first — highest ROI, one-time setup</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Mandatory lint gate in Developer + Tester</td>
+            <td>~80–100K tokens</td>
+            <td>30 min</td>
+            <td>Do first — trivial effort, high return</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Python stubs in ADRs</td>
+            <td>~50–70K tokens</td>
+            <td>2–3 hours</td>
+            <td>Do before next feature phase</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Targeted pytest runs</td>
+            <td>~35–50K tokens</td>
+            <td>30 min</td>
+            <td>Do first — trivial</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Planner scope-lock step</td>
+            <td>~100K tokens (net)</td>
+            <td>2–3 hours</td>
+            <td>Do before next major phase</td>
+          </tr>
+          <tr style="font-weight:700; background:#eef2ff;">
+            <td colspan="2">Total projected saving</td>
+            <td>~440–500K tokens (est.)</td>
+            <td colspan="2">~40–45% reduction in token usage for comparable scope</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       SECTION 5: WHAT WORKED WELL
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2>5 — What Worked Well (Keep Doing)</h2>
+    <div class="card-grid">
+      <div class="card">
+        <strong>🧪 TDD was non-negotiable</strong>
+        <p style="font-size:0.9rem; margin-top:0.5rem;">Writing tests before implementation
+        consistently. The Tester agent never wrote tests against stubs.
+        This discipline directly prevented several implementation shortcuts.</p>
+      </div>
+      <div class="card">
+        <strong>🔍 Code review before release</strong>
+        <p style="font-size:0.9rem; margin-top:0.5rem;">The Phase 4 Reviewer agent found
+        3 CRITICAL bugs that would have shipped. The review was expensive but paid for itself
+        in output quality. Never skip this gate.</p>
+      </div>
+      <div class="card">
+        <strong>⚡ Parallel agent dispatch</strong>
+        <p style="font-size:0.9rem; margin-top:0.5rem;">Running Tester + Developer agents
+        for independent tracks (SPDX, CycloneDX, format detector) in parallel
+        dramatically compressed wall-clock time without quality loss.</p>
+      </div>
+      <div class="card">
+        <strong>📋 TASKS.md as living tracker</strong>
+        <p style="font-size:0.9rem; margin-top:0.5rem;">Updating TASKS.md after every
+        task was the right call. When the context was compacted and a new session started,
+        TASKS.md enabled immediate resumption without re-reading conversation history.</p>
+      </div>
+      <div class="card">
+        <strong>🏛️ Phase approval gates</strong>
+        <p style="font-size:0.9rem; margin-top:0.5rem;">Human approval between phases kept
+        the Human-in-the-Loop meaningful. Without these gates, the workflow would be
+        autonomous execution with no oversight points.</p>
+      </div>
+      <div class="card">
+        <strong>📄 Spec-first development</strong>
+        <p style="font-size:0.9rem; margin-top:0.5rem;">Writing requirements and ADRs
+        before any code gave the Developer agent a ground truth to implement against.
+        Without this, agents tend to make their own architectural decisions inconsistently.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="report-footer">
+    <p>
+      Generated by Claude Sonnet 4.6 on 2026-04-07.
+      This report is based on the session transcript, git history, and agent definition files.
+      Token estimates are approximations derived from artifact sizes and agent invocation counts —
+      they are not based on actual API telemetry, which was not available.
+      Statements marked <em>(est.)</em> or in the callout boxes should be independently validated
+      if used for budget planning.
+    </p>
+    <p style="margin-top:0.5rem;">
+      Artifacts: <code>sbom-validator v0.1.0</code> —
+      <a href="https://github.com/SuceaCosmin/sbom-validator/releases/tag/v0.1.0">GitHub Release</a>
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
