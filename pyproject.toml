@@ -21,6 +21,7 @@ black = ">=24.0"
 ruff = ">=0.4"
 mypy = ">=1.9"
 types-jsonschema = "*"
+pyinstaller = {version = ">=6.0", python = ">=3.11,<3.15"}
 
 [tool.poetry.scripts]
 sbom-validator = "sbom_validator.cli:main"
