@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +11,8 @@ import jsonschema
 import jsonschema.exceptions
 
 from sbom_validator.models import IssueSeverity, ValidationIssue
+
+logger = logging.getLogger(__name__)
 
 _SCHEMAS_DIR = Path(__file__).parent / "schemas"
 
@@ -50,6 +53,7 @@ def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[Validatio
     if format_name not in _SCHEMA_FILES:
         raise ValueError(f"Unknown format: {format_name!r}. Expected one of: {list(_SCHEMA_FILES)}")
 
+    logger.debug("Running schema validation for format %s", format_name)
     schema = _load_schema(format_name)
     rule = _FORMAT_RULES[format_name]
 
@@ -69,5 +73,10 @@ def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[Validatio
                 rule=rule,
             )
         )
+
+    if issues:
+        logger.info("Schema validation found %d error(s)", len(issues))
+    else:
+        logger.info("Schema validation passed (%d issues)", len(issues))
 
     return issues

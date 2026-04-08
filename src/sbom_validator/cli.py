@@ -10,6 +10,7 @@ from typing import Any
 import click
 
 from sbom_validator import __version__
+from sbom_validator.logging_config import configure_logging
 from sbom_validator.models import ValidationResult, ValidationStatus
 from sbom_validator.validator import validate
 
@@ -77,11 +78,18 @@ def main() -> None:
     show_default=True,
     help="Output format.",
 )
-def validate_cmd(file: str, output_format: str) -> None:
+@click.option(
+    "--log-level",
+    default="WARNING",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
+    help="Set logging verbosity (default: WARNING).",
+)
+def validate_cmd(file: str, output_format: str, log_level: str) -> None:
     """Validate an SBOM FILE against schema and NTIA minimum elements.
 
     Exits with code 0 (PASS), 1 (validation FAIL), or 2 (tool ERROR).
     """
+    configure_logging(log_level)
     file_path = Path(file)
     result = validate(file_path)
 
