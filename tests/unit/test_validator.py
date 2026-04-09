@@ -11,7 +11,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from sbom_validator.models import ValidationResult, ValidationStatus
 from sbom_validator.validator import validate
 

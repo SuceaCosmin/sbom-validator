@@ -23,7 +23,6 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-
 from sbom_validator import __version__
 from sbom_validator.cli import main
 

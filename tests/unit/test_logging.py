@@ -19,7 +19,6 @@ import logging
 import sys
 
 import pytest
-
 from sbom_validator.logging_config import LOG_FORMAT, configure_logging
 
 # ---------------------------------------------------------------------------

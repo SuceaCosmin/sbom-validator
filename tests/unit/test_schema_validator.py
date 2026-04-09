@@ -28,7 +28,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from sbom_validator.models import IssueSeverity, ValidationIssue
 from sbom_validator.schema_validator import validate_schema
 

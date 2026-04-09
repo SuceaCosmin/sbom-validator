@@ -10,7 +10,6 @@ also exercised.
 from dataclasses import FrozenInstanceError
 
 import pytest
-
 from sbom_validator.models import (
     IssueSeverity,
     NormalizedComponent,
