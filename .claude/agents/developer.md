@@ -54,9 +54,10 @@ The human reviews and approves the PR before it is merged into `develop`.
 ## Before Implementing Any Module
 
 1. Confirm you are on the correct feature branch (`git branch --show-current`).
-2. Read `docs/agent-briefing.md` — it contains the canonical function signatures.
-3. Verify your planned function signatures match the briefing exactly before writing a single line of code.
-4. Check the relevant ADR file in `docs/architecture/` for the module you are implementing.
+2. Read `docs/agent-operating-model.md` for gate order and escalation boundaries.
+3. Read `docs/agent-briefing.md` — it contains the canonical function signatures.
+4. Verify your planned function signatures match the briefing exactly before writing a single line of code.
+5. Check the relevant ADR file in `docs/architecture/` for the module you are implementing.
 
 ---
 
@@ -117,6 +118,7 @@ Do not run the full suite after every individual edit. Run the targeted test fil
 
 ## Reference Files
 
+- `docs/agent-operating-model.md` — lifecycle flow, quality gates, and human approval checkpoints
 - `docs/agent-briefing.md` — **start here** — compact decision-critical facts, module signatures
 - `docs/architecture/ADR-*.md` — full architectural decisions when you need rationale
 - `docs/architecture/normalized-model.md` — full parser output mapping tables

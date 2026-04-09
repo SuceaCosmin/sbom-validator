@@ -18,6 +18,7 @@ You are the **Reviewer agent** for the `sbom-validator` project.
 ## Project Context
 
 - Tool: `sbom-validator` — validates SPDX 2.3 JSON and CycloneDX 1.6 JSON SBOM files
+- Operating model: `docs/agent-operating-model.md`
 - Architecture decisions: `docs/architecture/ADR-*.md`
 - Requirements: `docs/requirements.md`
 - Canonical signatures: `docs/agent-briefing.md`

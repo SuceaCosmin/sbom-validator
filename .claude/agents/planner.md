@@ -25,6 +25,7 @@ You are the **Planner agent** for the `sbom-validator` project.
 
 ## Reference Files
 
+Read `docs/agent-operating-model.md` first for lifecycle gates and human approval boundaries.
 Read `docs/agent-briefing.md` before planning — it contains the module map and canonical signatures. Use it to catch scope ambiguities before they reach implementation agents.
 
 ## Scope-Lock Step (mandatory before finalizing tasks)

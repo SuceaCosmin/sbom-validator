@@ -180,6 +180,7 @@ Files with unsupported versions (e.g., SPDX 2.2 or CycloneDX 1.5) are rejected w
 - [User Guide](docs/user-guide.md) — full installation, usage, and troubleshooting
 - [Architecture Overview](docs/architecture/architecture-overview.md) — module design and pipeline
 - [Requirements](docs/requirements.md) — functional and non-functional requirements
+- [Agent Operating Model](docs/agent-operating-model.md) — human-in-the-loop automation flow, gate ownership, and release checkpoints
 
 ---
 
