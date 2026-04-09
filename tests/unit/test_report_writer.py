@@ -453,7 +453,10 @@ class TestHtmlReportContent:
         assert "NTIA FR-04" not in html
         assert "provide a supplier/organization name" in html
         assert "<th>Hint</th>" in html
-        assert "Component &#x27;requests&#x27; is missing a supplier name." in html or "Component 'requests' is missing a supplier name." in html
+        assert (
+            "Component &#x27;requests&#x27; is missing a supplier name." in html
+            or "Component 'requests' is missing a supplier name." in html
+        )
 
     def test_html_places_message_and_hint_in_separate_columns(self, tmp_path: Path) -> None:
         xml_issue = ValidationIssue(
@@ -469,8 +472,14 @@ class TestHtmlReportContent:
             issues=(xml_issue,),
         )
         html = self._load_html(result, tmp_path)
-        assert "Missing required field &#x27;SPDXID&#x27;." in html or "Missing required field 'SPDXID'." in html
-        assert "add &#x27;SPDXID&#x27; at this location." in html or "add 'SPDXID' at this location." in html
+        assert (
+            "Missing required field &#x27;SPDXID&#x27;." in html
+            or "Missing required field 'SPDXID'." in html
+        )
+        assert (
+            "add &#x27;SPDXID&#x27; at this location." in html
+            or "add 'SPDXID' at this location." in html
+        )
 
 
 # ===========================================================================

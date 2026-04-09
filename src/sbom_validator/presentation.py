@@ -32,10 +32,7 @@ def humanize_message(message: str) -> str:
     required_property = _REQUIRED_PROPERTY_RE.match(clean)
     if required_property:
         prop = required_property.group(1)
-        return (
-            f"Missing required field '{prop}'. "
-            f"Hint: add '{prop}' at this location."
-        )
+        return f"Missing required field '{prop}'. " f"Hint: add '{prop}' at this location."
 
     if "missing required attribute 'type'" in clean:
         return (
