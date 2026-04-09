@@ -105,7 +105,7 @@ Everything else should be automated by agents.
 | G8 Release Readiness | `release-manager` | Version consistency, packaging, compatibility gates pass |
 | G9 Token Analytics | `token-analyst` | `token-report-vX.Y.Z.html` and delta report generated |
 
-No gate skipping is allowed.
+No gate skipping is allowed. Gates G5 (Security) and G9 (Token Analytics) must be completed **before** the release tag is pushed. If either cannot be completed, it must be formally recorded as a deferral in the release tracker with an explicit justification — silent omission is not acceptable.
 
 ---
 

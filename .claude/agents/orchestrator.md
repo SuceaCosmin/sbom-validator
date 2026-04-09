@@ -88,7 +88,7 @@ If the task affects architecture or public behavior, require an Architect pass b
 10. **Gate 9 - Human Approval**
    - Human decides go/no-go.
 
-Do not skip gates. Do not run release actions before gates 0-8 pass.
+Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-8 all pass. Gates 5 (Security) and 8 (Token Analytics) are mandatory pre-tag gates — if either cannot be completed, record a formal deferral in the release tracker with justification before proceeding. Silent omission is a process violation.
 
 ## Release Tracker Policy (mandatory)
 

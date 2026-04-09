@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Delta Report — v0.2.0 to v0.2.1</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #4c1d95; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #f5f3ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .delta-pos { color: #b91c1c; } /* more tokens = worse */
+    .delta-neg { color: #166534; } /* fewer tokens = better */
+    .delta-flat { color: #6b7280; }
+    .verdict-improved { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    .verdict-regressed { color: #b91c1c; font-weight: bold; font-size: 1.1rem; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Delta Report — v0.2.0 to v0.2.1</h1>
+  <p class="muted">SBOM Validator · Comparing release v0.2.0 (baseline) against v0.2.1 · Generated: 2026-04-09</p>
+  <p class="muted"><strong>Note:</strong> v0.2.0 values are reconstructed estimates from workflow evaluation reports and release artifacts. v0.2.1 values are from the v0.2.1 token report. Both sets carry <span class="tag-est">EST</span> designation.</p>
+
+  <!-- METADATA -->
+  <div class="card">
+    <h2>Comparison Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>v0.2.0 (Previous)</th><th>v0.2.1 (Current)</th></tr>
+      <tr><td>Scope type</td><td>Feature addition (logging, HTML/JSON reports, Windows/Linux binaries)</td><td>Feature addition (CycloneDX XML support) + UX improvements (presentation layer)</td></tr>
+      <tr><td>Sessions</td><td>~2–3 sessions (multi-day)</td><td>2 sessions (Cursor + Claude Code resumption)</td></tr>
+      <tr><td>Files changed</td><td>~40–50 files</td><td>37 files (13,700+ lines net)</td></tr>
+      <tr><td>Tests at release</td><td>484 passing</td><td>501 passing (+17)</td></tr>
+      <tr><td>CI failures (rework)</td><td>~4–5 cycles (preflight hardening included)</td><td>3 cycles (ruff + black × 2)</td></tr>
+      <tr><td>New dependencies</td><td>PyInstaller, jinja2, coverage tools</td><td>xmlschema</td></tr>
+      <tr><td>Agent team</td><td>Core 5 (planner/tester/developer/reviewer/docs)</td><td>Full 10-agent team (incl. orchestrator, ci-ops, release-manager, security, token-analyst)</td></tr>
+    </table>
+  </div>
+
+  <!-- TOPLINE DELTA -->
+  <div class="card">
+    <h2>Topline Delta</h2>
+    <table>
+      <tr><th>Metric</th><th>v0.2.0 <span class="tag-est">EST</span></th><th>v0.2.1 <span class="tag-est">EST</span></th><th>Delta</th><th>Assessment</th></tr>
+      <tr>
+        <td>Total tokens</td>
+        <td>~380,000 – 460,000</td>
+        <td>~310,000 – 380,000</td>
+        <td class="delta-neg">−50,000 to −80,000</td>
+        <td>Improvement. v0.2.0 was a larger multi-session release with more agent bootstrapping overhead. v0.2.1 was more focused.</td>
+      </tr>
+      <tr>
+        <td>Rework tokens</td>
+        <td>~70,000 – 90,000 (est. ~20% ratio)</td>
+        <td>~40,000 – 60,000 (~14% ratio)</td>
+        <td class="delta-neg">−25,000 to −30,000 (ratio: −6pp)</td>
+        <td>Improvement. Fewer rework cycles, smaller per-cycle cost.</td>
+      </tr>
+      <tr>
+        <td>CI/release failure overhead</td>
+        <td>~50,000 – 65,000 (4–5 CI cycles)</td>
+        <td>~40,000 – 55,000 (3 CI cycles)</td>
+        <td class="delta-neg">−10,000 to −15,000</td>
+        <td>Marginal improvement. Still entirely preventable with pre-commit hooks.</td>
+      </tr>
+      <tr>
+        <td>Session boundary overhead</td>
+        <td>~30,000 – 40,000 (multi-session, multi-day)</td>
+        <td>~20,000 – 30,000 (1 resumption)</td>
+        <td class="delta-neg">−10,000</td>
+        <td>Improvement due to fewer session breaks.</td>
+      </tr>
+      <tr>
+        <td>Agent bootstrapping (new agents)</td>
+        <td>~40,000 – 55,000 (agent team was being created)</td>
+        <td>~10,000 – 15,000 (team already established)</td>
+        <td class="delta-neg">−30,000 to −40,000</td>
+        <td>Large improvement. One-time cost of creating agent definitions is now amortised.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- PER-AGENT DELTA -->
+  <div class="card">
+    <h2>Per-Agent Delta</h2>
+    <table>
+      <tr><th>Agent</th><th>v0.2.0 <span class="tag-est">EST</span></th><th>v0.2.1 <span class="tag-est">EST</span></th><th>Delta</th><th>Comment</th></tr>
+      <tr><td>Developer (implementation)</td><td>~140,000–170,000</td><td>~120,000–145,000</td><td class="delta-neg">−20,000–25,000</td><td>v0.2.0 had more modules created from scratch. v0.2.1 was primarily extending existing code.</td></tr>
+      <tr><td>Tester</td><td>~70,000–85,000</td><td>~60,000–75,000</td><td class="delta-neg">−10,000</td><td>Similar test density but fewer new test modules.</td></tr>
+      <tr><td>CI-Ops</td><td>~50,000–65,000</td><td>~40,000–55,000</td><td class="delta-neg">−10,000–15,000</td><td>One fewer CI failure cycle. Root cause unchanged (no pre-commit hooks yet).</td></tr>
+      <tr><td>Documentation Writer + Architect</td><td>~30,000–40,000</td><td>~25,000–30,000</td><td class="delta-neg">−5,000–10,000</td><td>v0.2.1 docs changes were narrower in scope.</td></tr>
+      <tr><td>Orchestrator / Release Manager</td><td>~40,000–55,000 (being created)</td><td>~20,000–25,000</td><td class="delta-neg">−20,000–30,000</td><td>Agent creation cost in v0.2.0. Now operational at lower steady-state cost.</td></tr>
+      <tr><td>Token Analyst</td><td>N/A (not yet created)</td><td>~8,000–12,000</td><td class="delta-pos">+8,000–12,000</td><td>New role, first execution. Small absolute cost. Expected to stay flat or decrease as reporting becomes more automated.</td></tr>
+      <tr><td>Security Reviewer</td><td>N/A (skipped)</td><td>N/A (skipped)</td><td class="delta-flat">0</td><td>Gate was skipped in both releases. Needs enforcement.</td></tr>
+    </table>
+  </div>
+
+  <!-- IMPROVEMENTS AND REGRESSIONS -->
+  <div class="card">
+    <h2>Adopted Improvements and Regressions</h2>
+    <h3>Improvements Adopted vs v0.2.0</h3>
+    <ul>
+      <li><strong>Structured agent team operational:</strong> orchestrator, ci-ops, release-manager, token-analyst all active — reduced ad-hoc decision-making overhead.</li>
+      <li><strong>Release tracker (TASKS-vX.Y.Z.md):</strong> enforced per-release task tracking with gate evidence. Improved handoff clarity.</li>
+      <li><strong>Preflight hardening carried forward:</strong> CI now protects both <code>develop</code> and <code>master</code>, coverage threshold enforced, Poetry version pinned.</li>
+      <li><strong>Fewer sessions:</strong> v0.2.1 completed in a single resumed session vs multi-day for v0.2.0.</li>
+      <li><strong>Explicit <code>--base develop</code> rule:</strong> branching error caught and saved to memory — won't recur.</li>
+    </ul>
+    <h3>Regressions / New Friction Points</h3>
+    <ul>
+      <li><strong>CI lint/format failures recurred (3 cycles):</strong> same root cause as v0.2.0 — no pre-commit hooks. Structural fix not yet applied.</li>
+      <li><strong>G5 Security gate skipped again:</strong> new dependency (<code>xmlschema</code>) added without security review. Pattern from v0.2.0 repeated.</li>
+      <li><strong>G9 Token Analytics executed post-release:</strong> reports generated after the tag rather than as a pre-release gate. Reduces value for release decision-making.</li>
+      <li><strong>PR merged to master instead of develop:</strong> process deviation (missing <code>--base develop</code> flag). Fixed in memory for next release.</li>
+    </ul>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="card">
+    <h2>Efficiency Verdict and Forecast</h2>
+    <p>Verdict: <span class="verdict-improved">IMPROVED</span></p>
+    <p>v0.2.1 was more token-efficient than v0.2.0 across all major categories. The agent team is now established and operating at lower overhead. Rework ratio dropped from ~20% to ~14%. The two structural gaps (no pre-commit hooks, G5/G9 gates skipped) are the primary levers for the next release.</p>
+
+    <h3>Projected v0.3.x Token Budget Range</h3>
+    <table>
+      <tr><th>Scenario</th><th>Estimated Total</th><th>Assumptions</th></tr>
+      <tr>
+        <td>Baseline (no process changes)</td>
+        <td>~280,000 – 360,000</td>
+        <td>Similar feature scope. CI failures persist (~3 cycles). G5/G9 still skipped.</td>
+      </tr>
+      <tr>
+        <td>With pre-commit hooks added</td>
+        <td>~240,000 – 310,000</td>
+        <td>CI failure cycles drop to 0–1. Saves ~35,000–50,000 tokens.</td>
+      </tr>
+      <tr>
+        <td>With pre-commit hooks + G5/G9 gates enforced pre-release</td>
+        <td>~255,000 – 330,000</td>
+        <td>Adds ~15,000–20,000 for security + analytics, but eliminates downstream rework risk.</td>
+      </tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Recommendation: target the middle scenario for v0.3.x — add pre-commit hooks in the first task of the next release plan.</p>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span>. v0.2.0 baseline was reconstructed from <code>docs/workflow-evaluation-report_v0.2.0.html</code>, <code>docs/workflow-evaluation-comparison.html</code>, git log, and CI run history. v0.2.1 values are from the companion token-report-v0.2.1.html.</p>
+    <p class="muted">Confidence: <strong>Medium-low for v0.2.0 baseline</strong> (reconstructed), <strong>Medium for v0.2.1</strong> (same-session estimates). Delta direction (improved/regressed) is reliable; absolute delta magnitudes carry ±20% uncertainty.</p>
+  </div>
+
+</div>
+</body>
+</html>

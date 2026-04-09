@@ -77,11 +77,11 @@
 - Status: ✅
 
 ### G5 Security
-- Evidence:
-- Status:
+- Evidence: No formal security review executed. `xmlschema` dependency added without security gate. Formally deferred — see Deferrals table.
+- Status: ⚠️ Deferred to v0.3.x
 
 ### G6 CI Stability
-- Evidence: full local `pytest` run passed (496 tests).
+- Evidence: full local `pytest` run passed (501 tests); 3 CI failure cycles resolved (ruff import sort + black formatting).
 - Status: ✅
 
 ### G7 Docs Sync
@@ -93,8 +93,8 @@
 - Status: ✅
 
 ### G9 Token Analytics
-- Evidence:
-- Status:
+- Evidence: `docs/releases/token-report-v0.2.1.html` and `docs/releases/token-delta-v0.2.0_to_v0.2.1.html` generated post-release. All metrics are estimates (no direct telemetry). See reports for optimization recommendations.
+- Status: ✅ (post-release — process gap noted; see workflow fix)
 
 ---
 
@@ -102,12 +102,15 @@
 
 | ID | Description | Severity | Deferral Reason | Planned Release |
 |----|-------------|----------|-----------------|-----------------|
+| D1 | G5 Security review for `xmlschema` dependency | MEDIUM | Gate was skipped in this release cycle; no security issues found in manual spot-check but formal review not performed | v0.3.x |
+| D2 | G9 Token Analytics executed pre-release (not post) | LOW | Tooling/process not yet established to run token analyst before tag; reported retrospectively | v0.3.x |
+| D3 | Pre-commit hooks (black + ruff) | MEDIUM | Would eliminate recurring CI lint/format failures; not yet added to repo | v0.3.x |
 
 ---
 
 ## Final Verdict
 
-- **Recommendation:** `GO` / `NO-GO`
-- **Approved by (Human):**
-- **Date:**
-- **Notes:**
+- **Recommendation:** `GO` ✅
+- **Approved by (Human):** SuceaCosmin
+- **Date:** 2026-04-09
+- **Notes:** Released as v0.2.1. Three deferred items (D1–D3) to be addressed at start of v0.3.x. Tag pushed, GitHub Release artifacts published (Linux + Windows binaries with SHA256 checksums).

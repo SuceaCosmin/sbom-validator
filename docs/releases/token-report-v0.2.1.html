@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Usage Report — v0.2.1</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .tag-ok { color: #166534; font-size: 0.8rem; font-weight: bold; }
+    .verdict-improved { color: #166534; font-weight: bold; }
+    .bar-outer { background: #e5e7eb; border-radius: 4px; height: 12px; width: 100%; }
+    .bar-inner { background: #3b82f6; border-radius: 4px; height: 12px; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Usage Report — v0.2.1</h1>
+  <p class="muted">SBOM Validator · Release: v0.2.1 · Generated: 2026-04-09</p>
+
+  <!-- METADATA -->
+  <div class="card">
+    <h2>Release Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Release</td><td><strong>v0.2.1</strong></td></tr>
+      <tr><td>Date range</td><td>2026-04-09 (single session resumed from prior Cursor session)</td></tr>
+      <tr><td>Sessions included</td><td>2 (1 Cursor session + 1 Claude Code session resumption)</td></tr>
+      <tr><td>Compared baseline</td><td>v0.2.0 — see delta report</td></tr>
+      <tr><td>Feature branch</td><td><code>feature/cdx-xml-support</code></td></tr>
+      <tr><td>Scope type</td><td>Feature addition (CycloneDX XML support) + UX improvements (presentation layer)</td></tr>
+    </table>
+  </div>
+
+  <!-- SUMMARY METRICS -->
+  <div class="card">
+    <h2>Summary Metrics</h2>
+    <p class="muted">Direct token telemetry is not available from the Claude Code CLI. All values are estimates derived from observable work: files changed, lines added/modified, agent loops, CI retry cycles, and scope of reasoning tasks.</p>
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      <tr><td>Total tokens (input + output)</td><td>~310,000 – 380,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Productive tokens (net implementation)</td><td>~230,000 – 270,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework tokens (CI failures, fixes, retries)</td><td>~40,000 – 60,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Session boundary overhead (context reload)</td><td>~20,000 – 30,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework ratio</td><td>~13–16%</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Top single sink</td><td>Schema asset integration (XSD loading + schema_validator)</td><td>analysis</td></tr>
+    </table>
+  </div>
+
+  <!-- PER-AGENT BREAKDOWN -->
+  <div class="card">
+    <h2>Per-Agent Token Breakdown</h2>
+    <table>
+      <tr><th>Agent / Role</th><th>Est. Tokens</th><th>Share</th><th>Notes</th></tr>
+      <tr>
+        <td>Developer (implementation)</td>
+        <td>~120,000 – 145,000</td>
+        <td>~39%
+          <div class="bar-outer"><div class="bar-inner" style="width:39%"></div></div>
+        </td>
+        <td>Core CycloneDX XML work: detection, schema_validator, parser, validator wiring, PyInstaller spec. Largest single contributor.</td>
+      </tr>
+      <tr>
+        <td>Tester</td>
+        <td>~60,000 – 75,000</td>
+        <td>~20%
+          <div class="bar-outer"><div class="bar-inner" style="width:20%"></div></div>
+        </td>
+        <td>7 new fixture files, 6 updated test modules, full suite run (501 tests). Includes integration parity tests.</td>
+      </tr>
+      <tr>
+        <td>Developer (UX / presentation layer)</td>
+        <td>~35,000 – 45,000</td>
+        <td>~12%
+          <div class="bar-outer"><div class="bar-inner" style="width:12%"></div></div>
+        </td>
+        <td>presentation.py, humanized paths, hint column, NTIA suffix removal, iterative sandbox refinements.</td>
+      </tr>
+      <tr>
+        <td>CI-Ops (failure triage + fixes)</td>
+        <td>~40,000 – 55,000</td>
+        <td>~13%
+          <div class="bar-outer"><div class="bar-inner" style="width:13%"></div></div>
+        </td>
+        <td>3 CI run failures: ruff import sort, black formatting (presentation.py + test_report_writer.py). Each cycle required log fetch, diagnosis, fix, and push.</td>
+      </tr>
+      <tr>
+        <td>Documentation Writer + Architect</td>
+        <td>~25,000 – 30,000</td>
+        <td>~8%
+          <div class="bar-outer"><div class="bar-inner" style="width:8%"></div></div>
+        </td>
+        <td>README, requirements, ADR-001, architecture-overview updates.</td>
+      </tr>
+      <tr>
+        <td>Orchestrator / Release Manager</td>
+        <td>~20,000 – 25,000</td>
+        <td>~6%
+          <div class="bar-outer"><div class="bar-inner" style="width:6%"></div></div>
+        </td>
+        <td>Session resumption context rebuild, branch/tag/PR operations, release workflow monitoring.</td>
+      </tr>
+      <tr>
+        <td>Token Analyst (this report)</td>
+        <td>~8,000 – 12,000</td>
+        <td>~3%
+          <div class="bar-outer"><div class="bar-inner" style="width:3%"></div></div>
+        </td>
+        <td>Report generation only. No telemetry input available.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- PER-GATE BREAKDOWN -->
+  <div class="card">
+    <h2>Per-Gate / Phase Token Breakdown</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>Est. Tokens</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>G1 Planning (session resume + scope confirmation)</td><td>~15,000</td><td>✅</td><td>Transcript review + task inference to resume mid-session.</td></tr>
+      <tr><td>G2 Architecture (ADR + overview updates)</td><td>~18,000</td><td>✅</td><td>Lightweight — changes were additive to existing ADR-001.</td></tr>
+      <tr><td>G3 TDD Build (implementation loops)</td><td>~195,000 – 220,000</td><td>✅</td><td>Largest phase. Includes XML schema integration, parser dual-mode, validator wiring, 7 fixtures, test suite updates.</td></tr>
+      <tr><td>G4 Quality Review (ruff/black/mypy local)</td><td>~8,000</td><td>✅</td><td>Single local pass — clean.</td></tr>
+      <tr><td>G5 Security</td><td>—</td><td>⚠️ Skipped</td><td>Not executed in this release cycle. Deferred.</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~45,000 – 60,000</td><td>✅</td><td>3 CI failure cycles. Rework overhead: ruff fix → push, black fix → push, final green run.</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~20,000</td><td>✅</td><td>4 documentation files updated.</td></tr>
+      <tr><td>G8 Release Readiness (tag + release artifacts)</td><td>~10,000</td><td>✅</td><td>Tag push, release workflow watch, branch sync.</td></tr>
+      <tr><td>G9 Token Analytics (this report)</td><td>~10,000</td><td>✅</td><td>Post-release — executed after tag, not before.</td></tr>
+    </table>
+  </div>
+
+  <!-- TOP SINKS -->
+  <div class="card">
+    <h2>Top Token Sinks and Repetition Patterns</h2>
+    <ol>
+      <li><strong>Schema asset integration and XML validation wiring (~30% of G3 budget)</strong><br>
+        The CycloneDX XSD files are large (12,500+ lines combined). Reading, reasoning about, and wiring them into schema_validator.py consumed a disproportionate share of G3 tokens. Partially unavoidable given scope.</li>
+      <li><strong>CI failure rework cycles — lint/format misalignment (~13–16% of total)</strong><br>
+        3 CI failures, all in the same category: code style (ruff import sort + black formatting). Root cause: local checks passed on Windows but CI runs on Linux with slightly different toolchain versions. Each cycle cost ~log fetch + diagnosis + fix commit + push + re-run wait.</li>
+      <li><strong>Session boundary context reload (~6–9% overhead)</strong><br>
+        The work spanned two sessions (Cursor → Claude Code). The resumption required reading a full transcript (~600 lines) plus re-deriving task state from git status. One-time cost but significant.</li>
+      <li><strong>Iterative UX refinement sandbox loop (~12% of total)</strong><br>
+        The presentation layer went through 4–5 incremental feedback iterations (rule IDs removed → humanized paths → hints → separate hint column → SPDX re-test). Each round required re-running the sandbox and reviewing output. Productive but iterative.</li>
+      <li><strong>Sandbox report cleanup and re-runs</strong><br>
+        Multiple sandbox runs accumulated stale reports that required cleanup. Minor but recurring noise per session.</li>
+    </ol>
+  </div>
+
+  <!-- OPTIMIZATION ACTIONS -->
+  <div class="card">
+    <h2>Optimization Actions for Next Release</h2>
+    <table>
+      <tr><th>Action</th><th>Owner</th><th>Est. Savings</th><th>Effort</th></tr>
+      <tr>
+        <td>Run <code>poetry run black src/ tests/ && poetry run ruff check --fix src/ tests/</code> as a mandatory pre-commit local step before any push</td>
+        <td>Developer / CI-Ops</td>
+        <td>~30,000–45,000 tokens (eliminates rework CI cycles)</td>
+        <td>Low — one-line rule</td>
+      </tr>
+      <tr>
+        <td>Add pre-commit hook config (<code>.pre-commit-config.yaml</code>) enforcing black + ruff automatically on <code>git commit</code></td>
+        <td>Developer</td>
+        <td>~30,000–45,000 tokens (structural prevention)</td>
+        <td>Low — ~30 min setup</td>
+      </tr>
+      <tr>
+        <td>Execute Security Reviewer (G5) gate before CI push — currently skipped every release</td>
+        <td>Orchestrator / Security Reviewer</td>
+        <td>Prevents future security rework cost; low token overhead (~8,000–12,000)</td>
+        <td>Low — agent already defined</td>
+      </tr>
+      <tr>
+        <td>Start token analyst at session start, not after release, to enable per-loop tracking</td>
+        <td>Orchestrator / Token Analyst</td>
+        <td>+accuracy of estimates; removes post-hoc reconstruction cost (~5,000–8,000)</td>
+        <td>Low — process change only</td>
+      </tr>
+      <tr>
+        <td>For large schema/asset integrations, read only the schema header and key sections rather than full file content during reasoning</td>
+        <td>Developer</td>
+        <td>~15,000–25,000 tokens on schema-heavy features</td>
+        <td>Medium — requires agent discipline</td>
+      </tr>
+      <tr>
+        <td>Consolidate UX iteration feedback into a single review round with explicit acceptance criteria before implementation, rather than incremental rounds</td>
+        <td>Planner / Orchestrator</td>
+        <td>~20,000–35,000 tokens per UX feature</td>
+        <td>Medium — requires upfront spec</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- QUALITY IMPACT -->
+  <div class="card">
+    <h2>Quality Impact Assessment</h2>
+    <p>The token spend for this release was <strong>reasonable relative to scope</strong>. The CycloneDX XML feature required genuine complexity: two large XSD assets, dual-mode parser logic, schema_validator rewrite, and full test parity across 7 fixture scenarios. The UX improvements, while iterative, produced measurable end-user value (humanized paths, hint column, cleaner messages).</p>
+    <p>The main quality risk was the <strong>skipped G5 Security gate</strong>. The xmlschema dependency was added without a formal security review. For future releases introducing new third-party dependencies, G5 should be mandatory.</p>
+    <p>Overall token efficiency: <span class="verdict-improved">ACCEPTABLE</span> — rework ratio (~13–16%) is within normal range for a feature of this size. Primary efficiency opportunity is eliminating preventable CI failures via pre-commit hooks.</p>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">All token values are estimates <span class="tag-est">(EST)</span>. No direct API telemetry was available. Estimates were derived from:</p>
+    <ul>
+      <li>Observable work artifacts: 37 files changed, ~13,700 lines added/removed</li>
+      <li>Agent loop counts inferred from git commits and CI run history</li>
+      <li>Session boundary overhead estimated from transcript length (~600 lines)</li>
+      <li>CI failure cycle cost estimated from 3 failure runs × average log-fetch-fix-push loop</li>
+      <li>Per-agent estimates based on relative task size and known token density of coding vs documentation tasks</li>
+    </ul>
+    <p class="muted">Confidence: <strong>Medium</strong>. Ranges reflect ±15% uncertainty on each component. Totals should be treated as order-of-magnitude guidance, not precise billing figures.</p>
+  </div>
+
+</div>
+</body>
+</html>
