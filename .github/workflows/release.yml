@@ -33,6 +33,18 @@ jobs:
             exit 1
           fi
 
+      - name: Verify token analytics reports exist for this release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPORT="docs/releases/token-report-v${VERSION}.html"
+          if [ ! -f "$REPORT" ]; then
+            echo "ERROR: Token analytics report not found: $REPORT"
+            echo "The token analyst (G9) must run before tagging a release."
+            echo "Generate the report, commit it to the release branch, then re-tag."
+            exit 1
+          fi
+          echo "Token report verified: $REPORT"
+
   build-linux:
     needs: verify-tag-provenance
     runs-on: ubuntu-latest
