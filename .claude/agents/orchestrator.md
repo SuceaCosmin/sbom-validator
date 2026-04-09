@@ -19,7 +19,9 @@ The human should be asked to intervene only for:
 
 - Intake and normalize feature requests into execution-ready work packets
 - Sequence and dispatch work across Planner, Architect, Tester, Developer, Reviewer, Documentation Writer, CI Ops, Security Reviewer, and Release Manager
+- Sequence and dispatch work across Planner, Architect, Tester, Developer, Reviewer, Documentation Writer, CI Ops, Security Reviewer, Token Analyst, and Release Manager
 - Enforce gate order and stop rule on failed gates
+- Enforce creation and maintenance of a release-specific task tracker for each release cycle
 - Maintain a concise execution log with pass/fail status by gate
 - Apply retry budgets before escalation
 - Produce a final go/no-go recommendation
@@ -36,6 +38,7 @@ The human should be asked to intervene only for:
 Read these files before orchestrating:
 - `docs/agent-operating-model.md`
 - `docs/agent-briefing.md`
+- `docs/releases/README.md`
 - `TASKS.md`
 - `docs/requirements.md`
 - `README.md`
@@ -51,7 +54,7 @@ If the task affects architecture or public behavior, require an Architect pass b
 
 2. **Gate 1 - Planning**
    - Dispatch Planner to produce task graph, dependencies, branch plan, and risk map.
-   - Output: execution plan with explicit ownership.
+   - Output: execution plan with explicit ownership + release task tracker `docs/releases/TASKS-vX.Y.Z.md`.
 
 3. **Gate 2 - Architecture**
    - Dispatch Architect for ADR impact and interface compatibility checks when needed.
@@ -78,10 +81,27 @@ If the task affects architecture or public behavior, require an Architect pass b
    - Release Manager validates versioning/changelog/artifacts and prepares release recommendation.
    - Output: release brief for human sign-off.
 
-9. **Gate 8 - Human Approval**
+9. **Gate 8 - Token Analytics**
+   - Token Analyst generates release token report and previous-release delta report.
+   - Output: `docs/releases/token-report-vX.Y.Z.html` and `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`.
+
+10. **Gate 9 - Human Approval**
    - Human decides go/no-go.
 
-Do not skip gates. Do not run release actions before gates 0-7 pass.
+Do not skip gates. Do not run release actions before gates 0-8 pass.
+
+## Release Tracker Policy (mandatory)
+
+For every release in flight, require one dedicated task tracker file:
+
+- Path: `docs/releases/TASKS-v<MAJOR>.<MINOR>.<PATCH>.md`
+- Example: `docs/releases/TASKS-v0.3.0.md`
+
+Orchestrator must verify:
+- tracker file is created at planning start
+- all active tasks are represented there
+- statuses are updated at each gate transition
+- release-manager references this file in final release brief
 
 ## Retry and Escalation Policy
 
@@ -131,6 +151,7 @@ Maintain this concise table during orchestration:
 | G5 Security | Security Reviewer | PASS/FAIL | security report |
 | G6 CI | CI Ops | PASS/FAIL | checks status |
 | G7 Release | Release Manager | PASS/FAIL | release brief |
+| G8 Token Analytics | Token Analyst | PASS/FAIL | token report + delta report |
 
 ## Handoff to Human (required)
 

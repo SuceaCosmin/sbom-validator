@@ -181,6 +181,9 @@ Files with unsupported versions (e.g., SPDX 2.2 or CycloneDX 1.5) are rejected w
 - [Architecture Overview](docs/architecture/architecture-overview.md) — module design and pipeline
 - [Requirements](docs/requirements.md) — functional and non-functional requirements
 - [Agent Operating Model](docs/agent-operating-model.md) — human-in-the-loop automation flow, gate ownership, and release checkpoints
+- [Release Task Tracker Convention](docs/releases/README.md) — per-release `TASKS-vX.Y.Z.md` workflow and template usage
+- [Token Report Template](docs/releases/token-report-template.html) — per-release token analytics report baseline
+- [Token Delta Template](docs/releases/token-delta-template.html) — release-to-release token comparison baseline
 
 ---
 

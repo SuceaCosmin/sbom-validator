@@ -24,6 +24,7 @@ This project ships:
 ## Required Files to Read Before Release Work
 
 - `docs/agent-operating-model.md`
+- `docs/releases/README.md`
 - `pyproject.toml`
 - `src/sbom_validator/__init__.py`
 - `CHANGELOG.md`
@@ -31,6 +32,11 @@ This project ships:
 - `.github/workflows/ci.yml`
 - `.github/workflows/release.yml`
 - `TASKS.md`
+
+For release-scoped tracking and analytics:
+- `docs/releases/TASKS-vX.Y.Z.md`
+- `docs/releases/token-report-vX.Y.Z.html` (if already generated)
+- `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html` (if already generated)
 
 ## Mandatory Release Gates
 
@@ -60,6 +66,17 @@ Do not mark a release candidate ready until all are true:
 5. **Release Workflow Gate**
    - tag trigger pattern in release workflow is correct (`v*.*.*`)
    - binary build steps include schema/resource bundling requirements
+
+6. **Release Task Tracker Gate**
+   - release-specific tracker exists: `docs/releases/TASKS-vX.Y.Z.md`
+   - all tasks in the tracker are resolved (`✅`, `❌`, or explicitly deferred with rationale)
+   - tracker status aligns with actual release scope and changelog entries
+
+7. **Token Reporting Gate**
+   - release token report exists: `docs/releases/token-report-vX.Y.Z.html`
+   - delta report exists (or explicitly N/A for first reportable release):
+     `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`
+   - release brief links both reports
 
 ## Backward Compatibility Checklist (mandatory)
 

@@ -13,6 +13,7 @@ Goal: maximize automation while preserving quality, backward compatibility, and 
 - Work proceeds through explicit quality gates in fixed order.
 - Backward compatibility for CLI and machine-consumed outputs is a hard requirement unless explicitly approved otherwise.
 - Escalations should be rare, concise, and decision-oriented.
+- Every release in flight must have a dedicated release tracker file at `docs/releases/TASKS-vX.Y.Z.md`.
 
 ---
 
@@ -29,6 +30,7 @@ Goal: maximize automation while preserving quality, backward compatibility, and 
 | `security-reviewer` | Security/compliance/supply-chain gate | Before CI-final stabilization and release recommendation |
 | `ci-ops` | CI failure triage, safe auto-fixes, rerun loops | On any failing CI check |
 | `documentation-writer` | User-facing docs/changelog updates | Any feature affecting behavior, usage, or release notes |
+| `token-analyst` | Token usage evaluation and release-to-release delta reporting | After release readiness evidence is available, before final release approval |
 | `release-manager` | Release gates, versioning, artifact/release readiness | Once code/test/review/security gates pass |
 
 ---
@@ -42,6 +44,7 @@ Use this sequence for every feature:
 
 2. **Planning** (`planner`)
    - Produce task graph, dependencies, branch strategy, and risks.
+   - Create release tracker file: `docs/releases/TASKS-vX.Y.Z.md`.
 
 3. **Architecture decision** (`architect`, conditional)
    - Confirm ADR impact or record "no ADR change needed."
@@ -65,7 +68,10 @@ Use this sequence for every feature:
 9. **Release readiness** (`release-manager`)
    - Validate version/changelog/packaging and compatibility gates.
 
-10. **Human final approval**
+10. **Token analytics reporting** (`token-analyst`)
+   - Generate release token report and previous-release delta report.
+
+11. **Human final approval**
    - Approve or block release.
 
 ---
@@ -97,6 +103,7 @@ Everything else should be automated by agents.
 | G6 CI Stability | `ci-ops` | Required checks green and stable |
 | G7 Docs Sync | `documentation-writer` | Behavior docs/changelog/version references aligned |
 | G8 Release Readiness | `release-manager` | Version consistency, packaging, compatibility gates pass |
+| G9 Token Analytics | `token-analyst` | `token-report-vX.Y.Z.html` and delta report generated |
 
 No gate skipping is allowed.
 
@@ -155,6 +162,7 @@ Each completed feature should produce:
 - CI stabilization report
 - Docs/changelog update evidence
 - Release brief with GO/NO-GO recommendation
+- Release-specific task tracker (`docs/releases/TASKS-vX.Y.Z.md`) with final statuses
 
 This evidence enables fast human quality gates without deep manual digging.
 
