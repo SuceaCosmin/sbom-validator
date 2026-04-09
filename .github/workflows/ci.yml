@@ -4,11 +4,19 @@ on:
   push:
     branches: [master, develop]
   pull_request:
-    branches: [master]
+    branches: [develop, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
@@ -24,7 +32,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: latest
+          version: "1.8.3"
           virtualenvs-create: true
           virtualenvs-in-project: true
 
@@ -41,7 +49,7 @@ jobs:
         run: poetry run mypy src/
 
       - name: Run tests
-        run: poetry run pytest --cov=sbom_validator --cov-report=xml --cov-report=term
+        run: poetry run pytest --cov=sbom_validator --cov-fail-under=90 --cov-report=xml --cov-report=term
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

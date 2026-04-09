@@ -463,7 +463,7 @@ class TestToolVersionFallback:
 
     def test_tool_version_fallback_when_package_not_found(self, tmp_path: Path) -> None:
         """When importlib.metadata.version raises PackageNotFoundError,
-        _tool_version() must return the hardcoded fallback '0.2.0'."""
+        _tool_version() must return the fallback 'unknown'."""
         from sbom_validator.report_writer import _tool_version
 
         with patch(
@@ -472,7 +472,7 @@ class TestToolVersionFallback:
         ):
             version = _tool_version()
 
-        assert version == "0.2.0"
+        assert version == "unknown"
 
     def test_write_reports_uses_fallback_version_in_json(self, tmp_path: Path) -> None:
         """When the package is not installed, write_reports must still produce a
@@ -484,4 +484,4 @@ class TestToolVersionFallback:
             _, json_path = write_reports(_pass_result(), tmp_path)
 
         data = json.loads(json_path.read_text(encoding="utf-8"))
-        assert data["tool_version"] == "0.2.0"
+        assert data["tool_version"] == "unknown"

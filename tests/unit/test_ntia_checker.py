@@ -369,6 +369,16 @@ class TestNtiaCheckerTimestamp:
         issues = check_ntia(sbom)
         assert not any(i.rule == "FR-10" for i in issues)
 
+    def test_invalid_timestamp_string_detected(self) -> None:
+        sbom = _make_valid_sbom(timestamp="not-a-date")
+        issues = check_ntia(sbom)
+        assert any(i.rule == "FR-10" for i in issues)
+
+    def test_invalid_timestamp_format_detected(self) -> None:
+        sbom = _make_valid_sbom(timestamp="2024/01/15 10:30:00")
+        issues = check_ntia(sbom)
+        assert any(i.rule == "FR-10" for i in issues)
+
 
 # ===========================================================================
 # TestNtiaCheckerCollectAll

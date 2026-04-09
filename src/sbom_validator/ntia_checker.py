@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 
 from sbom_validator.models import IssueSeverity, NormalizedSBOM, ValidationIssue
 
@@ -126,13 +127,31 @@ def _check_author(sbom: NormalizedSBOM) -> list[ValidationIssue]:
 
 
 def _check_timestamp(sbom: NormalizedSBOM) -> list[ValidationIssue]:
-    """FR-10: The SBOM must contain a non-empty timestamp."""
+    """FR-10: The SBOM must contain a valid ISO 8601 timestamp."""
     if sbom.timestamp is None or sbom.timestamp.strip() == "":
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
                 field_path="timestamp",
                 message=("SBOM is missing a creation timestamp (NTIA FR-10)"),
+                rule="FR-10",
+            )
+        ]
+
+    raw_timestamp = sbom.timestamp.strip()
+    # Accept "Z" suffix by normalizing to a UTC offset for fromisoformat().
+    normalized = raw_timestamp[:-1] + "+00:00" if raw_timestamp.endswith("Z") else raw_timestamp
+    try:
+        datetime.fromisoformat(normalized)
+    except ValueError:
+        return [
+            ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path="timestamp",
+                message=(
+                    f"SBOM timestamp '{raw_timestamp}' is not a valid ISO 8601 date-time "
+                    "(NTIA FR-10)"
+                ),
                 rule="FR-10",
             )
         ]

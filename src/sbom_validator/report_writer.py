@@ -10,7 +10,7 @@ import importlib.metadata
 import json
 import logging
 import string
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sbom_validator.models import IssueSeverity, ValidationResult
@@ -163,11 +163,11 @@ def _escape(text: str) -> str:
 
 
 def _tool_version() -> str:
-    """Return the installed package version, falling back to '0.2.0'."""
+    """Return the installed package version, falling back to 'unknown'."""
     try:
         return importlib.metadata.version("sbom-validator")
     except importlib.metadata.PackageNotFoundError:
-        return "0.2.0"
+        return "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -195,8 +195,9 @@ def write_reports(
                  be written (e.g., permission denied).
     """
     # Compute shared timestamp and stems once.
-    timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
-    generated_at = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_utc = datetime.now(UTC)
+    timestamp = now_utc.strftime("%Y%m%d-%H%M%S")
+    generated_at = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     stem = Path(result.file_path).stem
     version = _tool_version()
 
@@ -220,32 +221,6 @@ def write_reports(
     error_count = sum(1 for i in result.issues if i.severity == IssueSeverity.ERROR)
     warning_count = sum(1 for i in result.issues if i.severity == IssueSeverity.WARNING)
     info_count = sum(1 for i in result.issues if i.severity == IssueSeverity.INFO)
-
-    # -----------------------------------------------------------------------
-    # Build JSON report
-    # -----------------------------------------------------------------------
-    json_data: dict[object, object] = {
-        "generated_at": generated_at,
-        "tool_version": version,
-        "file_path": result.file_path,
-        "format_detected": format_detected_expanded,
-        "status": str(result.status),
-        "summary": {
-            "error_count": error_count,
-            "warning_count": warning_count,
-            "info_count": info_count,
-        },
-        "issues": [
-            {
-                "severity": str(issue.severity),
-                "rule": issue.rule,
-                "field_path": issue.field_path,
-                "message": issue.message,
-            }
-            for issue in sorted_issues
-        ],
-    }
-    json_path.write_text(json.dumps(json_data, indent=2), encoding="utf-8")
 
     # -----------------------------------------------------------------------
     # Build HTML report
@@ -289,6 +264,32 @@ def write_reports(
         issues_section=issues_section,
     )
     html_path.write_text(html_content, encoding="utf-8")
+
+    # -----------------------------------------------------------------------
+    # Build JSON report
+    # -----------------------------------------------------------------------
+    json_data: dict[object, object] = {
+        "generated_at": generated_at,
+        "tool_version": version,
+        "file_path": result.file_path,
+        "format_detected": format_detected_expanded,
+        "status": str(result.status),
+        "summary": {
+            "error_count": error_count,
+            "warning_count": warning_count,
+            "info_count": info_count,
+        },
+        "issues": [
+            {
+                "severity": str(issue.severity),
+                "rule": issue.rule,
+                "field_path": issue.field_path,
+                "message": issue.message,
+            }
+            for issue in sorted_issues
+        ],
+    }
+    json_path.write_text(json.dumps(json_data, indent=2), encoding="utf-8")
 
     logger.info("Reports written: HTML=%s  JSON=%s", html_path, json_path)
 
