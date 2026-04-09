@@ -14,7 +14,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from sbom_validator.models import IssueSeverity, ValidationResult
-from sbom_validator.presentation import humanize_field_path, humanize_message, split_message_and_hint
+from sbom_validator.presentation import (
+    humanize_field_path,
+    humanize_message,
+    split_message_and_hint,
+)
 
 logger = logging.getLogger(__name__)
 
