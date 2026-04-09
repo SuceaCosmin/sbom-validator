@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Evaluation — v0.1.0 vs v0.2.0 Comparison</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px; line-height: 1.65; color: #1a1a2e; background: #f7f8fc;
+    }
+    a { color: #3b5bdb; text-decoration: none; }
+    .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    .report-header {
+      background: linear-gradient(135deg, #312e81 0%, #4f46e5 50%, #7c3aed 100%);
+      color: white; padding: 2.5rem 2rem; border-radius: 12px; margin-bottom: 2rem;
+    }
+    .report-header h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .report-header .meta { font-size: 0.9rem; opacity: 0.82; margin-top: 0.6rem; }
+    .report-header .meta span { margin-right: 1.6rem; }
+
+    section { margin-bottom: 2.5rem; }
+    h2 { font-size: 1.3rem; font-weight: 700; color: #312e81; border-left: 5px solid #4f46e5; padding-left: 0.75rem; margin-bottom: 1rem; }
+    h3 { font-size: 1.05rem; font-weight: 600; color: #3730a3; margin: 1.2rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+
+    .card { background: white; border-radius: 10px; padding: 1.4rem 1.6rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+
+    .badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+    .badge-strong   { background: #d3f9d8; color: #1a6b2f; }
+    .badge-medium   { background: #fff3bf; color: #7c5000; }
+    .badge-weak     { background: #ffe3e3; color: #8b0000; }
+    .badge-v1       { background: #e8ecf5; color: #3730a3; }
+    .badge-v2       { background: #dbeafe; color: #1e40af; }
+    .badge-up       { background: #dcfce7; color: #166534; }
+    .badge-same     { background: #f3f4f6; color: #4b5563; }
+    .badge-down     { background: #fee2e2; color: #991b1b; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 0.75rem 0 1rem; }
+    th { background: #ede9fe; color: #312e81; font-weight: 700; text-align: left; padding: 0.55rem 0.8rem; }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #e8ecf5; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f5f3ff; }
+
+    .v1-col { background: #f0f0ff; }
+    .v2-col { background: #f0f7ff; }
+
+    ul, ol { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+    li { margin-bottom: 0.35rem; }
+
+    .callout { border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; border-left: 4px solid; font-size: 0.92rem; }
+    .callout-blue   { background: #e7f5ff; border-color: #3b5bdb; }
+    .callout-yellow { background: #fff9db; border-color: #f59f00; }
+    .callout-red    { background: #fff5f5; border-color: #e03131; }
+    .callout-green  { background: #ebfbee; border-color: #2f9e44; }
+    .callout-purple { background: #f5f3ff; border-color: #7c3aed; }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    .progress-wrap { background: #e8ecf5; border-radius: 8px; height: 10px; margin: 0.3rem 0 0.8rem; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 8px; }
+    .bar-green  { background: #40c057; }
+    .bar-yellow { background: #fab005; }
+    .bar-red    { background: #fa5252; }
+    .bar-blue   { background: #339af0; }
+    .bar-purple { background: #7c3aed; }
+
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .v1-card { background: white; border-radius: 10px; padding: 1.2rem 1.4rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-top: 4px solid #6366f1; }
+    .v2-card { background: white; border-radius: 10px; padding: 1.2rem 1.4rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-top: 4px solid #2d6a4f; }
+    .ver-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .v1-label { color: #6366f1; }
+    .v2-label { color: #2d6a4f; }
+
+    .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-val { font-weight: 700; font-size: 1.05rem; }
+    .val-green  { color: #2d6a4f; }
+    .val-yellow { color: #b45309; }
+    .val-red    { color: #dc2626; }
+
+    .idea-card { background: white; border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 0.9rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 5px solid #7c3aed; }
+    .idea-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .idea-num { background: #7c3aed; color: white; width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .idea-title { font-weight: 700; font-size: 1.02rem; color: #312e81; }
+    .impact-row { display: flex; gap: 1rem; margin-top: 0.6rem; font-size: 0.82rem; flex-wrap: wrap; }
+    .impact-tag { padding: 0.15em 0.6em; border-radius: 4px; font-weight: 600; }
+    .tag-token   { background: #ffe8cc; color: #953b00; }
+    .tag-quality { background: #d3f9d8; color: #1a6b2f; }
+    .tag-effort  { background: #e7f5ff; color: #1565c0; }
+    .tag-risk    { background: #fce7f3; color: #9d174d; }
+
+    .report-footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid #dde2f0; font-size: 0.82rem; color: #6b7280; }
+    .uncertain { font-style: italic; color: #6b7280; font-size: 0.88rem; }
+    code { background: #f1f3f9; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.87em; }
+
+    @media (max-width: 620px) { .comparison-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h1>Workflow Evaluation — v0.1.0 vs v0.2.0 Comparison</h1>
+    <p style="opacity:0.88; margin-top:0.5rem; max-width:680px;">
+      Side-by-side comparison of two Human-in-the-Loop multi-agent development sessions
+      for <strong>sbom-validator</strong>. Focus: agent maturity progression, token efficiency
+      improvement, and remaining opportunities for future work packages.
+    </p>
+    <div class="meta">
+      <span>📅 v0.1.0 session: 2026-04-06</span>
+      <span>📅 v0.2.0 session: 2026-04-08</span>
+      <span>🤖 Model: Claude Sonnet 4.6</span>
+    </div>
+  </div>
+
+  <!-- SESSION STATS -->
+  <section>
+    <h2>Session Snapshots</h2>
+    <div class="comparison-grid">
+      <div class="v1-card">
+        <div class="ver-label v1-label">v0.1.0 — Foundation</div>
+        <div class="metric-row"><span>Deliverable</span><span class="metric-val">CLI tool + 358 tests + docs + release</span></div>
+        <div class="metric-row"><span>New source modules</span><span class="metric-val">8 modules (CLI + 6 core + 2 parsers)</span></div>
+        <div class="metric-row"><span>Test coverage</span><span class="metric-val val-yellow">97%</span></div>
+        <div class="metric-row"><span>CI failures (static analysis)</span><span class="metric-val val-red">3 rounds</span></div>
+        <div class="metric-row"><span>Avoidable rework cycles</span><span class="metric-val val-red">3+</span></div>
+        <div class="metric-row"><span>Release pipeline failures</span><span class="metric-val val-yellow">1 (CI workflow branches)</span></div>
+        <div class="metric-row"><span>Agent invocations (est.)</span><span class="metric-val">~18–22</span></div>
+        <div class="metric-row"><span>Est. total tokens</span><span class="metric-val val-red">~1,000–1,300K</span></div>
+        <div class="metric-row"><span>Hit Pro rate limit?</span><span class="metric-val val-red">Yes (4h limit reached)</span></div>
+      </div>
+      <div class="v2-card">
+        <div class="ver-label v2-label">v0.2.0 — Feature Addition</div>
+        <div class="metric-row"><span>Deliverable</span><span class="metric-val">3 features + 482 tests + docs + release</span></div>
+        <div class="metric-row"><span>New source modules</span><span class="metric-val">2 new (logging_config, report_writer) + 5 modified</span></div>
+        <div class="metric-row"><span>Test coverage</span><span class="metric-val val-green">100%</span></div>
+        <div class="metric-row"><span>CI failures (static analysis)</span><span class="metric-val val-green">0</span></div>
+        <div class="metric-row"><span>Avoidable rework cycles</span><span class="metric-val val-yellow">1 (release pipeline)</span></div>
+        <div class="metric-row"><span>Release pipeline failures</span><span class="metric-val val-yellow">2 (PyInstaller + Windows PATH)</span></div>
+        <div class="metric-row"><span>Agent invocations</span><span class="metric-val">11 + 2 follow-ups</span></div>
+        <div class="metric-row"><span>Est. total tokens</span><span class="metric-val val-yellow">~750–920K</span></div>
+        <div class="metric-row"><span>Hit Pro rate limit?</span><span class="metric-val val-green">Not reported</span></div>
+      </div>
+    </div>
+    <div class="callout callout-purple">
+      <strong>⚠️ Comparability caveat</strong>
+      v0.1.0 was a greenfield project (all infrastructure + first implementation from scratch).
+      v0.2.0 added features to an existing codebase. Feature addition work packages are
+      inherently cheaper — less architecture, fewer fixtures, smaller modules. A fair token
+      comparison should account for this scope difference. The v0.2.0 savings are
+      <strong>partly structural</strong> (smaller scope) and <strong>partly process-driven</strong>
+      (fewer rework cycles). It is not possible to precisely separate these two factors with the
+      available data. Estimates marked (est.) throughout.
+    </div>
+  </section>
+
+  <!-- AGENT MATURITY COMPARISON -->
+  <section>
+    <h2>1 — Agent Maturity Comparison</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>v0.1.0 Maturity</th>
+          <th>v0.2.0 Maturity</th>
+          <th>Direction</th>
+          <th>What changed</th>
+          <th>Top remaining gap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Developer</strong></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-strong">Strong</span></td>
+          <td><span class="badge badge-up">↑ Improved</span></td>
+          <td>Mandatory lint gate at top of agent file eliminated 3 CI failure rounds → 0. ADR cross-check instruction followed; no signature violations.</td>
+          <td>No artifact (binary) verification step; no poetry constraint check before editing pyproject.toml</td>
+        </tr>
+        <tr>
+          <td><strong>Tester</strong></td>
+          <td><span class="badge badge-strong">Strong</span></td>
+          <td><span class="badge badge-strong">Strong</span></td>
+          <td><span class="badge badge-same">→ Maintained</span></td>
+          <td>Pre-handoff lint gate added (ruff + black on test files). TDD discipline maintained; red phases confirmed in all cycles.</td>
+          <td>No guidance for Bash-blocked commit fallback; quality gate agent token cost is high (~78K) due to 100% coverage target</td>
+        </tr>
+        <tr>
+          <td><strong>Architect</strong></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-same">→ Maintained</span></td>
+          <td>ADRs now include concrete Python function signatures (stubs). No signature violations in v0.2.0. ADR-008 embedded full spec file content.</td>
+          <td>Missed transitive dependency data file inspection for PyInstaller (rfc3987_syntax .lark file). No CI convention notes for Windows runners.</td>
+        </tr>
+        <tr>
+          <td><strong>Planner</strong></td>
+          <td><span class="badge badge-weak">Weak</span></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-up">↑ Improved</span></td>
+          <td>First proper standalone invocation. Produced 18-task plan with dependency graph, parallelization map, risk register, scope-lock per task.</td>
+          <td>Output verbosity too high (~32K tokens); no output length constraint in definition. File-conflict detection is reactive not proactive.</td>
+        </tr>
+        <tr>
+          <td><strong>Documentation Writer</strong></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-same">→ Maintained</span></td>
+          <td>URL placeholder issue fixed (correct GitHub username used). Documentation sections aligned with ADR content closely.</td>
+          <td>Bash-blocked commit pattern recurring (same as v0.1.0 content-filter block — different cause, same symptom). No fallback guidance.</td>
+        </tr>
+        <tr>
+          <td><strong>Reviewer</strong></td>
+          <td><span class="badge badge-strong">Strong</span></td>
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-down">↓ Underutilized</span></td>
+          <td>Agent definition unchanged (still Strong). But in v0.2.0 it was only used for static analysis verification — no full code review was done.</td>
+          <td>Planner did not schedule a code review pass. For feature work packages, a lightweight "spot review" of new modules should be default-on.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card">
+      <h3>Overall Maturity Trajectory</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.9rem;">
+        <div>
+          <div style="font-weight:700; margin-bottom:0.5rem;">v0.1.0 avg maturity by dimension</div>
+          <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-blue" style="width:84%"></div></div></div>
+          <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:73%"></div></div></div>
+          <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:70%"></div></div></div>
+          <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-red" style="width:39%"></div></div></div>
+        </div>
+        <div>
+          <div style="font-weight:700; margin-bottom:0.5rem;">v0.2.0 avg maturity by dimension</div>
+          <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-blue" style="width:88%"></div></div></div>
+          <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:83%"></div></div></div>
+          <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:86%"></div></div></div>
+          <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:52%"></div></div></div>
+        </div>
+      </div>
+      <p style="font-size:0.88rem; margin-top:0.75rem; margin-bottom:0;">
+        The biggest improvement is in <em>Quality gate definition</em> (+16pp) driven by the
+        mandatory lint gate. The most persistently weak dimension remains <em>Failure handling
+        guidance</em> — what agents do when tools are blocked, external resources fail, or
+        constraints conflict. This is the highest-ROI remaining investment for v0.3.0.
+      </p>
+    </div>
+  </section>
+
+  <!-- TOKEN EFFICIENCY COMPARISON -->
+  <section>
+    <h2>2 — Token Efficiency Comparison</h2>
+
+    <div class="callout callout-yellow">
+      <strong>⚠️ Measurement methodology</strong>
+      v0.1.0 token estimates are from the v0.1.0 evaluation report (estimated from session
+      transcript analysis — no direct measurements). v0.2.0 estimates combine reported
+      per-agent <code>usage.total_tokens</code> values (~415K measured) with estimated main
+      context overhead (~300–450K). All figures are order-of-magnitude estimates. The
+      structural scope difference (greenfield vs. feature addition) means a direct token
+      comparison overstates the efficiency gain from process improvements.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Token sink</th>
+          <th class="v1-col">v0.1.0 (est.)</th>
+          <th class="v2-col">v0.2.0 (est.)</th>
+          <th>Change</th>
+          <th>Driver</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cold-start context loading</td>
+          <td class="v1-col">~200K (14 agents × ~14K ea)</td>
+          <td class="v2-col">~80K (11 agents × ~7K ea via briefing)</td>
+          <td><span style="color:#166534; font-weight:700;">−60% ↓</span></td>
+          <td>agent-briefing.md replaced per-agent ADR reads</td>
+        </tr>
+        <tr>
+          <td>Static analysis failure + fix cycles</td>
+          <td class="v1-col">~80–100K (3 CI rounds)</td>
+          <td class="v2-col">~0 (0 CI rounds)</td>
+          <td><span style="color:#166534; font-weight:700;">−100% ↓</span></td>
+          <td>Mandatory lint gate enforced in agent definitions</td>
+        </tr>
+        <tr>
+          <td>Core implementation (new modules)</td>
+          <td class="v1-col">~350–450K (7 Tester+Dev pairs)</td>
+          <td class="v2-col">~170K (2 Tester+Dev pairs + CLI wiring)</td>
+          <td><span style="color:#166534; font-weight:700;">−55% ↓</span></td>
+          <td>Partly scope reduction (2 modules vs 8); partly parallelism</td>
+        </tr>
+        <tr>
+          <td>Quality gate (coverage closure)</td>
+          <td class="v1-col">~30K (97% target, few gaps)</td>
+          <td class="v2-col">~78K (100% target, 13 new tests)</td>
+          <td><span style="color:#dc2626; font-weight:700;">+160% ↑</span></td>
+          <td>100% coverage target is expensive; frozen-binary paths hard to test</td>
+        </tr>
+        <tr>
+          <td>Planning &amp; architecture</td>
+          <td class="v1-col">~120–160K (5 ADRs + diagrams + spec)</td>
+          <td class="v2-col">~70K (3 ADRs + planner)</td>
+          <td><span style="color:#166534; font-weight:700;">−45% ↓</span></td>
+          <td>Partly scope; planner was more verbose than ideal (+32K)</td>
+        </tr>
+        <tr>
+          <td>Release pipeline failure + fix</td>
+          <td class="v1-col">~20K (1 CI config fix)</td>
+          <td class="v2-col">~50K (2 pipeline failures + retag)</td>
+          <td><span style="color:#dc2626; font-weight:700;">+150% ↑</span></td>
+          <td>New failure mode: PyInstaller transitive deps + Windows PATH</td>
+        </tr>
+        <tr>
+          <td>Documentation &amp; orchestration</td>
+          <td class="v1-col">~200–300K</td>
+          <td class="v2-col">~200–300K</td>
+          <td>≈ Same</td>
+          <td>Main context overhead scales roughly with session length</td>
+        </tr>
+        <tr style="background:#f5f3ff; font-weight:700;">
+          <td>Estimated total</td>
+          <td class="v1-col">~1,000–1,300K</td>
+          <td class="v2-col">~750–920K</td>
+          <td><span style="color:#166534;">−20 to −30% ↓</span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Interpretation</h3>
+    <div class="comparison-grid">
+      <div class="card">
+        <strong style="color:#1b4332;">What improved token efficiency</strong>
+        <ul style="font-size:0.9rem; margin-top:0.5rem;">
+          <li><strong>Lint gate</strong> — eliminated ~80–100K of avoidable rework (biggest single fix)</li>
+          <li><strong>agent-briefing.md</strong> — ~120K saved on repeated context reads</li>
+          <li><strong>Planner parallelism</strong> — 4 tasks ran in parallel (smoke+PyInstaller, quality gate+docs)</li>
+          <li><strong>Shorter developer prompts</strong> — ADR-embedded spec content meant less prose needed in orchestrator prompts</li>
+        </ul>
+      </div>
+      <div class="card">
+        <strong style="color:#7c1d1d;">What worsened or didn't improve</strong>
+        <ul style="font-size:0.9rem; margin-top:0.5rem;">
+          <li><strong>Quality gate cost</strong> — 100% target cost 2.5× more than v0.1.0's 97% target</li>
+          <li><strong>Release pipeline</strong> — 2 failures vs 1 in v0.1.0; new failure mode (PyInstaller)</li>
+          <li><strong>Bash-blocked agents</strong> — 3 manual interventions required (new friction pattern)</li>
+          <li><strong>Planner verbosity</strong> — 32K for planning vs ~0K (inline) in v0.1.0 — net negative despite quality gain</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-purple">
+      <strong>💡 Efficiency verdict</strong>
+      The ~20–30% reduction in estimated tokens represents <strong>genuine process improvement</strong>
+      (primarily lint gate + briefing file) partially offset by <strong>new friction</strong>
+      (Bash blocking, release pipeline, stricter coverage target). At current trajectory,
+      a further 15–20% reduction is achievable in v0.3.0 by: (1) adding Bash fallback
+      guidance, (2) fixing the ADR-008 transitive dep gap, (3) returning to 97% coverage
+      with pragmas, (4) constraining Planner output length. Combined these could bring a
+      similarly-scoped work package to ~600–700K tokens.
+    </div>
+  </section>
+
+  <!-- IMPROVEMENT OPPORTUNITIES -->
+  <section>
+    <h2>3 — Improvement Opportunities for Future Work Packages</h2>
+    <p>
+      Ordered by estimated token saving + implementation effort ratio. All ideas are
+      grounded in observed v0.1.0 and v0.2.0 session data.
+    </p>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">1</div>
+        <div class="idea-title">Add "Blocked Tool Fallback" to All Agent Definitions</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>What happened:</strong> 3 agents in v0.2.0 (and 1 in v0.1.0 via content filter)
+        could not complete their commit step due to tool permissions, requiring separate
+        follow-up agent invocations or manual orchestrator action.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>Fix:</strong> Add to all 6 agent definitions: <em>"If any required Bash
+        command is denied: (1) Output the exact commands in a fenced code block. (2) State
+        explicitly 'TASK INCOMPLETE — awaiting orchestrator to run the above commands.'
+        (3) Do not report the task as done."</em> This makes the failure mode graceful
+        instead of ambiguous.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~25–40K tokens/session</span>
+        <span class="impact-tag tag-quality">✅ No quality impact</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min</span>
+        <span class="impact-tag tag-risk">🔄 Observed: 3× in v0.2.0</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">2</div>
+        <div class="idea-title">Architect: Add Transitive Dependency Data File Checklist for Binary ADRs</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>What happened:</strong> ADR-008 correctly identified <code>spdx-tools</code>
+        and <code>cyclonedx-bom</code> as hidden import risks but missed the transitive path
+        <code>jsonschema → rfc3987_syntax → *.lark</code>. This caused a build failure at
+        release time.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>Fix:</strong> Add to the Architect definition for any binary distribution ADR:
+        <em>"For each runtime dependency, check for non-Python data files. Run:
+        <code>pip show &lt;pkg&gt; | grep Location</code> and list any <code>*.json</code>,
+        <code>*.yaml</code>, <code>*.lark</code>, <code>*.txt</code> files that are opened
+        at runtime. Use <code>collect_data_files(pkg)</code> in the spec for each."</em>
+        Also add CI convention: Windows runners → <code>pip install poetry</code> +
+        <code>shell: bash</code> (snok/install-poetry known PATH issue).
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~30–50K tokens/release (2 pipeline runs → 1)</span>
+        <span class="impact-tag tag-quality">✅ First-pass binary works</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 1 hour</span>
+        <span class="impact-tag tag-risk">🔄 Observed: caused release failure in v0.2.0</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">3</div>
+        <div class="idea-title">Add Planner Output Length Constraint + Spot Review Decision Gate</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>What happened (verbosity):</strong> The Planner produced excellent content but
+        consumed ~32K tokens with extensive per-task prose. An 800-word output cap
+        (summary table + dependency list + top-5 risks) would deliver the same decisions at
+        ~12K tokens.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>What happened (review gap):</strong> No code review was scheduled in v0.2.0.
+        The Planner should include an explicit decision gate: <em>"Does this work package
+        add new core logic? → Schedule spot review (Reviewer reads new modules against ADRs,
+        ~20K tokens). Is it config/docs only? → Skip review."</em> A spot review in v0.2.0
+        might have caught the PyInstaller spec gap.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~20K tokens (Planner verbosity) + quality uplift from spot review</span>
+        <span class="impact-tag tag-quality">✅ Quality improved (review gate)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 45 min</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">4</div>
+        <div class="idea-title">Establish Coverage Policy: 97% + Named <code>pragma: no cover</code> Exceptions</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>What happened:</strong> The quality gate agent consumed ~78K tokens — 2.5×
+        the v0.1.0 quality gate — mostly chasing the last 3–4% of coverage over genuinely
+        hard-to-test branches (frozen binary paths, package metadata fallbacks).
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>Fix:</strong> Establish a project policy: 97% minimum coverage with documented
+        <code># pragma: no cover</code> annotations for: (1) frozen binary (<code>sys._MEIPASS</code>)
+        branches, (2) <code>importlib.metadata</code> fallbacks, (3) any branch that would
+        require mocking stdlib internals. The Tester agent definition should include this
+        policy so it doesn't pursue 100% by default.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~20–30K tokens at quality gate</span>
+        <span class="impact-tag tag-quality">→ Quality: acceptable (exceptions documented)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min (policy decision + 3 annotations)</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">5</div>
+        <div class="idea-title">Keep agent-briefing.md Current — Add a "Briefing Update" Step to Every Work Package</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>Observation:</strong> <code>agent-briefing.md</code> was the single highest-ROI
+        improvement from v0.1.0. It worked well in v0.2.0 because the Architect was explicitly
+        instructed to update it as part of the ADR tasks. However, in future work packages
+        where the Architect is not involved (e.g., a pure Developer task), the briefing could
+        become stale.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        <strong>Fix:</strong> Add to the Planner's task template a mandatory bookend task:
+        <em>"6.PRE — Review agent-briefing.md against current codebase; update module map,
+        function signatures, and ADR index if stale. Assign to Developer. 1 commit, no PR
+        needed. This task has no dependencies and runs before any other task."</em>
+        This ensures the briefing is always current at the start of each work package.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Saves: prevents cold-start drift in future sessions</span>
+        <span class="impact-tag tag-quality">✅ Quality improved (agents work from accurate signatures)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min per work package start</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MATURITY ROADMAP -->
+  <section>
+    <h2>4 — Recommended Agent Definition Updates Before v0.3.0</h2>
+    <p>Ordered by priority. All are small edits (15 min – 1 hour each).</p>
+
+    <table>
+      <thead>
+        <tr><th>Priority</th><th>Agent</th><th>Change</th><th>Expected impact</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>P1</strong></td>
+          <td>All (6 agents)</td>
+          <td>Add "Blocked Bash Fallback" section</td>
+          <td>Eliminate 3 follow-up invocations per session (~25–40K tokens)</td>
+        </tr>
+        <tr>
+          <td><strong>P1</strong></td>
+          <td>Architect</td>
+          <td>Add transitive data file checklist for binary distribution ADRs + Windows CI convention note</td>
+          <td>Eliminate release pipeline rework (~30–50K tokens)</td>
+        </tr>
+        <tr>
+          <td><strong>P2</strong></td>
+          <td>Planner</td>
+          <td>Add output length constraint (800-word cap) + spot review decision gate</td>
+          <td>~20K tokens saved per planning pass; code review quality gate restored</td>
+        </tr>
+        <tr>
+          <td><strong>P2</strong></td>
+          <td>Tester</td>
+          <td>Add coverage policy: 97% minimum, pragma:no cover for frozen-binary paths</td>
+          <td>~20–30K tokens saved at quality gate</td>
+        </tr>
+        <tr>
+          <td><strong>P3</strong></td>
+          <td>Developer</td>
+          <td>Add binary artifact verification step: "if task produces a binary, run it with --version before marking done"</td>
+          <td>Catch PyInstaller-class issues before CI</td>
+        </tr>
+        <tr>
+          <td><strong>P3</strong></td>
+          <td>Developer</td>
+          <td>Add poetry constraint check: "run poetry add --dry-run before editing pyproject.toml"</td>
+          <td>Prevent constraint conflicts requiring manual fix</td>
+        </tr>
+        <tr>
+          <td><strong>P3</strong></td>
+          <td>Planner</td>
+          <td>Add briefing freshness check as mandatory first task (6.PRE)</td>
+          <td>Prevent agent-briefing.md drift across work packages</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- TRAJECTORY -->
+  <section>
+    <h2>5 — Efficiency Trajectory Projection</h2>
+
+    <div class="card">
+      <p>
+        If the P1 and P2 improvements above are implemented before the next work package,
+        the estimated token budget for a similarly-scoped feature-addition session
+        (2–3 new modules, comparable complexity) would be:
+      </p>
+      <table>
+        <thead>
+          <tr><th>Session</th><th>Est. tokens</th><th>Key driver of change</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>v0.1.0 (baseline)</td>
+            <td>~1,000–1,300K</td>
+            <td>Greenfield + lint failures + no briefing + no Planner</td>
+          </tr>
+          <tr>
+            <td>v0.2.0 (current)</td>
+            <td>~750–920K</td>
+            <td>Lint gate + briefing + Planner; new friction: Bash blocks, release failures</td>
+          </tr>
+          <tr>
+            <td>v0.3.0 (projected, P1+P2 fixes applied)</td>
+            <td class="val-green"><strong>~580–720K (est.)</strong></td>
+            <td>Bash fallback (−35K) + ADR-008 fix (−40K) + coverage policy (−25K) + Planner cap (−20K)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="uncertain" style="margin-top:0.5rem;">
+        Projection assumes similar work package scope and no new unforeseen friction patterns.
+        The main unknown is orchestration context growth — as the codebase grows, agents read
+        larger files, and main context tokens increase proportionally. Context compression (e.g.,
+        summarizing completed phase outputs) could become relevant beyond v0.3.0.
+      </p>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    <p>
+      Generated by Claude Sonnet 4.6 on 2026-04-09.<br/>
+      Individual session reports: <a href="workflow-evaluation-report.html">v0.1.0 Evaluation</a> &nbsp;|&nbsp;
+      <a href="workflow-evaluation-report_v0.2.0.html">v0.2.0 Evaluation</a><br/>
+      Token estimates are derived from session metadata and known Claude output rates — treat as indicative, not precise.
+      Scope difference between v0.1.0 (greenfield) and v0.2.0 (feature addition) is a confounding factor in all comparisons.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

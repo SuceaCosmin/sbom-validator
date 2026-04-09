@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Evaluation — sbom-validator v0.2.0 Session</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px; line-height: 1.65; color: #1a1a2e; background: #f7f8fc;
+    }
+    a { color: #3b5bdb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    .report-header {
+      background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+      color: white; padding: 2.5rem 2rem; border-radius: 12px; margin-bottom: 2rem;
+    }
+    .report-header h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .report-header .meta { font-size: 0.9rem; opacity: 0.82; margin-top: 0.6rem; }
+    .report-header .meta span { margin-right: 1.6rem; }
+
+    section { margin-bottom: 2.5rem; }
+    h2 { font-size: 1.3rem; font-weight: 700; color: #1b4332; border-left: 5px solid #2d6a4f; padding-left: 0.75rem; margin-bottom: 1rem; }
+    h3 { font-size: 1.05rem; font-weight: 600; color: #2c5f4a; margin: 1.2rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+
+    .card { background: white; border-radius: 10px; padding: 1.4rem 1.6rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+    .badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+    .badge-strong  { background: #d3f9d8; color: #1a6b2f; }
+    .badge-medium  { background: #fff3bf; color: #7c5000; }
+    .badge-weak    { background: #ffe3e3; color: #8b0000; }
+    .badge-high    { background: #ffe3e3; color: #8b0000; }
+    .badge-med     { background: #fff3bf; color: #7c5000; }
+    .badge-low     { background: #d3f9d8; color: #1a6b2f; }
+    .badge-improved { background: #d0ebff; color: #1c4f8a; }
+    .badge-partial  { background: #fff3bf; color: #7c5000; }
+    .badge-missed   { background: #ffe3e3; color: #8b0000; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 0.75rem 0 1rem; }
+    th { background: #d8f3dc; color: #1b4332; font-weight: 700; text-align: left; padding: 0.55rem 0.8rem; }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #e8ecf5; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f0faf2; }
+
+    ul, ol { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+    li { margin-bottom: 0.35rem; }
+
+    .callout { border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; border-left: 4px solid; font-size: 0.92rem; }
+    .callout-blue   { background: #e7f5ff; border-color: #3b5bdb; }
+    .callout-yellow { background: #fff9db; border-color: #f59f00; }
+    .callout-red    { background: #fff5f5; border-color: #e03131; }
+    .callout-green  { background: #ebfbee; border-color: #2f9e44; }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    .progress-wrap { background: #e8ecf5; border-radius: 8px; height: 10px; margin: 0.3rem 0 0.8rem; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 8px; }
+    .bar-green  { background: #40c057; }
+    .bar-yellow { background: #fab005; }
+    .bar-red    { background: #fa5252; }
+    .bar-blue   { background: #339af0; }
+
+    .idea-card { background: white; border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 0.9rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 5px solid #2d6a4f; }
+    .idea-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .idea-num { background: #2d6a4f; color: white; width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .idea-title { font-weight: 700; font-size: 1.02rem; color: #1b4332; }
+    .impact-row { display: flex; gap: 1rem; margin-top: 0.6rem; font-size: 0.82rem; flex-wrap: wrap; }
+    .impact-tag { padding: 0.15em 0.6em; border-radius: 4px; font-weight: 600; }
+    .tag-token   { background: #ffe8cc; color: #953b00; }
+    .tag-quality { background: #d3f9d8; color: #1a6b2f; }
+    .tag-effort  { background: #e7f5ff; color: #1565c0; }
+
+    .gap-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; border-bottom: 1px solid #e8ecf5; font-size: 0.9rem; }
+    .gap-row:last-child { border-bottom: none; }
+
+    .report-footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid #dde2f0; font-size: 0.82rem; color: #6b7280; }
+    .uncertain { font-style: italic; color: #6b7280; font-size: 0.88rem; }
+    code { background: #f1f3f9; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.87em; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h1>Human-in-the-Loop AI Workflow — v0.2.0 Session Evaluation</h1>
+    <p style="opacity:0.88; margin-top:0.5rem; max-width:660px;">
+      Analysis of the multi-agent Specification Driven Development session that delivered
+      <strong>sbom-validator v0.2.0</strong>: structured logging, HTML/JSON report generation,
+      and standalone binary distribution for Windows and Linux.
+    </p>
+    <div class="meta">
+      <span>📅 Session date: 2026-04-08</span>
+      <span>🚀 Deliverable: sbom-validator v0.2.0</span>
+      <span>🤖 Model: Claude Sonnet 4.6 (Pro subscription)</span>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <section>
+    <h2>Executive Summary</h2>
+    <div class="card">
+      <p>
+        The session delivered all three user stories — <strong>structured logging</strong>
+        (<code>--log-level</code>), <strong>HTML/JSON report generation</strong>
+        (<code>--report-dir</code>), and <strong>standalone binaries</strong> for Windows
+        and Linux — across 11 agent invocations, with zero static-analysis failures
+        (<code>ruff</code>, <code>black</code>, <code>mypy</code>) and 100% test coverage
+        (482 tests, up from 358 at 97%).
+      </p>
+      <p>
+        The workflow was <strong>effective and noticeably more efficient</strong> than v0.1.0.
+        Four of the five improvement ideas from the previous evaluation were partially or fully
+        implemented. The mandatory lint gate eliminated the three CI failure cycles that cost
+        ~80–100K tokens in v0.1.0. The agent-briefing.md file reduced cold-start context loading.
+        The Planner agent was properly invoked for the first time.
+      </p>
+      <p>
+        The main new friction point was the <strong>release pipeline</strong> — two distinct
+        failures (PyInstaller missing transitive data files on Linux; Poetry not found on
+        Windows) required a post-release hotfix. This is a gap in the Architect's ADR-008
+        scope and in the Developer's binary verification step.
+      </p>
+      <div style="display:flex; gap:2rem; flex-wrap:wrap; margin-top:1rem;">
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Agent Maturity (avg)</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#2d6a4f;">Medium–Strong</div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Token Efficiency</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#fab005;">Medium</div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Output Quality</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#40c057;">High</div>
+        </div>
+        <div>
+          <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Avoidable Rework</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#fab005;">1 cycle</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 0: GAP CLOSURE FROM v0.1.0 -->
+  <section>
+    <h2>0 — v0.1.0 Gap Closure Assessment</h2>
+    <p>
+      The v0.1.0 evaluation identified 5 improvement ideas. This section scores how
+      thoroughly each was addressed in the v0.2.0 session.
+    </p>
+    <div class="card">
+      <div class="gap-row">
+        <span class="badge badge-improved">✓ Addressed</span>
+        <div>
+          <strong>Idea 1 — Compact "Project Briefing" file</strong><br/>
+          <span style="font-size:0.88rem;">
+            <code>docs/agent-briefing.md</code> was created after v0.1.0 and used in this session.
+            The Architect updated it as part of ADR writing. Developer and Tester agents were
+            explicitly directed to read it. Cold-start reads of 5 ADRs + normalized-model.md
+            were replaced by a single briefing read in most agent prompts.
+            <span class="uncertain">Estimated saving vs v0.1.0: ~120–150K tokens (est.) — this was the highest-impact fix.</span>
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-improved">✓ Addressed</span>
+        <div>
+          <strong>Idea 2 — Mandatory pre-handoff lint gate</strong><br/>
+          <span style="font-size:0.88rem;">
+            The Developer and Tester agent definitions both now have a mandatory
+            <code>ruff + black + mypy</code> block at the top of the file, formatted as
+            a non-negotiable gate. Result: zero static-analysis failures in this session
+            (vs. 3 CI failure rounds in v0.1.0). This was the most directly measurable
+            improvement.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-improved">✓ Addressed</span>
+        <div>
+          <strong>Idea 3 — Concrete type signatures (runnable stubs) in ADRs</strong><br/>
+          <span style="font-size:0.88rem;">
+            ADR-006, 007, and 008 all included concrete Python function signatures.
+            ADR-007 specified <code>write_reports(result: ValidationResult, report_dir: Path) -&gt; tuple[Path, Path]</code>
+            verbatim. No signature violations occurred in implementation — the CRITICAL findings
+            from v0.1.0 (R-04/R-05 parser signature mismatch) were not repeated.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-improved">✓ Addressed</span>
+        <div>
+          <strong>Idea 4 — Targeted test runs during development</strong><br/>
+          <span style="font-size:0.88rem;">
+            Developer agent definition now instructs targeted <code>pytest tests/unit/test_&lt;module&gt;.py</code>
+            runs during implementation, with full suite only at phase end. Agents followed this
+            pattern in v0.2.0. Estimated reduction: 5–7 avoidable full-suite runs eliminated.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-partial">~ Partial</span>
+        <div>
+          <strong>Idea 5 — Planner agent actually invoked as standalone agent</strong><br/>
+          <span style="font-size:0.88rem;">
+            The Planner was invoked for the first time as a proper standalone agent and produced
+            an excellent 18-task plan with dependency graph and risk register. However, the
+            Planner output was very verbose (~31K tokens consumed) and the plan document itself
+            was longer than necessary. Token-budget awareness guidance in the Planner definition
+            (introduced after v0.1.0) helped but did not fully constrain output length.
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: AGENT MATURITY -->
+  <section>
+    <h2>1 — Agent Maturity Benchmark (v0.2.0)</h2>
+    <p>
+      Agents are evaluated on: <em>Role clarity</em>, <em>Context specificity</em>,
+      <em>Quality gate definition</em>, <em>Failure handling guidance</em>.
+      Maturity: <span class="badge badge-strong">Strong</span>
+      <span class="badge badge-medium">Medium</span>
+      <span class="badge badge-weak">Weak</span>.
+    </p>
+
+    <!-- DEVELOPER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">👨‍💻</span>
+        <strong style="font-size:1.05rem;">Developer Agent</strong>
+        <span class="badge badge-strong">Strong</span>
+        <span style="font-size:0.82rem; color:#2d6a4f; font-weight:600;">↑ Upgraded from Medium</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:90%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:88%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:92%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:55%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>What improved:</strong> The mandatory lint gate at the top of the agent file
+        worked exactly as designed — zero ruff/black/mypy failures across all four Developer
+        invocations. The ADR cross-check instruction ("read docs/agent-briefing.md before
+        writing any code, verify signatures match") was followed; no signature violations
+        occurred. Targeted test run guidance was respected.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Remaining gap:</strong> The Developer agent for PyInstaller (9.C2) could not
+        do a test binary build locally (Bash tool was blocked mid-session, requiring manual
+        orchestrator intervention for commits). More critically, the agent did not attempt
+        even a simple <code>pyinstaller --help</code> dry-run or inspect the dependency tree
+        for non-Python data assets — which would have surfaced the <code>rfc3987_syntax</code>
+        missing <code>.lark</code> file before release.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Suggested fix:</strong> Add a "build artifact verification" step to the agent
+        definition for tasks involving PyInstaller or other build tools:
+        <em>"If the task produces a binary or compiled artifact, run it with <code>--version</code>
+        and one real fixture before marking done."</em>
+      </p>
+    </div>
+
+    <!-- TESTER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">🧪</span>
+        <strong style="font-size:1.05rem;">Tester Agent</strong>
+        <span class="badge badge-strong">Strong</span>
+        <span style="font-size:0.82rem; color:#888; font-weight:600;">→ Maintained</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:90%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:88%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:60%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Strong performance:</strong> TDD discipline maintained cleanly across two
+        complete red→green cycles (logging: 34 tests, reports: 57 tests + 11 CLI tests).
+        Red phases confirmed before each Developer handoff. The quality gate agent (Phase 10)
+        identified 13 uncovered branches and wrote targeted tests to reach 100% coverage.
+        No ruff/black issues in test output (mandatory lint gate followed).
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>New observation:</strong> The quality gate agent consumed ~78K tokens — the
+        heaviest single-agent spend in the session. This was driven by needing to read all test
+        files, identify uncovered branches across 7 modules, and write 13 targeted tests. This
+        is partly unavoidable but partly due to the coverage target being set at 100% (up from
+        97% in v0.1.0). The 3% gap required finding and testing very specific exception paths.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Remaining gap:</strong> Smoke test agent (9.C1) was blocked from committing
+        (Bash permission issue) — required a separate manual intervention. The Tester definition
+        has no guidance on handling tool permission failures mid-task.
+      </p>
+    </div>
+
+    <!-- ARCHITECT -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">🏛️</span>
+        <strong style="font-size:1.05rem;">Architect Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+        <span style="font-size:0.82rem; color:#888; font-weight:600;">→ Maintained</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:82%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:80%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:45%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>What worked well:</strong> All three ADRs included concrete function signatures
+        (the gap from v0.1.0). ADR-007 specified the exact JSON schema keys. ADR-008 embedded
+        the full PyInstaller spec content — a significant improvement that allowed Developer 9.C2
+        to treat the ADR as a direct implementation blueprint.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Key failure — ADR-008 scope gap:</strong> The ADR called out <code>spdx-tools</code>
+        and <code>cyclonedx-bom</code> as hidden import risks, but missed the transitive path:
+        <code>jsonschema</code> → <code>rfc3987_syntax</code> → <code>syntax_rfc3987.lark</code>
+        (a non-Python data file). PyInstaller bundles Python code automatically but not data files
+        from transitive dependencies unless explicitly listed. This is a known PyInstaller failure
+        mode that the Architect did not check for.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Suggested fix:</strong> Add to the Architect agent definition:
+        <em>"For ADRs involving frozen binary distribution: check each runtime dependency for
+        non-Python data files by running <code>pip show &lt;pkg&gt;</code> and inspecting the
+        package directory for <code>*.json</code>, <code>*.lark</code>, <code>*.yaml</code>
+        or similar assets. Use <code>collect_data_files()</code> for any package with such assets."</em>
+      </p>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">📋</span>
+        <strong style="font-size:1.05rem;">Planner Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+        <span style="font-size:0.82rem; color:#2d6a4f; font-weight:600;">↑ Upgraded from Weak</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:75%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:65%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:50%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>What improved:</strong> First actual invocation as a standalone agent. Produced
+        18 tasks with task IDs, dependency graph, parallelization map, risks register, and
+        scope-lock output per task. The plan correctly identified the 3 ADR sign-off gate and
+        the critical path. Token-budget awareness (cap at 4 parallel tracks) was respected.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Remaining gap — output verbosity:</strong> The plan consumed ~32K tokens and
+        produced far more prose than an orchestrator needs. A concise summary table + dependency
+        graph would serve the same purpose at 30–40% of the token cost. The Planner definition
+        needs an explicit output length constraint.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Remaining gap — file conflict detection:</strong> The plan noted that 6.A1 and
+        6.A2 both modify <code>agent-briefing.md</code> (a merge conflict risk) but the proposed
+        resolution was "assign to the same agent invocation or sequence them." In practice, the
+        Architect was given both tasks together, which worked, but the Planner's guidance here
+        was reactive not proactive.
+      </p>
+    </div>
+
+    <!-- DOCUMENTATION WRITER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">📝</span>
+        <strong style="font-size:1.05rem;">Documentation Writer Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+        <span style="font-size:0.82rem; color:#888; font-weight:600;">→ Maintained</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:82%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:72%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:45%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>What improved:</strong> The <code>your-org</code> placeholder URL issue from
+        v0.1.0 was fixed in the user-guide update (the agent used the correct <code>SuceaCosmin</code>
+        GitHub URL). Documentation sections matched the actual ADR content closely. CHANGELOG
+        followed the existing format.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Remaining gap:</strong> Bash tool was blocked for git commit — the agent produced
+        output but could not complete the commit step, requiring manual intervention from the
+        orchestrator. This is a recurring failure mode (also hit by Developer 9.C2 and Tester 9.C1).
+        The agent definition has no guidance for this scenario.
+      </p>
+    </div>
+
+    <!-- REVIEWER -->
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+        <span style="font-size:1.2rem;">🔍</span>
+        <strong style="font-size:1.05rem;">Reviewer Agent</strong>
+        <span class="badge badge-medium">Medium</span>
+        <span style="font-size:0.82rem; color:#e03131; font-weight:600;">↓ Effectively downgraded</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.88rem; margin-bottom:0.75rem;">
+        <div>Role clarity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:90%"></div></div></div>
+        <div>Context specificity<div class="progress-wrap"><div class="progress-bar bar-green" style="width:85%"></div></div></div>
+        <div>Quality gate definition<div class="progress-wrap"><div class="progress-bar bar-green" style="width:90%"></div></div></div>
+        <div>Failure handling guidance<div class="progress-wrap"><div class="progress-bar bar-yellow" style="width:60%"></div></div></div>
+      </div>
+      <p style="font-size:0.9rem; margin-bottom:0.5rem;">
+        <strong>Critical observation:</strong> The Reviewer agent was only used for static
+        analysis verification (task 10.D2) in v0.2.0. There was no dedicated architecture/code
+        review pass equivalent to Phase 4 in v0.1.0 (which found 13 findings including 3
+        CRITICAL bugs). This is a <strong>workflow regression</strong>. The agent definition is
+        Strong, but the workflow did not use it at its designed scope.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Why this matters:</strong> The v0.2.0 codebase was smaller and the features
+        were lower-risk (no new data model changes), which may justify skipping a full review
+        this iteration. But the Planner should explicitly gate on whether a full code review
+        is needed per work package, rather than defaulting to "no review." A lightweight
+        review (spot-checking new modules against ADRs) would cost ~20K tokens and could
+        catch issues like the frozen-binary data-file gap before release.
+      </p>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="card">
+      <h3>Summary Table</h3>
+      <table>
+        <thead>
+          <tr><th>Agent</th><th>v0.1.0</th><th>v0.2.0</th><th>Change</th><th>Top remaining gap</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Developer</td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td><span class="badge badge-strong">Strong</span></td>
+            <td>↑ Lint gate enforcement</td>
+            <td>No binary artifact verification step</td>
+          </tr>
+          <tr>
+            <td>Tester</td>
+            <td><span class="badge badge-strong">Strong</span></td>
+            <td><span class="badge badge-strong">Strong</span></td>
+            <td>→ Maintained</td>
+            <td>No guidance for Bash-blocked commit fallback</td>
+          </tr>
+          <tr>
+            <td>Architect</td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>→ Maintained (stubs improved, transitive deps gap remains)</td>
+            <td>Transitive dependency data file inspection for PyInstaller</td>
+          </tr>
+          <tr>
+            <td>Planner</td>
+            <td><span class="badge badge-weak">Weak</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>↑ First real invocation, good output</td>
+            <td>Output too verbose; no length constraint</td>
+          </tr>
+          <tr>
+            <td>Documentation Writer</td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>→ URL placeholder fixed; Bash-blocked pattern recurs</td>
+            <td>No guidance for tool permission failures</td>
+          </tr>
+          <tr>
+            <td>Reviewer</td>
+            <td><span class="badge badge-strong">Strong</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>↓ Not used at full scope (only static analysis)</td>
+            <td>Planner should decide per-WP whether full review is needed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 2: REPETITIVE TASKS -->
+  <section>
+    <h2>2 — Most Repetitive Tasks (v0.2.0)</h2>
+
+    <table>
+      <thead>
+        <tr><th>#</th><th>Repetitive Task</th><th>Occurrences</th><th>Avoidable?</th><th>Rational</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Manual orchestrator intervention for blocked Bash commits</strong> — three agents (smoke test tester 9.C1, PyInstaller developer 9.C2, documentation writer 10.D3) could write files but not commit them</td>
+          <td>3× in one session</td>
+          <td><span class="badge badge-high">Yes</span></td>
+          <td>Each instance required the orchestrator to spawn a correction agent or run manual git commands. This is a workflow gap: agents have no fallback instruction for when Bash is restricted. Suggested fix: each agent definition should include a "if Bash commit is blocked" step that outputs the exact commands for the orchestrator to run manually.</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>Release pipeline re-run</strong> — full 2-job CI build triggered twice for v0.2.0 due to two separate failures</td>
+          <td>2 pipeline runs (each ~1–2 min CI + fix time)</td>
+          <td><span class="badge badge-high">Mostly</span></td>
+          <td>The rfc3987_syntax data file issue could have been caught by a local test build. The Windows Poetry PATH issue could have been caught by referencing the snok/install-poetry known issues documentation. Both were ADR-008 gaps. A single "validate the spec locally before writing the CI workflow" step would have caught at least one of the two.</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>Quality gate coverage pass</strong> — Phase 10 tester wrote 13 tests to close coverage from 96% to 100%</td>
+          <td>1 pass (but consumed ~78K tokens)</td>
+          <td><span class="badge badge-med">Partially</span></td>
+          <td>Some uncovered branches (PyInstaller <code>_MEIPASS</code> path, <code>PackageNotFoundError</code> fallback) are genuinely hard to test during implementation. Others (validator exception paths) should have been caught by the Developer's own test coverage check. The coverage target of 100% (up from 97%) is strict and added ~20K tokens of incremental cost.</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>Poetry lock constraint fix</strong> — PyInstaller constraint <code>&gt;=6.0</code> conflicted with Python <code>&lt;4.0</code> bound; required manual pyproject.toml edit and re-lock</td>
+          <td>1× (manual fix required)</td>
+          <td><span class="badge badge-high">Yes</span></td>
+          <td>The Developer agent wrote the PyInstaller dependency without checking the constraint compatibility in the existing pyproject.toml. Running <code>poetry add pyinstaller --dry-run</code> before editing would have surfaced this. A "check poetry constraint compatibility before editing pyproject.toml" instruction should be added to the Developer definition.</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong>Agent-briefing.md concurrent modification</strong> — Architect wrote ADR-006 and ADR-007 sequentially to avoid merge conflicts on the shared briefing file</td>
+          <td>2× serialized tasks that could have been fully parallel</td>
+          <td><span class="badge badge-med">Partially</span></td>
+          <td>The Planner correctly flagged the conflict but resolved it by serializing. A better resolution: have one of the two ADR agents own all agent-briefing.md updates (the other just notes what it would add). This would have allowed true parallelism for the ADR phase.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 3: TOKEN USAGE -->
+  <section>
+    <h2>3 — Token Usage Evaluation</h2>
+
+    <div class="callout callout-yellow">
+      <strong>⚠️ Uncertainty note</strong>
+      Agent-level token counts are taken from the <code>usage.total_tokens</code> field
+      reported at the end of each agent invocation (visible in session metadata). Main
+      orchestration context (the primary conversation window carrying all tool results,
+      user messages, and my responses) is estimated — no direct measurement is available.
+      Sub-agent tokens do not fully account for input context (files read, tool results)
+      vs. output tokens. Treat totals as order-of-magnitude estimates.
+    </div>
+
+    <h3>Per-Agent Token Consumption (measured from session)</h3>
+    <table>
+      <thead>
+        <tr><th>Agent / Task</th><th>Tokens (reported)</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Planner — work package breakdown</td><td>31,957</td><td>High for planning — output very verbose</td></tr>
+        <tr><td>Architect — ADRs 006/007/008 + agent-briefing update</td><td>37,570</td><td>Good — 4 deliverables in one pass</td></tr>
+        <tr><td>Tester — logging red phase (7.A1)</td><td>44,111</td><td>Reasonable for 34 new tests + existing file read</td></tr>
+        <tr><td>Developer — logging green phase (7.A2)</td><td>38,263</td><td>Efficient — lint gate self-enforced</td></tr>
+        <tr><td>Tester — report writer red phase (8.B1 + 8.B3)</td><td>44,234</td><td>Reasonable for 57+11 tests</td></tr>
+        <tr><td>Developer — report writer green phase (8.B2 + 8.B4)</td><td>39,870</td><td>Efficient — no rework needed</td></tr>
+        <tr><td>Tester — smoke test script (9.C1)</td><td>18,778</td><td>Partial — Bash blocked, needed follow-up</td></tr>
+        <tr><td>Developer — PyInstaller spec + release workflow (9.C2 + 9.C3)</td><td>25,806</td><td>Partial — Bash blocked mid-task</td></tr>
+        <tr><td>Tester — smoke test commit fix (follow-up)</td><td>~10,831</td><td>Avoidable overhead from Bash block</td></tr>
+        <tr><td>Tester/Reviewer — quality gate (10.D1 + 10.D2)</td><td>77,975</td><td>Heaviest agent — 13 new tests to hit 100%</td></tr>
+        <tr><td>Documentation Writer (10.D3 + 10.D4)</td><td>45,843</td><td>Good — 4 files in one pass</td></tr>
+        <tr><td><strong>Sub-agent total</strong></td><td><strong>~415K</strong></td><td></td></tr>
+        <tr><td>Main orchestration context (est.)</td><td>~300–450K (est.)</td><td>Carries all tool results, user messages, responses across 12 turns</td></tr>
+        <tr><td>Release pipeline debug + fix (2 rounds)</td><td>~30–50K (est.)</td><td>Read logs, fix spec + workflow, manual commits</td></tr>
+        <tr><td><strong>Estimated session total</strong></td><td><strong>~750K–920K (est.)</strong></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Verdict</h3>
+    <div class="callout callout-blue">
+      <strong>🔵 Medium efficiency — improved from v0.1.0 Low–Medium</strong>
+      <p style="margin-top:0.4rem;">
+        Estimated total tokens (~750K–920K) represent a <strong>20–30% reduction</strong>
+        from v0.1.0 (~1,000K–1,300K). The primary drivers of savings:
+      </p>
+      <ul style="margin-top:0.4rem; font-size:0.92rem;">
+        <li><strong>Lint gate enforcement</strong> — eliminated ~80–100K tokens of CI failure + fix cycles</li>
+        <li><strong>agent-briefing.md</strong> — reduced cold-start context loading across all agent invocations</li>
+        <li><strong>Planner-driven parallelization</strong> — multiple phases ran in parallel (smoke test + PyInstaller developer; quality gate + documentation writer)</li>
+      </ul>
+      <p style="margin-top:0.4rem;">
+        The largest remaining waste is the <strong>quality gate agent (~78K tokens)</strong>
+        and the <strong>release pipeline failure</strong> (~2 full build runs + fix cycle, ~50K tokens est.).
+        Combined these account for ~130K tokens that could be reduced with better ADR-008
+        scope and a lower coverage target (97% vs 100% would have saved ~15K tokens at the
+        quality gate stage).
+      </p>
+      <p class="uncertain" style="margin-top:0.4rem;">
+        Note: these figures assume the session did not hit the Pro rate limit. If rate-limiting
+        caused restarts or retries, actual token consumption may have been higher. No direct
+        measurement available.
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 4: NEW ISSUES -->
+  <section>
+    <h2>4 — New Issues Emerging in v0.2.0</h2>
+    <p>
+      Issues that did not exist in v0.1.0 and were not anticipated by the improvement plan.
+    </p>
+
+    <div class="card">
+      <h3>Issue A — Bash Tool Permission Blocking Pattern</h3>
+      <p style="font-size:0.9rem;">
+        Three agents were blocked from running git commit via Bash, requiring manual
+        orchestrator intervention. This was not a problem in v0.1.0 (different session
+        or permission scope). The pattern is: agent completes all file writes successfully,
+        then fails at the commit step, returns a "here are the commands to run manually"
+        response. This is recoverable but costs orchestrator attention and 1–2 additional
+        agent invocations.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Recommendation:</strong> Add a standard "blocked commit fallback" section
+        to all agent definitions: <em>"If git commit is blocked by tool permissions, output
+        the exact commands in a code block and mark the task as incomplete — the orchestrator
+        will run them."</em> This makes the failure mode explicit and handled rather than
+        producing an ambiguous half-done state.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Issue B — PyInstaller Transitive Dependency Data Files</h3>
+      <p style="font-size:0.9rem;">
+        PyInstaller does not automatically bundle non-Python data files from transitive
+        dependencies (files ending in <code>.lark</code>, <code>.json</code>, etc.).
+        <code>rfc3987_syntax</code> (a dependency of <code>jsonschema</code>) ships a
+        <code>.lark</code> grammar file that is loaded at runtime. The ADR-008 risk register
+        focused on direct dependencies (<code>spdx-tools</code>, <code>cyclonedx-bom</code>)
+        but did not inspect the transitive dependency graph for data assets.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Fix applied:</strong> Added <code>collect_data_files('rfc3987_syntax')</code>
+        and <code>collect_data_files('jsonschema')</code> to the spec file. This is the correct
+        PyInstaller idiom. The fix was straightforward once the error was identified from CI logs.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Issue C — GitHub Actions Windows + snok/install-poetry@v1 PATH Issue</h3>
+      <p style="font-size:0.9rem;">
+        <code>snok/install-poetry@v1</code> does not reliably add Poetry to PATH in the
+        PowerShell shell used by Windows GitHub Actions runners. This is a known limitation
+        documented in the action's issues. The fix (<code>pip install poetry</code> +
+        <code>shell: bash</code>) is simple but was not pre-empted in ADR-008.
+      </p>
+      <p style="font-size:0.9rem; margin-bottom:0;">
+        <strong>Recommendation:</strong> Add to the Architect agent definition or to a
+        project-level CI conventions note: <em>"On Windows GitHub Actions runners, use
+        <code>pip install poetry</code> and <code>shell: bash</code> as defaults. Avoid
+        <code>snok/install-poetry@v1</code> on Windows due to PATH propagation issues
+        in PowerShell."</em>
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 5: IMPROVEMENT IDEAS -->
+  <section>
+    <h2>5 — Improvement Ideas for Next Work Package</h2>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">1</div>
+        <div class="idea-title">Add a "Blocked Bash Fallback" Section to All Agent Definitions</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        Three agents were blocked from git commit in this session. The pattern is consistent
+        and predictable. Each agent definition should include a terminal section:
+        <em>"If any Bash command is denied by tool permissions: output the exact commands
+        in a fenced code block, state clearly that the task is incomplete pending orchestrator
+        action, and do not mark the task done."</em>
+        This prevents the ambiguous half-done state where an agent returns a success-sounding
+        summary but the commit never happened.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~20–30K tokens (3× follow-up agents eliminated)</span>
+        <span class="impact-tag tag-quality">✅ Quality: improved (no missed commits)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min (add section to 5 agent files)</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">2</div>
+        <div class="idea-title">Add PyInstaller Data File Checklist to Architect Agent</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        For any ADR involving binary distribution, the Architect agent should be required
+        to enumerate non-Python data assets in the dependency tree. The check is simple:
+        <em>"For each runtime dependency, inspect its installed directory for non-.py files.
+        Any <code>.json</code>, <code>.lark</code>, <code>.yaml</code>, <code>.txt</code>
+        or similar files that are loaded at runtime must be explicitly listed in <code>datas</code>
+        using <code>collect_data_files(pkg)</code>."</em>
+        This one check would have prevented the Linux binary failure entirely.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~30–50K tokens (1 release re-run + fix cycle eliminated)</span>
+        <span class="impact-tag tag-quality">✅ Quality: improved (first-pass binary works)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 1 hour (update Architect definition + add to ADR template)</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">3</div>
+        <div class="idea-title">Introduce a Lightweight "Spot Review" for New Modules (not full Phase 4)</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        v0.2.0 had no dedicated code review pass. v0.1.0's full Phase 4 review found 13
+        findings including 3 CRITICAL bugs. The right pattern for a maintenance work package
+        (new features on an existing, reviewed codebase) is a lightweight spot review:
+        the Reviewer reads only the new modules (<code>logging_config.py</code>,
+        <code>report_writer.py</code>) and the modified <code>cli.py</code> against the
+        relevant ADRs. This costs ~15–25K tokens vs. ~150K for a full review, and would
+        have caught the frozen-binary issue if included.
+      </p>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        The Planner should explicitly decide per-work-package: full review (new core logic),
+        spot review (new features on existing base), or skip (docs/config only).
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Token cost: +15–25K tokens (new cost, but prevents larger rework)</span>
+        <span class="impact-tag tag-quality">✅ Quality: improved (catches issues before release)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 1 hour (add spot review task to Planner template)</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">4</div>
+        <div class="idea-title">Add Planner Output Length Constraint</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        The Planner consumed ~32K tokens producing a very detailed plan document with
+        extensive prose per task. The orchestrator primarily needs: task table (ID, agent,
+        deps, deliverables), dependency graph, risk register (top 5). Add to the Planner
+        definition: <em>"Output the plan as: (1) summary table — max 20 rows, (2) dependency
+        graph — ASCII or list format, (3) top 5 risks — 2 sentences each. Total output
+        should not exceed 800 words of prose."</em>
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~15–20K tokens per planning invocation</span>
+        <span class="impact-tag tag-quality">→ Quality: neutral (same decisions, less prose)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 20 min (edit Planner definition)</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">5</div>
+        <div class="idea-title">Revisit 100% Coverage Target — Return to 97% with Named Exceptions</div>
+      </div>
+      <p style="font-size:0.92rem; margin-bottom:0.5rem;">
+        The quality gate agent consumed ~78K tokens — the highest single-agent spend in the
+        session — largely due to the 100% coverage target requiring tests for frozen-binary
+        paths, <code>PackageNotFoundError</code> fallbacks, and deep exception branches. These
+        are legitimate test cases but cost disproportionately. A policy of 97% minimum with
+        explicit <code># pragma: no cover</code> annotations for genuinely untestable paths
+        (e.g., the <code>sys._MEIPASS</code> frozen binary branch) would reduce the quality
+        gate cost by an estimated 20–30% while maintaining meaningful coverage.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">💰 Est. saving: ~15–25K tokens at quality gate</span>
+        <span class="impact-tag tag-quality">→ Quality: acceptable (named exceptions are documented)</span>
+        <span class="impact-tag tag-effort">🔧 Effort: 30 min (policy decision + add 3–4 pragma annotations)</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    <p>Generated by Claude Sonnet 4.6 on 2026-04-09. Token estimates are derived from session metadata and known Claude output rates — treat as indicative, not precise. All improvement effort estimates assume a single experienced practitioner.</p>
+  </div>
+
+</div>
+</body>
+</html>
