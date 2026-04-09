@@ -58,8 +58,8 @@ jobs:
       - name: Build binary
         run: poetry run pyinstaller sbom_validator.spec
 
-      - name: Smoke test
-        run: ./dist/sbom-validator --version
+      - name: Smoke test binary
+        run: bash scripts/smoke-test-binary.sh ./dist/sbom-validator
 
       - name: Generate checksums
         run: sha256sum dist/sbom-validator > dist/sbom-validator.sha256
@@ -95,8 +95,8 @@ jobs:
       - name: Build binary
         run: poetry run pyinstaller sbom_validator.spec
 
-      - name: Smoke test
-        run: ./dist/sbom-validator.exe --version
+      - name: Smoke test binary
+        run: bash scripts/smoke-test-binary.sh ./dist/sbom-validator.exe
 
       - name: Generate checksums
         run: sha256sum dist/sbom-validator.exe > dist/sbom-validator.exe.sha256

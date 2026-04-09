@@ -63,9 +63,16 @@ Do not mark a release candidate ready until all are true:
    - Exit code semantics remain stable: `0=PASS`, `1=FAIL`, `2=ERROR`
    - JSON output keys remain stable unless approved breaking change
 
-5. **Release Workflow Gate**
+5. **Binary Smoke Test Gate**
+   - Run `bash scripts/smoke-test-binary.sh` against a locally built binary before tagging
+   - Checks must include: `--version` output, `--help` output, PASS/FAIL/ERROR exit codes on real fixtures, and `--report-dir` file generation
+   - A smoke test that only checks exit code 0 (e.g. `./binary --version`) is not sufficient — output content must be verified
+   - If the binary cannot be built locally, the CI release workflow smoke test step must be confirmed green before marking release ready
+
+6. **Release Workflow Gate**
    - tag trigger pattern in release workflow is correct (`v*.*.*`)
    - binary build steps include schema/resource bundling requirements
+   - smoke test step uses `scripts/smoke-test-binary.sh`, not a bare `--version` check
 
 6. **Release Task Tracker Gate**
    - release-specific tracker exists: `docs/releases/TASKS-vX.Y.Z.md`
