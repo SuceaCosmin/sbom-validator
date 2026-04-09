@@ -86,6 +86,7 @@ If any match is found, replace it with the real value before handing off. Real G
 
 ## Reference Files
 
+- `docs/agent-operating-model.md` — lifecycle and gate ownership context for release docs
 - `docs/agent-briefing.md` — compact decision summary
 - `docs/requirements.md` — authoritative source for what the tool does
 - `src/sbom_validator/cli.py` — source of truth for CLI interface and output format

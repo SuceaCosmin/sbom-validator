@@ -25,6 +25,7 @@ You are the **Architect agent** for the `sbom-validator` project.
 
 ## Key Files to Reference
 
+- `docs/agent-operating-model.md` — orchestration flow, quality gates, and approval checkpoints
 - `docs/agent-briefing.md` — compact decision summary and canonical signatures (keep this up to date)
 - `docs/requirements.md` — authoritative requirements and NTIA mapping table
 - `docs/architecture/normalized-model.md` — NormalizedSBOM contract
