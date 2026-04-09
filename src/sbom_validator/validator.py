@@ -71,10 +71,17 @@ def validate(file_path: str | Path) -> ValidationResult:
             format_detected=None,
         )
 
-    # Stage 1: Read raw JSON
+    # Stage 1: Read raw document
     logger.debug("Stage %s \u2192 %s", "format_detection", "schema_validation")
     try:
-        raw_doc = json.loads(file_path.read_text(encoding="utf-8"))
+        raw_text = file_path.read_text(encoding="utf-8")
+        if format_name == "spdx":
+            raw_doc: dict[str, object] | str = json.loads(raw_text)
+        else:
+            try:
+                raw_doc = json.loads(raw_text)
+            except json.JSONDecodeError:
+                raw_doc = raw_text
     except Exception as e:
         logger.error("Unexpected error during validation of %s: %s", str_path, e)
         return ValidationResult(

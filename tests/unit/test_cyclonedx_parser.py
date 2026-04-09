@@ -120,6 +120,15 @@ class TestParseCycloneDXBasic:
         result = parse_cyclonedx(fixtures_path / "valid-minimal.cdx.json")
         assert result.components[0].component_id == "pkg:pypi/requests@2.31.0"
 
+    def test_xml_fixture_parses_into_normalized_sbom(self, fixtures_path: Path) -> None:
+        result = parse_cyclonedx(fixtures_path / "valid-minimal.cdx.xml")
+        assert isinstance(result, NormalizedSBOM)
+        assert result.format == "cyclonedx"
+        assert len(result.components) == 1
+        assert result.components[0].name == "requests"
+        assert result.relationships[0].from_id == "app-ref"
+        assert result.relationships[0].to_id == "pkg:pypi/requests@2.31.0"
+
 
 # ---------------------------------------------------------------------------
 # TestParseCycloneDXMissingFields – graceful handling of absent optional fields

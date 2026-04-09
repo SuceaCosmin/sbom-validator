@@ -352,6 +352,22 @@ files = [
 ]
 
 [[package]]
+name = "elementpath"
+version = "5.1.1"
+description = "XPath 1.0/2.0/3.0/3.1 parsers and selectors for ElementTree and lxml"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "elementpath-5.1.1-py3-none-any.whl", hash = "sha256:57637359065e60654422d8474c1749b09bb21348012b7197f868027e3c09c9b9"},
+    {file = "elementpath-5.1.1.tar.gz", hash = "sha256:c4d1bd6aed987258354d0ea004d965eb0a6818213326bd4fd9bde5dacdb20277"},
+]
+
+[package.extras]
+dev = ["coverage", "flake8", "lxml", "lxml-stubs", "memray ; platform_python_implementation != \"PyPy\"", "mypy", "psutil", "sphinx", "tox (>=4.0)", "xmlschema (>=4.0.1)"]
+docs = ["readthedocs-sphinx-search", "sphinx"]
+
+[[package]]
 name = "fqdn"
 version = "1.5.1"
 description = "Validates fully-qualified domain names against RFC 1123, so that they are acceptable to modern bowsers"
@@ -1689,6 +1705,26 @@ files = [
 ]
 
 [[package]]
+name = "xmlschema"
+version = "4.3.1"
+description = "An XML Schema validator and decoder"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "xmlschema-4.3.1-py3-none-any.whl", hash = "sha256:9560314d70ae87be0aecb8712cfebed636f867707ccf9758d4b0645d607f64b9"},
+    {file = "xmlschema-4.3.1.tar.gz", hash = "sha256:853effdfaf127849d4724368c17bd669e7f1486e15a0376404ad7954ec31a338"},
+]
+
+[package.dependencies]
+elementpath = ">=5.1.0,<6.0.0"
+
+[package.extras]
+codegen = ["jinja2"]
+dev = ["coverage", "flake8", "lxml", "lxml-stubs", "mypy", "psutil", "tox", "xmlschema[docs]"]
+docs = ["jinja2", "sphinx", "sphinx_rtd_theme"]
+
+[[package]]
 name = "xmltodict"
 version = "1.0.4"
 description = "Makes working with XML feel like you are working with JSON"
@@ -1706,4 +1742,4 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "2041a85e15f95f0ffe4aeefcf36dd525c3a50e09c7a1e82f20649fc88ed0d9b3"
+content-hash = "2c661d9fa2a46a8bc620b564dab9151488f41636dfb656c7540df94c3a27dc7a"

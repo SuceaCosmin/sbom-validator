@@ -59,6 +59,11 @@ def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_text(path: Path) -> str:
+    """Load a text fixture file and return the raw contents."""
+    return path.read_text(encoding="utf-8")
+
+
 # ---------------------------------------------------------------------------
 # TestValidateSchemaSPDX
 # ---------------------------------------------------------------------------
@@ -205,6 +210,17 @@ class TestValidateSchemaCycloneDX:
             assert (
                 issue.field_path.strip() != ""
             ), "issue.field_path must not be empty or whitespace-only"
+
+    def test_valid_cyclonedx_xml_returns_empty_list(self, cdx_fixtures: Path) -> None:
+        xml_doc = _load_text(cdx_fixtures / "valid-minimal.cdx.xml")
+        result = validate_schema(xml_doc, "cyclonedx")
+        assert result == []
+
+    def test_invalid_cyclonedx_xml_returns_issues(self, cdx_fixtures: Path) -> None:
+        xml_doc = _load_text(cdx_fixtures / "invalid-schema.cdx.xml")
+        result = validate_schema(xml_doc, "cyclonedx")
+        assert len(result) > 0
+        assert {issue.rule for issue in result} == {"FR-03"}
 
 
 # ---------------------------------------------------------------------------

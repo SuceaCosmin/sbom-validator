@@ -13,6 +13,7 @@ click = ">=8.1"
 jsonschema = ">=4.21"
 spdx-tools = ">=0.8"
 cyclonedx-bom = ">=4.0"
+xmlschema = ">=3.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"

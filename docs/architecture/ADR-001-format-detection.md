@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-`sbom-validator` supports two SBOM formats — SPDX 2.3 JSON and CycloneDX 1.6 JSON — and must automatically identify which format a given file uses before any validation can proceed (FR-01). The tool must work without asking the user to specify the format via a flag, because a key design goal is frictionless integration into CI/CD pipelines where operators should not need to know or care which format their toolchain produces.
+`sbom-validator` supports SPDX 2.3 JSON and CycloneDX 1.6 in both JSON and XML representations, and must automatically identify which format a given file uses before any validation can proceed (FR-01). The tool must work without asking the user to specify the format via a flag, because a key design goal is frictionless integration into CI/CD pipelines where operators should not need to know or care which format their toolchain produces.
 
 Several detection strategies were considered:
 
@@ -14,7 +14,8 @@ Several detection strategies were considered:
 
 2. **MIME type / content-type header** — not applicable for local file validation.
 
-3. **Top-level JSON field inspection** — both SPDX and CycloneDX mandate unique, required, root-level fields that act as unambiguous format fingerprints. SPDX 2.3 JSON requires `spdxVersion` at the document root (always the string `"SPDX-2.3"`). CycloneDX 1.6 JSON requires `bomFormat` (always the string `"CycloneDX"`) and `specVersion` (e.g., `"1.6"`) at the document root. These fields are defined by their respective specifications and cannot be absent in a conformant document.
+3. **Top-level JSON field inspection** — both SPDX and CycloneDX JSON mandate unique, required, root-level fields that act as unambiguous format fingerprints. SPDX 2.3 JSON requires `spdxVersion` at the document root (always the string `"SPDX-2.3"`). CycloneDX 1.6 JSON requires `bomFormat` (always the string `"CycloneDX"`) and `specVersion` (e.g., `"1.6"`) at the document root.
+4. **CycloneDX XML root inspection** — CycloneDX XML 1.6 documents are identified by root element `bom` in namespace `http://cyclonedx.org/schema/bom/1.6` with BOM document version `1`.
 
 4. **Schema probing** — attempt to validate against both schemas and infer format from which one passes. This is expensive (two full schema validations per file), creates circular logic, and gives poor error messages.
 
@@ -27,6 +28,7 @@ Format detection is performed by parsing the file as JSON and inspecting the top
 1. If the parsed document is a JSON object containing the key `"spdxVersion"` at the root level, the format is **SPDX**. The value of `spdxVersion` is additionally checked to equal `"SPDX-2.3"`; if it contains a different version string, an `UnsupportedFormatError` is raised with a message indicating the version is not supported.
 
 2. If the parsed document is a JSON object containing the key `"bomFormat"` with value `"CycloneDX"` at the root level, the format is **CycloneDX**. The value of `specVersion` is additionally checked to equal `"1.6"`; if it contains a different version string, an `UnsupportedFormatError` is raised with a message indicating the version is not supported.
+3. If JSON parsing fails, the detector attempts CycloneDX XML root inspection. If the root namespace/version matches CycloneDX 1.6 XML, the format is **CycloneDX**.
 
 3. If neither condition matches, an `UnsupportedFormatError` is raised. The tool exits with code `2` (ERROR) and reports an issue with severity `ERROR`.
 
@@ -52,5 +54,5 @@ It raises `UnsupportedFormatError` on any unrecognized input. The caller (the to
 
 **Negative:**
 
-- Requires the file to be valid JSON before detection can succeed. A binary file or truncated JSON produces an ERROR rather than a more specific "wrong format" message. This is acceptable because a non-JSON file cannot be validated as either SPDX or CycloneDX JSON.
+- Non-JSON files are checked for CycloneDX XML 1.6 signature; unsupported or malformed XML is rejected as unsupported format.
 - The tool does not auto-detect the format if a user provides a file with a typo in `spdxVersion` (e.g., `"spdxversion"`). This is correct behavior — such a file is not a valid SPDX document.

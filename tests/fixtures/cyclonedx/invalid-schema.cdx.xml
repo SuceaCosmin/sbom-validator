@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.6" serialNumber="urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79" version="1">
+  <metadata>
+    <timestamp>2024-01-15T10:00:00Z</timestamp>
+    <authors><author><name>AcmeCorp SBOM Team</name></author></authors>
+  </metadata>
+  <components>
+    <component bom-ref="pkg:pypi/requests@2.31.0">
+      <version>2.31.0</version>
+      <supplier><name>AcmeCorp</name></supplier>
+      <purl>pkg:pypi/requests@2.31.0</purl>
+    </component>
+  </components>
+</bom>

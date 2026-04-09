@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from sbom_validator.models import IssueSeverity, ValidationResult
+from sbom_validator.presentation import humanize_field_path, humanize_message, split_message_and_hint
 
 logger = logging.getLogger(__name__)
 
@@ -187,6 +188,10 @@ def write_reports(
         result: The completed ValidationResult from the validator pipeline.
         report_dir: Directory in which to write the two report files.
 
+    Human-facing HTML intentionally omits internal rule IDs to keep output
+    focused on actionable issue context. JSON reports still include rule IDs
+    for programmatic consumers.
+
     Returns:
         A two-tuple (html_path, json_path) of the paths actually written.
 
@@ -229,19 +234,23 @@ def write_reports(
     format_display = format_detected_expanded if format_detected_expanded is not None else "Unknown"
 
     if sorted_issues:
-        rows = "\n".join(
-            f"    <tr>"
-            f'<td class="sev-{_escape(str(issue.severity))}">{_escape(str(issue.severity))}</td>'
-            f"<td>{_escape(issue.rule)}</td>"
-            f"<td>{_escape(issue.field_path)}</td>"
-            f"<td>{_escape(issue.message)}</td>"
-            f"</tr>"
-            for issue in sorted_issues
-        )
+        rows_parts: list[str] = []
+        for issue in sorted_issues:
+            friendly_message = humanize_message(issue.message)
+            base_message, hint = split_message_and_hint(friendly_message)
+            rows_parts.append(
+                f"    <tr>"
+                f'<td class="sev-{_escape(str(issue.severity))}">{_escape(str(issue.severity))}</td>'
+                f"<td>{_escape(humanize_field_path(issue.field_path))}</td>"
+                f"<td>{_escape(base_message)}</td>"
+                f"<td>{_escape(hint or '-')}</td>"
+                f"</tr>"
+            )
+        rows = "\n".join(rows_parts)
         issues_section = (
             "<table>\n"
             "  <thead>\n"
-            "    <tr><th>Severity</th><th>Rule</th><th>Field Path</th><th>Message</th></tr>\n"
+            "    <tr><th>Severity</th><th>Field Path</th><th>Message</th><th>Hint</th></tr>\n"
             "  </thead>\n"
             "  <tbody>\n"
             f"{rows}\n"

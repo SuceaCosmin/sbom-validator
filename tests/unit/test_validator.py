@@ -63,6 +63,12 @@ class TestValidatorPassScenarios:
         result = validate(CDX_FIXTURES / "valid-full.cdx.json")
         assert result.issues == ()
 
+    def test_valid_cyclonedx_xml_minimal_returns_pass(self) -> None:
+        result = validate(CDX_FIXTURES / "valid-minimal.cdx.xml")
+        assert result.status == ValidationStatus.PASS
+        assert result.issues == ()
+        assert result.format_detected == "cyclonedx"
+
     def test_pass_result_has_correct_file_path(self) -> None:
         result = validate(SPDX_FIXTURES / "valid-minimal.spdx.json")
         assert "valid-minimal.spdx.json" in result.file_path
@@ -114,6 +120,12 @@ class TestValidatorSchemaFailScenarios:
 
     def test_invalid_cdx_schema_issues_have_fr03_rule(self) -> None:
         result = validate(CDX_FIXTURES / "invalid-schema.cdx.json")
+        assert all(i.rule == "FR-03" for i in result.issues)
+
+    def test_invalid_cdx_xml_schema_issues_have_fr03_rule(self) -> None:
+        result = validate(CDX_FIXTURES / "invalid-schema.cdx.xml")
+        assert result.status == ValidationStatus.FAIL
+        assert len(result.issues) > 0
         assert all(i.rule == "FR-03" for i in result.issues)
 
     def test_schema_fail_has_no_ntia_issues(self) -> None:
@@ -176,6 +188,10 @@ class TestValidatorNtiaFailScenarios:
 
     def test_missing_supplier_cdx_returns_fail(self) -> None:
         result = validate(CDX_FIXTURES / "missing-supplier.cdx.json")
+        assert result.status == ValidationStatus.FAIL
+
+    def test_missing_supplier_cdx_xml_returns_fail(self) -> None:
+        result = validate(CDX_FIXTURES / "missing-supplier.cdx.xml")
         assert result.status == ValidationStatus.FAIL
 
     def test_missing_timestamp_cdx_returns_fail(self) -> None:

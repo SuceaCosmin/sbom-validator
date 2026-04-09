@@ -22,7 +22,7 @@ The tool is designed for integration into CI/CD pipelines. It communicates resul
 ### 2.1 In Scope (v0.1.0)
 
 - Validation of **SPDX 2.3 JSON** files (schema conformance + NTIA element checks)
-- Validation of **CycloneDX 1.6 JSON** files (schema conformance + NTIA element checks)
+- Validation of **CycloneDX 1.6 JSON and XML** files (schema conformance + NTIA element checks)
 - Automatic format detection from file content (no manual format flag required)
 - CLI with **text** and **JSON** output modes
 - Structured exit codes suitable for CI/CD gate integration
@@ -35,7 +35,7 @@ The following are explicitly deferred to future versions:
 | Item | Rationale |
 |------|-----------|
 | SPDX formats: RDF, tag-value (TV), XML | Only JSON is supported in v0.1.0 |
-| CycloneDX XML format | Only JSON is supported in v0.1.0 |
+| CycloneDX XML format | CycloneDX XML is supported only for version 1.6 |
 | SPDX versions other than 2.3 | Scope control |
 | CycloneDX versions other than 1.6 | Scope control |
 | License compliance checking | Separate concern; requires policy input |
@@ -48,19 +48,20 @@ The following are explicitly deferred to future versions:
 
 ### FR-01 — Format Auto-Detection
 
-The tool **must** automatically determine whether an input file is SPDX 2.3 JSON or CycloneDX 1.6 JSON by inspecting the file content, without requiring the user to specify the format.
+The tool **must** automatically determine whether an input file is SPDX 2.3 JSON, CycloneDX 1.6 JSON, or CycloneDX 1.6 XML by inspecting the file content, without requiring the user to specify the format.
 
 - For SPDX: the presence of `"spdxVersion": "SPDX-2.3"` at the document root is the definitive indicator.
 - For CycloneDX: the presence of `"bomFormat": "CycloneDX"` and `"specVersion": "1.6"` at the document root is the definitive indicator.
+- For CycloneDX XML: the root `bom` element in namespace `http://cyclonedx.org/schema/bom/1.6` is the definitive indicator.
 - If the file cannot be identified as either format, the tool **must** exit with code `2` and report an `ERROR`-severity issue.
 
 ### FR-02 — Schema Validation: SPDX 2.3 JSON
 
 The tool **must** validate SPDX 2.3 JSON files against the official SPDX 2.3 JSON schema. All schema violations **must** be collected and reported. Schema failure blocks the NTIA phase (see FR-14 and Section 6).
 
-### FR-03 — Schema Validation: CycloneDX 1.6 JSON
+### FR-03 — Schema Validation: CycloneDX 1.6 (JSON/XML)
 
-The tool **must** validate CycloneDX 1.6 JSON files against the official CycloneDX 1.6 JSON schema. All schema violations **must** be collected and reported. Schema failure blocks the NTIA phase (see FR-14 and Section 6).
+The tool **must** validate CycloneDX 1.6 JSON files against the official CycloneDX 1.6 JSON schema and CycloneDX 1.6 XML files against the official CycloneDX 1.6 XML schema (XSD). All schema violations **must** be collected and reported. Schema failure blocks the NTIA phase (see FR-14 and Section 6).
 
 ### FR-04 — NTIA Element: Supplier Name
 

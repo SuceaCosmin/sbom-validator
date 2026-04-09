@@ -6,7 +6,7 @@
 
 A CLI tool to validate Software Bill of Materials (SBOM) files against format schemas and NTIA minimum element requirements.
 
-Supports **SPDX 2.3 JSON** and **CycloneDX 1.6 JSON**.
+Supports **SPDX 2.3 JSON**, **CycloneDX 1.6 JSON**, and **CycloneDX 1.6 XML**.
 
 ---
 
@@ -170,8 +170,10 @@ validate-sbom:
 |--------|---------|-----------|
 | SPDX JSON | 2.3 only | `spdxVersion == "SPDX-2.3"` |
 | CycloneDX JSON | 1.6 only | `bomFormat == "CycloneDX"` + `specVersion == "1.6"` |
+| CycloneDX XML | 1.6 only | root `<bom>` namespace `http://cyclonedx.org/schema/bom/1.6` |
 
 Files with unsupported versions (e.g., SPDX 2.2 or CycloneDX 1.5) are rejected with exit code `2` and a clear error message. Format detection is based on file content, not file extension.
+CycloneDX XML inputs are validated with strict XSD schema checks in Stage 1 before any NTIA evaluation.
 
 ---
 

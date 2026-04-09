@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.6" serialNumber="urn:uuid:9f3a2b1c-4d5e-6f7a-8b9c-0d1e2f3a4b5c" version="1">
+  <metadata>
+    <timestamp>2024-01-15T10:00:00Z</timestamp>
+    <authors>
+      <author><name>AcmeCorp SBOM Team</name></author>
+    </authors>
+    <manufacture>
+      <name>AcmeCorp</name>
+    </manufacture>
+    <component type="application" bom-ref="app-webapp-2.5.0">
+      <supplier><name>AcmeCorp</name></supplier>
+      <name>acmecorp-webapp</name>
+      <version>2.5.0</version>
+    </component>
+  </metadata>
+  <components>
+    <component type="library" bom-ref="pkg:pypi/requests@2.31.0">
+      <supplier><name>AcmeCorp</name></supplier>
+      <name>requests</name>
+      <version>2.31.0</version>
+      <purl>pkg:pypi/requests@2.31.0</purl>
+      <cpe>cpe:2.3:a:python-requests:requests:2.31.0:*:*:*:*:*:*:*</cpe>
+    </component>
+    <component type="library" bom-ref="pkg:pypi/urllib3@2.1.0">
+      <supplier><name>AcmeCorp</name></supplier>
+      <name>urllib3</name>
+      <version>2.1.0</version>
+      <purl>pkg:pypi/urllib3@2.1.0</purl>
+    </component>
+    <component type="library" bom-ref="pkg:pypi/certifi@2024.2.2">
+      <supplier><name>ExampleSoft Ltd</name></supplier>
+      <name>certifi</name>
+      <version>2024.2.2</version>
+      <purl>pkg:pypi/certifi@2024.2.2</purl>
+    </component>
+    <component type="library" bom-ref="pkg:npm/lodash@4.17.21">
+      <supplier><name>ExampleSoft Ltd</name></supplier>
+      <name>lodash</name>
+      <version>4.17.21</version>
+      <purl>pkg:npm/lodash@4.17.21</purl>
+      <cpe>cpe:2.3:a:lodash:lodash:4.17.21:*:*:*:*:node.js:*:*</cpe>
+    </component>
+  </components>
+  <dependencies>
+    <dependency ref="app-webapp-2.5.0">
+      <dependency ref="pkg:pypi/requests@2.31.0" />
+      <dependency ref="pkg:npm/lodash@4.17.21" />
+    </dependency>
+    <dependency ref="pkg:pypi/requests@2.31.0">
+      <dependency ref="pkg:pypi/urllib3@2.1.0" />
+      <dependency ref="pkg:pypi/certifi@2024.2.2" />
+    </dependency>
+    <dependency ref="pkg:pypi/urllib3@2.1.0" />
+    <dependency ref="pkg:pypi/certifi@2024.2.2" />
+    <dependency ref="pkg:npm/lodash@4.17.21" />
+  </dependencies>
+</bom>

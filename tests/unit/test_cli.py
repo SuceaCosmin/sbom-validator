@@ -133,6 +133,10 @@ class TestCliValidatePassTextOutput:
         result = runner.invoke(main, ["validate", str(CDX_FIXTURES / "valid-full.cdx.json")])
         assert result.exit_code == 0
 
+    def test_valid_cyclonedx_xml_exits_zero(self, runner: CliRunner) -> None:
+        result = runner.invoke(main, ["validate", str(CDX_FIXTURES / "valid-minimal.cdx.xml")])
+        assert result.exit_code == 0
+
 
 # ===========================================================================
 # TestCliValidateFailTextOutput
@@ -227,6 +231,20 @@ class TestCliValidateFailTextOutput:
     def test_invalid_schema_spdx_output_contains_fail(self, runner: CliRunner) -> None:
         result = runner.invoke(main, ["validate", str(SPDX_FIXTURES / "invalid-schema.spdx.json")])
         assert "FAIL" in result.output
+
+    def test_invalid_cyclonedx_xml_output_uses_human_friendly_field_path(
+        self, runner: CliRunner
+    ) -> None:
+        result = runner.invoke(main, ["validate", str(CDX_FIXTURES / "invalid-schema.cdx.xml")])
+        assert result.exit_code == 1
+        assert "/bom/components/component" in result.output
+        assert "{http://cyclonedx.org/schema/bom/1.6}" not in result.output
+
+    def test_conformance_failure_hides_ntia_rule_and_shows_hint(self, runner: CliRunner) -> None:
+        result = runner.invoke(main, ["validate", str(CDX_FIXTURES / "missing-supplier.cdx.json")])
+        assert result.exit_code == 1
+        assert "NTIA FR-" not in result.output
+        assert "Hint: provide a supplier/organization name" in result.output
 
 
 # ===========================================================================
@@ -393,6 +411,20 @@ class TestCliJsonOutputPass:
         )
         data = json.loads(result.output)
         assert data["issues"] == []
+
+    def test_valid_cyclonedx_xml_json_format_detected_is_cyclonedx(self, runner: CliRunner) -> None:
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(CDX_FIXTURES / "valid-minimal.cdx.xml"),
+                "--format",
+                "json",
+            ],
+        )
+        data = json.loads(result.output)
+        assert data["status"] == "PASS"
+        assert data["format_detected"] == "cyclonedx"
 
 
 # ===========================================================================

@@ -1,16 +1,15 @@
 """Unit tests for sbom_validator.format_detector.
 
 Tests cover the detect_format(file_path: Path) -> str function, which inspects
-the top-level keys of a JSON file to determine whether the SBOM is in SPDX or
-CycloneDX format.
+JSON/XML input to determine whether the SBOM is in SPDX or CycloneDX format.
 
 Expected behaviour:
 - Returns "spdx" when the JSON contains a top-level "spdxVersion" key.
 - Returns "cyclonedx" when the JSON contains "bomFormat": "CycloneDX".
 - Raises UnsupportedFormatError when neither key is present or bomFormat has
   an unrecognised value.
-- Raises ParseError when the file does not exist, is empty, or contains
-  invalid JSON.
+- Raises ParseError when the file does not exist or cannot be read.
+- Raises UnsupportedFormatError for malformed/unknown content.
 
 Real fixture files are used for the happy-path detection tests; temporary
 files (via the pytest `tmp_path` fixture) are used for edge-case scenarios.
@@ -31,6 +30,7 @@ from sbom_validator.format_detector import detect_format
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 SPDX_FIXTURE = FIXTURES_DIR / "spdx" / "valid-minimal.spdx.json"
 CYCLONEDX_FIXTURE = FIXTURES_DIR / "cyclonedx" / "valid-minimal.cdx.json"
+CYCLONEDX_XML_FIXTURE = FIXTURES_DIR / "cyclonedx" / "valid-minimal.cdx.xml"
 
 
 # ---------------------------------------------------------------------------
@@ -44,6 +44,9 @@ class TestDetectFormatFromFixtures:
 
     def test_valid_cyclonedx_fixture_returns_cyclonedx(self):
         assert detect_format(CYCLONEDX_FIXTURE) == "cyclonedx"
+
+    def test_valid_cyclonedx_xml_fixture_returns_cyclonedx(self):
+        assert detect_format(CYCLONEDX_XML_FIXTURE) == "cyclonedx"
 
 
 # ---------------------------------------------------------------------------
@@ -129,16 +132,25 @@ class TestDetectFormatErrorCases:
         with pytest.raises(ParseError):
             detect_format(missing)
 
-    def test_file_with_invalid_json_raises_parse_error(self, tmp_path: Path):
+    def test_file_with_invalid_json_raises_unsupported_format_error(self, tmp_path: Path):
         f = tmp_path / "bad.json"
         f.write_text("not json {{{{", encoding="utf-8")
-        with pytest.raises(ParseError):
+        with pytest.raises(UnsupportedFormatError):
             detect_format(f)
 
     def test_empty_file_raises_parse_error(self, tmp_path: Path):
         f = tmp_path / "empty.json"
         f.write_text("", encoding="utf-8")
-        with pytest.raises(ParseError):
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_xml_with_unsupported_namespace_raises_unsupported_format_error(self, tmp_path: Path):
+        f = tmp_path / "bad-version.cdx.xml"
+        f.write_text(
+            '<bom xmlns="http://cyclonedx.org/schema/bom/1.5" version="1" />',
+            encoding="utf-8",
+        )
+        with pytest.raises(UnsupportedFormatError):
             detect_format(f)
 
     def test_file_with_json_array_raises_unsupported_format_error_or_parse_error(
