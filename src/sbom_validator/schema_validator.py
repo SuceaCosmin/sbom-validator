@@ -5,11 +5,13 @@ from __future__ import annotations
 import json
 import logging
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
 import jsonschema
 import jsonschema.exceptions
+import xmlschema
 
 from sbom_validator.models import IssueSeverity, ValidationIssue
 
@@ -38,6 +40,7 @@ _FORMAT_RULES: dict[str, str] = {
 }
 
 _loaded_schemas: dict[str, dict[str, Any]] = {}
+_loaded_xml_schemas: dict[str, xmlschema.XMLSchemaBase] = {}
 
 
 def _load_schema(format_name: str) -> dict[str, Any]:
@@ -48,11 +51,69 @@ def _load_schema(format_name: str) -> dict[str, Any]:
     return _loaded_schemas[format_name]
 
 
-def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[ValidationIssue]:
-    """Validate raw JSON document against the appropriate schema.
+def _load_cyclonedx_xml_schema() -> xmlschema.XMLSchemaBase:
+    """Load and cache the bundled CycloneDX 1.6 XML schema."""
+    key = "cyclonedx-xml"
+    if key not in _loaded_xml_schemas:
+        schema_path = _schemas_dir() / "cyclonedx-1.6.schema.xsd"
+        _loaded_xml_schemas[key] = xmlschema.XMLSchema(str(schema_path))
+    return _loaded_xml_schemas[key]
+
+
+def _validate_json_schema(
+    raw_doc: dict[str, Any], format_name: str, rule: str
+) -> list[ValidationIssue]:
+    """Validate a JSON document and return ValidationIssue items."""
+    schema = _load_schema(format_name)
+    validator = jsonschema.Draft7Validator(schema)
+    issues: list[ValidationIssue] = []
+    for error in validator.iter_errors(raw_doc):
+        field_path = ".".join(str(p) for p in error.absolute_path) if error.absolute_path else "$"
+        issues.append(
+            ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path=field_path,
+                message=error.message,
+                rule=rule,
+            )
+        )
+    return issues
+
+
+def _validate_cyclonedx_xml(raw_doc: str, rule: str) -> list[ValidationIssue]:
+    """Validate a CycloneDX XML document against the bundled XSD."""
+    issues: list[ValidationIssue] = []
+    try:
+        root = ET.fromstring(raw_doc)
+    except ET.ParseError as exc:
+        return [
+            ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path="$",
+                message=f"Invalid XML: {exc}",
+                rule=rule,
+            )
+        ]
+
+    validator = _load_cyclonedx_xml_schema()
+    for error in validator.iter_errors(root):
+        field_path = error.path or "$"
+        issues.append(
+            ValidationIssue(
+                severity=IssueSeverity.ERROR,
+                field_path=field_path,
+                message=error.reason or str(error),
+                rule=rule,
+            )
+        )
+    return issues
+
+
+def validate_schema(raw_doc: dict[str, Any] | str, format_name: str) -> list[ValidationIssue]:
+    """Validate raw document against the appropriate schema.
 
     Args:
-        raw_doc: Parsed JSON document as a dict.
+        raw_doc: Parsed JSON document as a dict, or XML string for CycloneDX XML.
         format_name: Either 'spdx' or 'cyclonedx'.
 
     Returns:
@@ -65,25 +126,15 @@ def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[Validatio
         raise ValueError(f"Unknown format: {format_name!r}. Expected one of: {list(_SCHEMA_FILES)}")
 
     logger.debug("Running schema validation for format %s", format_name)
-    schema = _load_schema(format_name)
     rule = _FORMAT_RULES[format_name]
-
-    validator = jsonschema.Draft7Validator(schema)
-
-    issues: list[ValidationIssue] = []
-    for error in validator.iter_errors(raw_doc):
-        if error.absolute_path:
-            field_path = ".".join(str(p) for p in error.absolute_path)
-        else:
-            field_path = "$"
-        issues.append(
-            ValidationIssue(
-                severity=IssueSeverity.ERROR,
-                field_path=field_path,
-                message=error.message,
-                rule=rule,
-            )
-        )
+    if format_name == "spdx":
+        if not isinstance(raw_doc, dict):
+            raise ValueError("SPDX schema validation expects a JSON object document.")
+        issues = _validate_json_schema(raw_doc, format_name, rule)
+    elif isinstance(raw_doc, str):
+        issues = _validate_cyclonedx_xml(raw_doc, rule)
+    else:
+        issues = _validate_json_schema(raw_doc, format_name, rule)
 
     if issues:
         logger.info("Schema validation found %d error(s)", len(issues))

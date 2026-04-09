@@ -38,6 +38,7 @@ If any command exits non-zero, fix the issues first. Import ordering errors (ruf
 
 ## Reference Files
 
+Read `docs/agent-operating-model.md` first for lifecycle gates and escalation boundaries.
 Read `docs/agent-briefing.md` before writing tests — it contains the canonical function signatures and NTIA mapping table. Do not guess what a function signature looks like; verify it from the briefing or the source file.
 
 ## TDD Discipline

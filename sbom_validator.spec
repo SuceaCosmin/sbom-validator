@@ -20,6 +20,8 @@ a = Analysis(
     datas=[
         (str(schemas_dir / "spdx-2.3.schema.json"), "schemas"),
         (str(schemas_dir / "cyclonedx-1.6.schema.json"), "schemas"),
+        (str(schemas_dir / "cyclonedx-1.6.schema.xsd"), "schemas"),
+        (str(schemas_dir / "cyclonedx-spdx.xsd"), "schemas"),
     ] + _extra_datas,
     hiddenimports=[
         "jsonschema.validators",

@@ -2,9 +2,9 @@
 
 ## System Overview
 
-`sbom-validator` is a layered, pipeline-oriented tool for validating SBOM (Software Bill of Materials) files against two complementary standards: format-specific JSON schemas and the NTIA minimum-element requirements. The system is organized into four logical layers that execute in strict sequence:
+`sbom-validator` is a layered, pipeline-oriented tool for validating SBOM (Software Bill of Materials) files against format-specific schemas (JSON Schema and XML XSD) and NTIA minimum-element requirements. The system is organized into four logical layers that execute in strict sequence:
 
-1. **Format Detection** — identifies whether the input is SPDX 2.3 JSON or CycloneDX 1.6 JSON.
+1. **Format Detection** — identifies whether the input is SPDX 2.3 JSON, CycloneDX 1.6 JSON, or CycloneDX 1.6 XML.
 2. **Schema Validation** — checks the document's structure against the official JSON schema for the detected format.
 3. **Parsing** — translates the raw JSON document into a format-agnostic `NormalizedSBOM` internal model.
 4. **NTIA Checking** — evaluates all seven NTIA minimum elements against the normalized model.
@@ -21,10 +21,10 @@ Refer to `component-diagram.drawio` for a visual overview of the component relat
 |--------|----------------|
 | `cli.py` | CLI entry point, output rendering, exit codes (0/1/2) |
 | `validator.py` | Pipeline orchestration: coordinates all four stages and converts exceptions into `ValidationResult` objects |
-| `format_detector.py` | Detect SPDX vs. CycloneDX from top-level JSON field inspection |
+| `format_detector.py` | Detect SPDX/CycloneDX using JSON keys and CycloneDX XML root namespace |
 | `schema_validator.py` | JSON schema conformance checking against bundled format schemas |
 | `parsers/spdx_parser.py` | SPDX 2.3 JSON → `NormalizedSBOM` translation |
-| `parsers/cyclonedx_parser.py` | CycloneDX 1.6 JSON → `NormalizedSBOM` translation |
+| `parsers/cyclonedx_parser.py` | CycloneDX 1.6 JSON/XML → `NormalizedSBOM` translation |
 | `ntia_checker.py` | NTIA minimum element compliance evaluation (FR-04 through FR-10) |
 | `models.py` | Shared data contracts: frozen dataclasses and enums for results and issues |
 | `exceptions.py` | Domain-specific exception hierarchy (`ParseError`, `UnsupportedFormatError`) |
@@ -121,9 +121,10 @@ Format detection is performed by inspecting the top-level keys of the parsed JSO
 
 The detection rules, applied in order:
 
-1. **SPDX:** `"spdxVersion"` is present at the document root → format is SPDX.
+1. **SPDX:** `"spdxVersion"` is present at the JSON document root → format is SPDX.
    - The value must equal `"SPDX-2.3"`; any other version string raises `UnsupportedFormatError`.
-2. **CycloneDX:** `"bomFormat"` is present with value `"CycloneDX"` at the document root → format is CycloneDX.
+2. **CycloneDX JSON:** `"bomFormat"` is present with value `"CycloneDX"` at the JSON document root → format is CycloneDX.
+3. **CycloneDX XML:** root element `bom` with namespace `http://cyclonedx.org/schema/bom/1.6` and document `version="1"` → format is CycloneDX.
    - `specVersion` must equal `"1.6"`; any other version string raises `UnsupportedFormatError`.
 3. **Neither matches** → `UnsupportedFormatError` is raised. The orchestrator converts this to `ValidationResult(status=ERROR)` and the CLI exits with code `2`.
 

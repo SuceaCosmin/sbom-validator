@@ -10,10 +10,15 @@ import importlib.metadata
 import json
 import logging
 import string
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sbom_validator.models import IssueSeverity, ValidationResult
+from sbom_validator.presentation import (
+    humanize_field_path,
+    humanize_message,
+    split_message_and_hint,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -163,11 +168,11 @@ def _escape(text: str) -> str:
 
 
 def _tool_version() -> str:
-    """Return the installed package version, falling back to '0.2.0'."""
+    """Return the installed package version, falling back to 'unknown'."""
     try:
         return importlib.metadata.version("sbom-validator")
     except importlib.metadata.PackageNotFoundError:
-        return "0.2.0"
+        return "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -187,6 +192,10 @@ def write_reports(
         result: The completed ValidationResult from the validator pipeline.
         report_dir: Directory in which to write the two report files.
 
+    Human-facing HTML intentionally omits internal rule IDs to keep output
+    focused on actionable issue context. JSON reports still include rule IDs
+    for programmatic consumers.
+
     Returns:
         A two-tuple (html_path, json_path) of the paths actually written.
 
@@ -195,8 +204,9 @@ def write_reports(
                  be written (e.g., permission denied).
     """
     # Compute shared timestamp and stems once.
-    timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
-    generated_at = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_utc = datetime.now(UTC)
+    timestamp = now_utc.strftime("%Y%m%d-%H%M%S")
+    generated_at = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     stem = Path(result.file_path).stem
     version = _tool_version()
 
@@ -220,6 +230,53 @@ def write_reports(
     error_count = sum(1 for i in result.issues if i.severity == IssueSeverity.ERROR)
     warning_count = sum(1 for i in result.issues if i.severity == IssueSeverity.WARNING)
     info_count = sum(1 for i in result.issues if i.severity == IssueSeverity.INFO)
+
+    # -----------------------------------------------------------------------
+    # Build HTML report
+    # -----------------------------------------------------------------------
+    status_colour = _STATUS_COLOUR.get(str(result.status), "#424242")
+    format_display = format_detected_expanded if format_detected_expanded is not None else "Unknown"
+
+    if sorted_issues:
+        rows_parts: list[str] = []
+        for issue in sorted_issues:
+            friendly_message = humanize_message(issue.message)
+            base_message, hint = split_message_and_hint(friendly_message)
+            rows_parts.append(
+                f"    <tr>"
+                f'<td class="sev-{_escape(str(issue.severity))}">{_escape(str(issue.severity))}</td>'
+                f"<td>{_escape(humanize_field_path(issue.field_path))}</td>"
+                f"<td>{_escape(base_message)}</td>"
+                f"<td>{_escape(hint or '-')}</td>"
+                f"</tr>"
+            )
+        rows = "\n".join(rows_parts)
+        issues_section = (
+            "<table>\n"
+            "  <thead>\n"
+            "    <tr><th>Severity</th><th>Field Path</th><th>Message</th><th>Hint</th></tr>\n"
+            "  </thead>\n"
+            "  <tbody>\n"
+            f"{rows}\n"
+            "  </tbody>\n"
+            "</table>"
+        )
+    else:
+        issues_section = '<p class="no-issues">No issues found.</p>'
+
+    html_content = _HTML_TEMPLATE.substitute(
+        tool_version=_escape(version),
+        generated_at=_escape(generated_at),
+        file_path=_escape(result.file_path),
+        format_detected=_escape(format_display),
+        status=_escape(str(result.status)),
+        status_colour=status_colour,
+        error_count=error_count,
+        warning_count=warning_count,
+        info_count=info_count,
+        issues_section=issues_section,
+    )
+    html_path.write_text(html_content, encoding="utf-8")
 
     # -----------------------------------------------------------------------
     # Build JSON report
@@ -246,49 +303,6 @@ def write_reports(
         ],
     }
     json_path.write_text(json.dumps(json_data, indent=2), encoding="utf-8")
-
-    # -----------------------------------------------------------------------
-    # Build HTML report
-    # -----------------------------------------------------------------------
-    status_colour = _STATUS_COLOUR.get(str(result.status), "#424242")
-    format_display = format_detected_expanded if format_detected_expanded is not None else "Unknown"
-
-    if sorted_issues:
-        rows = "\n".join(
-            f"    <tr>"
-            f'<td class="sev-{_escape(str(issue.severity))}">{_escape(str(issue.severity))}</td>'
-            f"<td>{_escape(issue.rule)}</td>"
-            f"<td>{_escape(issue.field_path)}</td>"
-            f"<td>{_escape(issue.message)}</td>"
-            f"</tr>"
-            for issue in sorted_issues
-        )
-        issues_section = (
-            "<table>\n"
-            "  <thead>\n"
-            "    <tr><th>Severity</th><th>Rule</th><th>Field Path</th><th>Message</th></tr>\n"
-            "  </thead>\n"
-            "  <tbody>\n"
-            f"{rows}\n"
-            "  </tbody>\n"
-            "</table>"
-        )
-    else:
-        issues_section = '<p class="no-issues">No issues found.</p>'
-
-    html_content = _HTML_TEMPLATE.substitute(
-        tool_version=_escape(version),
-        generated_at=_escape(generated_at),
-        file_path=_escape(result.file_path),
-        format_detected=_escape(format_display),
-        status=_escape(str(result.status)),
-        status_colour=status_colour,
-        error_count=error_count,
-        warning_count=warning_count,
-        info_count=info_count,
-        issues_section=issues_section,
-    )
-    html_path.write_text(html_content, encoding="utf-8")
 
     logger.info("Reports written: HTML=%s  JSON=%s", html_path, json_path)
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.6" serialNumber="urn:uuid:b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e" version="1">
+  <metadata>
+    <timestamp>2024-01-15T10:00:00Z</timestamp>
+    <authors><author><name>AcmeCorp SBOM Team</name></author></authors>
+    <component type="application" bom-ref="app-ref">
+      <supplier><name>AcmeCorp</name></supplier>
+      <name>MyApp</name>
+      <version>1.0.0</version>
+    </component>
+  </metadata>
+  <components>
+    <component type="library" bom-ref="comp-requests-2.31.0">
+      <supplier><name>AcmeCorp</name></supplier>
+      <name>requests</name>
+      <version>2.31.0</version>
+    </component>
+    <component type="library" bom-ref="comp-urllib3-2.1.0">
+      <supplier><name>AcmeCorp</name></supplier>
+      <name>urllib3</name>
+      <version>2.1.0</version>
+    </component>
+  </components>
+  <dependencies>
+    <dependency ref="app-ref">
+      <dependency ref="comp-requests-2.31.0" />
+    </dependency>
+    <dependency ref="comp-requests-2.31.0">
+      <dependency ref="comp-urllib3-2.1.0" />
+    </dependency>
+  </dependencies>
+</bom>

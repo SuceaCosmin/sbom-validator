@@ -49,6 +49,11 @@ class TestFullPassPipeline:
         result = runner.invoke(main, ["validate", str(CDX_FIXTURES / "valid-full.cdx.json")])
         assert result.exit_code == 0
 
+    def test_valid_cyclonedx_xml_minimal_full_pipeline(self, runner):
+        result = runner.invoke(main, ["validate", str(CDX_FIXTURES / "valid-minimal.cdx.xml")])
+        assert result.exit_code == 0
+        assert "PASS" in result.output
+
     def test_pass_json_output_structure(self, runner):
         """JSON output for a passing SBOM has all required keys."""
         result = runner.invoke(
@@ -106,6 +111,14 @@ class TestSchemaFailurePipeline:
     def test_invalid_cdx_schema_json_has_fr03_issues(self, runner):
         result = runner.invoke(
             main, ["validate", str(CDX_FIXTURES / "invalid-schema.cdx.json"), "--format", "json"]
+        )
+        data = json.loads(result.output)
+        assert data["status"] == "FAIL"
+        assert all(i["rule"] == "FR-03" for i in data["issues"])
+
+    def test_invalid_cdx_xml_schema_json_has_fr03_issues(self, runner):
+        result = runner.invoke(
+            main, ["validate", str(CDX_FIXTURES / "invalid-schema.cdx.xml"), "--format", "json"]
         )
         data = json.loads(result.output)
         assert data["status"] == "FAIL"

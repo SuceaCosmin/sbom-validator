@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Delta Report — vA.B.C to vX.Y.Z</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2 { color: #4c1d95; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #f5f3ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Delta Report — vA.B.C to vX.Y.Z</h1>
+  <p class="muted">Compare current release against previous release using consistent metrics.</p>
+
+  <div class="card">
+    <h2>Comparison Metadata</h2>
+    <ul>
+      <li>Previous release: <strong>vA.B.C</strong></li>
+      <li>Current release: <strong>vX.Y.Z</strong></li>
+      <li>Scope note: greenfield / feature-addition / mixed</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Topline Delta</h2>
+    <table>
+      <tr><th>Metric</th><th>Previous</th><th>Current</th><th>Delta</th><th>Notes</th></tr>
+      <tr><td>Total tokens</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+      <tr><td>Rework tokens</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+      <tr><td>CI/release failure overhead</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Delta</h2>
+    <table>
+      <tr><th>Agent</th><th>Previous</th><th>Current</th><th>Delta</th><th>Comment</th></tr>
+      <tr><td>Planner</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Adopted Improvements and Regressions</h2>
+    <h3>Adopted</h3>
+    <ul><li>...</li></ul>
+    <h3>Regressions / New Friction</h3>
+    <ul><li>...</li></ul>
+  </div>
+
+  <div class="card">
+    <h2>Efficiency Verdict and Forecast</h2>
+    <p>Verdict: Improved / Flat / Regressed</p>
+    <p>Projected next-release token range: ...</p>
+  </div>
+
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">Indicate where values are measured vs estimated and list assumptions.</p>
+  </div>
+</div>
+</body>
+</html>

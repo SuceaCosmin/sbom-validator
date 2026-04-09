@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.6" serialNumber="urn:uuid:99999999-8888-7777-6666-555555555555" version="1">
+  <metadata>
+    <timestamp>2026-04-09T20:30:00Z</timestamp>
+    <authors>
+      <author>
+        <name>Demo Security Team</name>
+      </author>
+    </authors>
+    <component type="application" bom-ref="app-demo-web-1.0.0">
+      <supplier>
+        <name>DemoCorp</name>
+      </supplier>
+      <name>demo-webapp</name>
+      <version>1.0.0</version>
+    </component>
+  </metadata>
+  <components>
+    <component bom-ref="pkg:npm/react@18.2.0">
+      <supplier>
+        <name>Meta</name>
+      </supplier>
+      <version>18.2.0</version>
+      <purl>pkg:npm/react@18.2.0</purl>
+    </component>
+  </components>
+</bom>

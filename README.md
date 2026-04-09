@@ -6,7 +6,7 @@
 
 A CLI tool to validate Software Bill of Materials (SBOM) files against format schemas and NTIA minimum element requirements.
 
-Supports **SPDX 2.3 JSON** and **CycloneDX 1.6 JSON**.
+Supports **SPDX 2.3 JSON**, **CycloneDX 1.6 JSON**, and **CycloneDX 1.6 XML**.
 
 ---
 
@@ -47,7 +47,7 @@ The file is checked against the seven elements mandated by the NTIA "Framing Sof
 | Author | FR-09 | The SBOM must identify at least one author |
 | Timestamp | FR-10 | The SBOM must include a creation timestamp |
 
-All issues from both stages are reported in a single pass — the tool never stops at the first error.
+The tool reports all issues within each stage in a single pass. If schema validation fails, NTIA checks are skipped by design.
 
 ---
 
@@ -170,8 +170,10 @@ validate-sbom:
 |--------|---------|-----------|
 | SPDX JSON | 2.3 only | `spdxVersion == "SPDX-2.3"` |
 | CycloneDX JSON | 1.6 only | `bomFormat == "CycloneDX"` + `specVersion == "1.6"` |
+| CycloneDX XML | 1.6 only | root `<bom>` namespace `http://cyclonedx.org/schema/bom/1.6` |
 
 Files with unsupported versions (e.g., SPDX 2.2 or CycloneDX 1.5) are rejected with exit code `2` and a clear error message. Format detection is based on file content, not file extension.
+CycloneDX XML inputs are validated with strict XSD schema checks in Stage 1 before any NTIA evaluation.
 
 ---
 
@@ -180,6 +182,10 @@ Files with unsupported versions (e.g., SPDX 2.2 or CycloneDX 1.5) are rejected w
 - [User Guide](docs/user-guide.md) — full installation, usage, and troubleshooting
 - [Architecture Overview](docs/architecture/architecture-overview.md) — module design and pipeline
 - [Requirements](docs/requirements.md) — functional and non-functional requirements
+- [Agent Operating Model](docs/agent-operating-model.md) — human-in-the-loop automation flow, gate ownership, and release checkpoints
+- [Release Task Tracker Convention](docs/releases/README.md) — per-release `TASKS-vX.Y.Z.md` workflow and template usage
+- [Token Report Template](docs/releases/token-report-template.html) — per-release token analytics report baseline
+- [Token Delta Template](docs/releases/token-delta-template.html) — release-to-release token comparison baseline
 
 ---
 

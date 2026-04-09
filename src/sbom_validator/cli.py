@@ -12,6 +12,7 @@ import click
 from sbom_validator import __version__
 from sbom_validator.logging_config import configure_logging
 from sbom_validator.models import ValidationResult, ValidationStatus
+from sbom_validator.presentation import humanize_field_path, humanize_message
 from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
 
@@ -44,7 +45,11 @@ def _exit_code(result: ValidationResult) -> int:
 
 
 def _render_text(result: ValidationResult) -> str:
-    """Render a human-readable text report."""
+    """Render a human-readable text report.
+
+    Rule IDs are intentionally omitted from text output to reduce
+    implementation-detail noise for end users.
+    """
     lines: list[str] = []
     status_label = result.status.value  # "PASS", "FAIL", "ERROR"
     lines.append(f"Status:  {status_label}")
@@ -55,7 +60,8 @@ def _render_text(result: ValidationResult) -> str:
         lines.append(f"Issues:  {len(result.issues)}")
         for issue in result.issues:
             lines.append(
-                f"  [{issue.severity.value}] {issue.field_path}: {issue.message} ({issue.rule})"
+                f"  [{issue.severity.value}] {humanize_field_path(issue.field_path)}: "
+                f"{humanize_message(issue.message)}"
             )
     else:
         if result.status == ValidationStatus.PASS:

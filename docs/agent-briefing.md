@@ -5,6 +5,18 @@ Read the originals only when you need detailed rationale or full mapping tables.
 
 ---
 
+## Workflow Entry Point
+
+For end-to-end execution order, gate ownership, escalation policy, and human approval checkpoints, read:
+
+- `docs/agent-operating-model.md`
+- `docs/releases/README.md` (for release-specific task tracker naming and lifecycle usage)
+- `.claude/agents/token-analyst.md` (for release token usage and delta reporting)
+
+Use this briefing for technical contracts/signatures, and the operating model for orchestration rules.
+
+---
+
 ## Architecture Decisions (8 ADRs in brief)
 
 | ADR | Decision |

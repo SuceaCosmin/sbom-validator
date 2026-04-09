@@ -63,6 +63,12 @@ class TestValidatorPassScenarios:
         result = validate(CDX_FIXTURES / "valid-full.cdx.json")
         assert result.issues == ()
 
+    def test_valid_cyclonedx_xml_minimal_returns_pass(self) -> None:
+        result = validate(CDX_FIXTURES / "valid-minimal.cdx.xml")
+        assert result.status == ValidationStatus.PASS
+        assert result.issues == ()
+        assert result.format_detected == "cyclonedx"
+
     def test_pass_result_has_correct_file_path(self) -> None:
         result = validate(SPDX_FIXTURES / "valid-minimal.spdx.json")
         assert "valid-minimal.spdx.json" in result.file_path
@@ -114,6 +120,12 @@ class TestValidatorSchemaFailScenarios:
 
     def test_invalid_cdx_schema_issues_have_fr03_rule(self) -> None:
         result = validate(CDX_FIXTURES / "invalid-schema.cdx.json")
+        assert all(i.rule == "FR-03" for i in result.issues)
+
+    def test_invalid_cdx_xml_schema_issues_have_fr03_rule(self) -> None:
+        result = validate(CDX_FIXTURES / "invalid-schema.cdx.xml")
+        assert result.status == ValidationStatus.FAIL
+        assert len(result.issues) > 0
         assert all(i.rule == "FR-03" for i in result.issues)
 
     def test_schema_fail_has_no_ntia_issues(self) -> None:
@@ -178,6 +190,10 @@ class TestValidatorNtiaFailScenarios:
         result = validate(CDX_FIXTURES / "missing-supplier.cdx.json")
         assert result.status == ValidationStatus.FAIL
 
+    def test_missing_supplier_cdx_xml_returns_fail(self) -> None:
+        result = validate(CDX_FIXTURES / "missing-supplier.cdx.xml")
+        assert result.status == ValidationStatus.FAIL
+
     def test_missing_timestamp_cdx_returns_fail(self) -> None:
         result = validate(CDX_FIXTURES / "missing-timestamp.cdx.json")
         assert result.status == ValidationStatus.FAIL
@@ -237,6 +253,7 @@ class TestValidatorErrorScenarios:
     def test_nonexistent_file_returns_error(self, tmp_path: Path) -> None:
         result = validate(tmp_path / "nonexistent.json")
         assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) >= 1
 
     def test_nonexistent_file_does_not_raise(self, tmp_path: Path) -> None:
         # The orchestrator must convert all exceptions to ERROR results
@@ -254,6 +271,7 @@ class TestValidatorErrorScenarios:
         bad_file.write_text("not json", encoding="utf-8")
         result = validate(bad_file)
         assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) >= 1
 
     def test_invalid_json_does_not_raise(self, tmp_path: Path) -> None:
         bad_file = tmp_path / "bad.json"
@@ -268,6 +286,7 @@ class TestValidatorErrorScenarios:
         unknown.write_text('{"neither": "spdx nor cyclonedx"}', encoding="utf-8")
         result = validate(unknown)
         assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) >= 1
 
     def test_unknown_format_does_not_raise(self, tmp_path: Path) -> None:
         unknown = tmp_path / "unknown.json"

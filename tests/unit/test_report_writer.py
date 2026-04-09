@@ -411,6 +411,76 @@ class TestHtmlReportContent:
         html = self._load_html(_pass_result(), tmp_path)
         assert len(html.strip()) > 0
 
+    def test_html_humanizes_xml_field_paths_and_messages(self, tmp_path: Path) -> None:
+        xml_issue = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            field_path=(
+                "/{http://cyclonedx.org/schema/bom/1.6}bom/"
+                "{http://cyclonedx.org/schema/bom/1.6}components/"
+                "{http://cyclonedx.org/schema/bom/1.6}component"
+            ),
+            message=(
+                "Unexpected child with tag '{http://cyclonedx.org/schema/bom/1.6}version' "
+                "at position 2. Tag 'bom:name' expected."
+            ),
+            rule="FR-03",
+        )
+        result = ValidationResult(
+            status=ValidationStatus.FAIL,
+            file_path="/tmp/bom.xml",
+            format_detected="cyclonedx",
+            issues=(xml_issue,),
+        )
+        html = self._load_html(result, tmp_path)
+        assert "/bom/components/component" in html
+        assert "{http://cyclonedx.org/schema/bom/1.6}" not in html
+        assert "Element &#x27;name&#x27;" in html or "Element 'name'" in html
+
+    def test_html_hides_ntia_rule_ids_and_adds_supplier_hint(self, tmp_path: Path) -> None:
+        ntia_issue = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            field_path="components[0].supplier",
+            message="Component 'requests' is missing a supplier name (NTIA FR-04)",
+            rule="FR-04",
+        )
+        result = ValidationResult(
+            status=ValidationStatus.FAIL,
+            file_path="/tmp/bom.json",
+            format_detected="cyclonedx",
+            issues=(ntia_issue,),
+        )
+        html = self._load_html(result, tmp_path)
+        assert "NTIA FR-04" not in html
+        assert "provide a supplier/organization name" in html
+        assert "<th>Hint</th>" in html
+        assert (
+            "Component &#x27;requests&#x27; is missing a supplier name." in html
+            or "Component 'requests' is missing a supplier name." in html
+        )
+
+    def test_html_places_message_and_hint_in_separate_columns(self, tmp_path: Path) -> None:
+        xml_issue = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            field_path="packages.0",
+            message="'SPDXID' is a required property",
+            rule="FR-02",
+        )
+        result = ValidationResult(
+            status=ValidationStatus.FAIL,
+            file_path="/tmp/bom.json",
+            format_detected="spdx",
+            issues=(xml_issue,),
+        )
+        html = self._load_html(result, tmp_path)
+        assert (
+            "Missing required field &#x27;SPDXID&#x27;." in html
+            or "Missing required field 'SPDXID'." in html
+        )
+        assert (
+            "add &#x27;SPDXID&#x27; at this location." in html
+            or "add 'SPDXID' at this location." in html
+        )
+
 
 # ===========================================================================
 # TestReturnValue
@@ -463,7 +533,7 @@ class TestToolVersionFallback:
 
     def test_tool_version_fallback_when_package_not_found(self, tmp_path: Path) -> None:
         """When importlib.metadata.version raises PackageNotFoundError,
-        _tool_version() must return the hardcoded fallback '0.2.0'."""
+        _tool_version() must return the fallback 'unknown'."""
         from sbom_validator.report_writer import _tool_version
 
         with patch(
@@ -472,7 +542,7 @@ class TestToolVersionFallback:
         ):
             version = _tool_version()
 
-        assert version == "0.2.0"
+        assert version == "unknown"
 
     def test_write_reports_uses_fallback_version_in_json(self, tmp_path: Path) -> None:
         """When the package is not installed, write_reports must still produce a
@@ -484,4 +554,4 @@ class TestToolVersionFallback:
             _, json_path = write_reports(_pass_result(), tmp_path)
 
         data = json.loads(json_path.read_text(encoding="utf-8"))
-        assert data["tool_version"] == "0.2.0"
+        assert data["tool_version"] == "unknown"

@@ -22,6 +22,16 @@ from sbom_validator.schema_validator import validate_schema
 logger = logging.getLogger(__name__)
 
 
+def _error_issue(message: str, rule: str = "SYS-ERROR") -> ValidationIssue:
+    """Build a consistent ERROR issue payload for tool/input failures."""
+    return ValidationIssue(
+        severity=IssueSeverity.ERROR,
+        field_path="",
+        message=message,
+        rule=rule,
+    )
+
+
 def validate(file_path: str | Path) -> ValidationResult:
     """Validate an SBOM file through the full pipeline.
 
@@ -45,11 +55,11 @@ def validate(file_path: str | Path) -> ValidationResult:
         format_name = detect_format(file_path)
         logger.info("Format detected: %s", format_name)
     except (ParseError, UnsupportedFormatError) as e:
-        logger.warning("Unexpected error during validation of %s: %s", str_path, e)
+        logger.warning("Validation input error for %s: %s", str_path, e)
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(),
+            issues=(_error_issue(str(e), rule="FR-01"),),
             format_detected=None,
         )
     except Exception as e:
@@ -57,34 +67,27 @@ def validate(file_path: str | Path) -> ValidationResult:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(
-                ValidationIssue(
-                    severity=IssueSeverity.ERROR,
-                    field_path="",
-                    message=str(e),
-                    rule="",
-                ),
-            ),
+            issues=(_error_issue(str(e)),),
             format_detected=None,
         )
 
-    # Stage 1: Read raw JSON
+    # Stage 1: Read raw document
     logger.debug("Stage %s \u2192 %s", "format_detection", "schema_validation")
     try:
-        raw_doc = json.loads(file_path.read_text(encoding="utf-8"))
+        raw_text = file_path.read_text(encoding="utf-8")
+        if format_name == "spdx":
+            raw_doc: dict[str, object] | str = json.loads(raw_text)
+        else:
+            try:
+                raw_doc = json.loads(raw_text)
+            except json.JSONDecodeError:
+                raw_doc = raw_text
     except Exception as e:
         logger.error("Unexpected error during validation of %s: %s", str_path, e)
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(
-                ValidationIssue(
-                    severity=IssueSeverity.ERROR,
-                    field_path="",
-                    message=str(e),
-                    rule="",
-                ),
-            ),
+            issues=(_error_issue(str(e)),),
             format_detected=format_name,
         )
 
@@ -109,18 +112,11 @@ def validate(file_path: str | Path) -> ValidationResult:
         else:
             sbom = parse_cyclonedx(file_path)
     except ParseError as e:
-        logger.warning("Unexpected error during validation of %s: %s", str_path, e)
+        logger.warning("Validation parse error for %s: %s", str_path, e)
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(
-                ValidationIssue(
-                    severity=IssueSeverity.ERROR,
-                    field_path="",
-                    message=str(e),
-                    rule="",
-                ),
-            ),
+            issues=(_error_issue(str(e)),),
             format_detected=format_name,
         )
 
