@@ -10,9 +10,33 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  build-linux:
+  verify-tag-provenance:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag commit belongs to master or develop
+        run: |
+          git fetch origin master develop
+          if git branch -r --contains "$GITHUB_SHA" | grep -Eq "origin/(master|develop)$"; then
+            echo "Tag commit is on an approved branch."
+          else
+            echo "Tag commit is not on master or develop."
+            exit 1
+          fi
+
+  build-linux:
+    needs: verify-tag-provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -24,7 +48,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: latest
+          version: "1.8.3"
           virtualenvs-create: true
           virtualenvs-in-project: true
 
@@ -37,13 +61,20 @@ jobs:
       - name: Smoke test
         run: ./dist/sbom-validator --version
 
+      - name: Generate checksums
+        run: sha256sum dist/sbom-validator > dist/sbom-validator.sha256
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/sbom-validator
+          files: |
+            dist/sbom-validator
+            dist/sbom-validator.sha256
 
   build-windows:
+    needs: verify-tag-provenance
     runs-on: windows-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -56,7 +87,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Poetry
-        run: pip install poetry
+        run: pip install poetry==1.8.3
 
       - name: Install dependencies
         run: poetry install --with dev
@@ -67,7 +98,12 @@ jobs:
       - name: Smoke test
         run: ./dist/sbom-validator.exe --version
 
+      - name: Generate checksums
+        run: sha256sum dist/sbom-validator.exe > dist/sbom-validator.exe.sha256
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/sbom-validator.exe
+          files: |
+            dist/sbom-validator.exe
+            dist/sbom-validator.exe.sha256

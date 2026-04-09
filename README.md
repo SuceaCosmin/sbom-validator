@@ -47,7 +47,7 @@ The file is checked against the seven elements mandated by the NTIA "Framing Sof
 | Author | FR-09 | The SBOM must identify at least one author |
 | Timestamp | FR-10 | The SBOM must include a creation timestamp |
 
-All issues from both stages are reported in a single pass — the tool never stops at the first error.
+The tool reports all issues within each stage in a single pass. If schema validation fails, NTIA checks are skipped by design.
 
 ---
 

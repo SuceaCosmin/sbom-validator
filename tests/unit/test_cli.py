@@ -24,6 +24,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
+from sbom_validator import __version__
 from sbom_validator.cli import main
 
 # ---------------------------------------------------------------------------
@@ -59,7 +60,7 @@ class TestCliVersion:
 
     def test_version_output_contains_version_string(self, runner: CliRunner) -> None:
         result = runner.invoke(main, ["--version"])
-        assert "0.1.0" in result.output
+        assert __version__ in result.output
 
 
 # ===========================================================================

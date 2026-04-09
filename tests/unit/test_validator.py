@@ -237,6 +237,7 @@ class TestValidatorErrorScenarios:
     def test_nonexistent_file_returns_error(self, tmp_path: Path) -> None:
         result = validate(tmp_path / "nonexistent.json")
         assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) >= 1
 
     def test_nonexistent_file_does_not_raise(self, tmp_path: Path) -> None:
         # The orchestrator must convert all exceptions to ERROR results
@@ -254,6 +255,7 @@ class TestValidatorErrorScenarios:
         bad_file.write_text("not json", encoding="utf-8")
         result = validate(bad_file)
         assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) >= 1
 
     def test_invalid_json_does_not_raise(self, tmp_path: Path) -> None:
         bad_file = tmp_path / "bad.json"
@@ -268,6 +270,7 @@ class TestValidatorErrorScenarios:
         unknown.write_text('{"neither": "spdx nor cyclonedx"}', encoding="utf-8")
         result = validate(unknown)
         assert result.status == ValidationStatus.ERROR
+        assert len(result.issues) >= 1
 
     def test_unknown_format_does_not_raise(self, tmp_path: Path) -> None:
         unknown = tmp_path / "unknown.json"
