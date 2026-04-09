@@ -116,3 +116,7 @@ def validate_cmd(file: str, output_format: str, log_level: str, report_dir: Path
         write_reports(result, report_dir)
 
     sys.exit(_exit_code(result))
+
+
+if __name__ == "__main__":
+    main()

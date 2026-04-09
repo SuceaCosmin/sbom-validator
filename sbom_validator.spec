@@ -5,13 +5,18 @@
 
 from pathlib import Path
 import sys
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 src_root = Path(SPECPATH)
 schemas_dir = src_root / "src" / "sbom_validator" / "schemas"
 
 # Bundle data files from packages that use non-Python assets at runtime
-_extra_datas = collect_data_files("rfc3987_syntax") + collect_data_files("jsonschema")
+_extra_datas = (
+    collect_data_files("rfc3987_syntax")
+    + collect_data_files("jsonschema")
+    + collect_data_files("xmlschema")
+    + collect_data_files("elementpath")
+)
 
 a = Analysis(
     [str(src_root / "src" / "sbom_validator" / "cli.py")],
@@ -31,7 +36,7 @@ a = Analysis(
         "sbom_validator.parsers.cyclonedx_parser",
         "sbom_validator.logging_config",
         "sbom_validator.report_writer",
-    ],
+    ] + collect_submodules("xmlschema") + collect_submodules("elementpath"),
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
