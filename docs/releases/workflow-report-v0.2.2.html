@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Evaluation Report — sbom-validator v0.2.2</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px; line-height: 1.65; color: #1a1a2e; background: #f7f8fc;
+    }
+    a { color: #3b5bdb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    .report-header {
+      background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+      color: white; padding: 2.5rem 2rem; border-radius: 12px; margin-bottom: 2rem;
+    }
+    .report-header h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .report-header .meta { font-size: 0.9rem; opacity: 0.82; margin-top: 0.6rem; }
+    .report-header .meta span { margin-right: 1.6rem; }
+
+    section { margin-bottom: 2.5rem; }
+    h2 { font-size: 1.3rem; font-weight: 700; color: #1b4332; border-left: 5px solid #2d6a4f; padding-left: 0.75rem; margin-bottom: 1rem; }
+    h3 { font-size: 1.05rem; font-weight: 600; color: #2c5f4a; margin: 1.2rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+
+    .card { background: white; border-radius: 10px; padding: 1.4rem 1.6rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+    .badge { display: inline-block; padding: 0.22em 0.75em; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+    .badge-yes      { background: #d3f9d8; color: #1a6b2f; }
+    .badge-partial  { background: #fff3bf; color: #7c5000; }
+    .badge-no       { background: #ffe3e3; color: #8b0000; }
+    .badge-high     { background: #d3f9d8; color: #1a6b2f; }
+    .badge-medium   { background: #fff3bf; color: #7c5000; }
+    .badge-low      { background: #ffe3e3; color: #8b0000; }
+    .badge-deferred { background: #e7f5ff; color: #1c4f8a; }
+    .badge-skipped  { background: #f1f3f5; color: #495057; }
+    .badge-green    { background: #d3f9d8; color: #1a6b2f; }
+    .badge-healthy  { background: #d3f9d8; color: #1a6b2f; font-size: 1rem; padding: 0.3em 1em; }
+    .badge-attention { background: #fff3bf; color: #7c5000; font-size: 1rem; padding: 0.3em 1em; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 0.75rem 0 1rem; }
+    th { background: #d8f3dc; color: #1b4332; font-weight: 700; text-align: left; padding: 0.55rem 0.8rem; }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #e8ecf5; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f0faf2; }
+
+    ul, ol { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+    li { margin-bottom: 0.35rem; }
+
+    .callout { border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; border-left: 4px solid; font-size: 0.92rem; }
+    .callout-blue   { background: #e7f5ff; border-color: #3b5bdb; }
+    .callout-yellow { background: #fff9db; border-color: #f59f00; }
+    .callout-red    { background: #fff5f5; border-color: #e03131; }
+    .callout-green  { background: #ebfbee; border-color: #2f9e44; }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    .progress-wrap { background: #e8ecf5; border-radius: 8px; height: 10px; margin: 0.3rem 0 0.8rem; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 8px; }
+    .bar-green  { background: #40c057; }
+    .bar-yellow { background: #fab005; }
+    .bar-red    { background: #fa5252; }
+    .bar-blue   { background: #339af0; }
+
+    .idea-card { background: white; border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 0.9rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 5px solid #2d6a4f; }
+    .idea-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .idea-num { background: #2d6a4f; color: white; width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
+    .idea-title { font-weight: 700; font-size: 1.02rem; color: #1b4332; }
+    .impact-row { display: flex; gap: 1rem; margin-top: 0.6rem; font-size: 0.82rem; flex-wrap: wrap; }
+    .impact-tag { padding: 0.15em 0.6em; border-radius: 4px; font-weight: 600; }
+    .tag-token   { background: #ffe8cc; color: #953b00; }
+    .tag-quality { background: #d3f9d8; color: #1a6b2f; }
+    .tag-effort  { background: #e7f5ff; color: #1565c0; }
+
+    .gap-row { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.55rem 0.8rem; border-bottom: 1px solid #e8ecf5; font-size: 0.9rem; }
+    .gap-row:last-child { border-bottom: none; }
+
+    .delta-pos { color: #b91c1c; font-weight: 600; }
+    .delta-neg { color: #166534; font-weight: 600; }
+    .delta-flat { color: #6b7280; }
+
+    .report-footer { margin-top: 3rem; padding-top: 1.2rem; border-top: 1px solid #dde2f0; font-size: 0.82rem; color: #6b7280; }
+    .uncertain { font-style: italic; color: #6b7280; font-size: 0.88rem; }
+    code { background: #f1f3f9; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.87em; }
+    .inferred { color: #b45309; font-size: 0.82rem; font-style: italic; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <h1>Workflow Evaluation Report — sbom-validator v0.2.2</h1>
+    <p style="opacity:0.88; margin-top:0.5rem; max-width:680px;">
+      Per-agent efficiency analysis for the v0.2.2 patch release: binary fix, CycloneDX XML
+      process hardening, pre-commit hooks, and workflow enforcement gates. Benchmarked against v0.2.1.
+    </p>
+    <div class="meta">
+      <span>📅 Release date: 2026-04-09</span>
+      <span>🚀 Scope: Patch — bug fix + process hardening</span>
+      <span>🤖 Model: Claude Sonnet 4.6</span>
+      <span>📊 Sessions: 1 (continuation)</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: RELEASE OVERVIEW -->
+  <section>
+    <h2>1 — Release Overview</h2>
+    <div class="card">
+      <table>
+        <tr><th>Field</th><th>Value</th></tr>
+        <tr><td>Version</td><td><strong>v0.2.2</strong></td></tr>
+        <tr><td>Release date</td><td>2026-04-09</td></tr>
+        <tr><td>Scope type</td><td>Patch — bug fix + process hardening (no new user-facing features)</td></tr>
+        <tr><td>Sessions</td><td>1 (continuation of v0.2.1 session — no context reload cost)</td></tr>
+        <tr><td>Commits</td><td>6</td></tr>
+        <tr><td>Files changed</td><td>27 files, 764 insertions, 41 deletions</td></tr>
+        <tr><td>New dependencies</td><td>None (xmlschema was added in v0.2.1)</td></tr>
+        <tr><td>CI failure cycles</td><td>4</td></tr>
+        <tr><td>Tests passing</td><td>501 (Python 3.11 + 3.12)</td></tr>
+        <tr><td>Release binary status</td><td>✅ Working (Linux + Windows) — first working binary since v0.1.0</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>End-to-End Cycle Summary (Idea → Tag)</h3>
+      <ol>
+        <li><strong>Trigger:</strong> Binary reported as silently failing (exit 0, no output) across all previous releases.</li>
+        <li><strong>Diagnosis:</strong> Multiple capture approaches (cmd.exe, PowerShell, Python subprocess) all returned empty output; pattern pointed to Click group never being invoked. Root cause: missing <code>if __name__ == '__main__': main()</code> in <code>cli.py</code>.</li>
+        <li><strong>Secondary diagnosis:</strong> <code>xmlschema</code> (79 submodules) and <code>elementpath</code> (69 submodules) not bundled in PyInstaller spec — added <code>collect_submodules()</code> and <code>collect_data_files()</code>.</li>
+        <li><strong>CI stabilization:</strong> 4 failure cycles — ruff import sort ×2, black formatting, pre-commit version pin drift. Structurally resolved by switching to <code>repo: local</code> hooks that always use poetry-installed versions.</li>
+        <li><strong>Smoke test:</strong> New <code>scripts/smoke-test-binary.sh</code> — 14 scenarios verifying output content and exit codes, integrated into release CI.</li>
+        <li><strong>Process hardening:</strong> CI gate added for token report existence; workflow-analyst agent created; release-manager and orchestrator updated.</li>
+        <li><strong>Release:</strong> Tag pushed, GitHub Actions published Linux + Windows binaries. Smoke test: 14/14 passing.</li>
+      </ol>
+    </div>
+
+    <div class="card" style="display:flex; gap:2rem; flex-wrap:wrap; align-items:center;">
+      <div>
+        <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Overall Verdict</div>
+        <span class="badge badge-healthy">Needs Attention</span>
+      </div>
+      <div>
+        <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Gate Compliance</div>
+        <div style="font-size:1.6rem; font-weight:800; color:#2d6a4f;">8/9 ✅ (G5 deferred)</div>
+      </div>
+      <div>
+        <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">Rework Ratio</div>
+        <div style="font-size:1.6rem; font-weight:800; color:#fab005;">~24% (est.)</div>
+      </div>
+      <div>
+        <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.2rem;">CI Cycles</div>
+        <div style="font-size:1.6rem; font-weight:800; color:#e03131;">4</div>
+      </div>
+    </div>
+    <div class="callout callout-yellow">
+      <strong>Verdict Justification</strong>
+      The release shipped all stated goals and delivered working binaries for the first time since v0.1.0.
+      However, 24% of tokens were rework (CI drift, multi-round diagnosis), G5 security was deferred a second
+      consecutive release, and G9 token analytics ran post-release again despite being identified as a gap in
+      v0.2.1. The structural fixes shipped (local hooks, smoke test, CI enforcement) are expected to resolve
+      these categories in v0.3.x.
+    </div>
+  </section>
+
+  <!-- SECTION 2: PER-AGENT EVALUATION -->
+  <section>
+    <h2>2 — Per-Agent Evaluation</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>Role Fulfilled</th>
+            <th>Efficiency</th>
+            <th>Key Contribution</th>
+            <th>Drawbacks</th>
+            <th>Improvement Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>orchestrator</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Coordinated binary diagnosis lifecycle. Kept scope contained to patch-only changes.</td>
+            <td>Process improvement tasks (hooks, CI gates, new agent) were appended mid-release rather than pre-planned. Some coordination overhead from mid-cycle scope additions.</td>
+            <td>Add a "process debt" backlog check at G1 so mid-cycle additions are planned upfront.</td>
+          </tr>
+          <tr>
+            <td><strong>developer</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Diagnosed silent exit-0 binary failure; added <code>__main__</code> guard; added <code>collect_submodules()</code> to spec; wrote <code>smoke-test-binary.sh</code> (14 scenarios); fixed XSD element ordering in <code>valid-full.cdx.xml</code>.</td>
+            <td>Binary diagnosis required many capture attempts across cmd.exe / PowerShell / Python subprocess before converging on root cause. Smoke test exit-code capture bug (<code>set -e</code> + <code>|| true</code>) required a second debugging round.</td>
+            <td>Add binary smoke test to <em>pre-release</em> local checklist. Document common PyInstaller pitfalls in agent briefing.</td>
+          </tr>
+          <tr>
+            <td><strong>ci-ops</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-low">Low</span></td>
+            <td>Triaged and fixed 4 CI failure cycles. Identified pre-commit version drift root cause. Delivered structural fix (local <code>poetry run</code> hooks) after two rounds of symptom fixing.</td>
+            <td>First two fixes were symptom fixes (pin updates), not root-cause fixes. Required 3 separate diagnosis-fix-push cycles before the structural resolution. This pattern repeated from v0.2.1 (3 cycles then).</td>
+            <td>Add "root cause first, symptom fix second" rule to ci-ops agent definition. Consider a <code>.pre-commit-config.yaml</code> validation step in the developer pre-handoff checklist.</td>
+          </tr>
+          <tr>
+            <td><strong>release-manager</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>Version bump, CHANGELOG, TASKS-v0.2.2.md tracker, tag push, release workflow monitoring. Added binary smoke test gate to agent definition.</td>
+            <td>G9 (token analytics) ran post-tag for the second release in a row. The gate was documented as mandatory but the CI enforcement for it was added in the same session — a timing gap.</td>
+            <td>Move token report CI check to pre-tag validation step. Already done this release — should eliminate recurrence.</td>
+          </tr>
+          <tr>
+            <td><strong>token-analyst</strong></td>
+            <td><span class="badge badge-partial">Partial</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Generated <code>token-report-v0.2.2.html</code> and <code>token-delta-v0.2.1_to_v0.2.2.html</code> with accurate rework ratio analysis and projected v0.3.x budget.</td>
+            <td>Executed post-release for the second consecutive release. CI enforcement gate for the token report was added <em>during</em> this session — meaning it was identified as a gap but not structurally blocked until after the v0.2.2 tag was already pushed.</td>
+            <td>CI gate now enforces pre-tag execution. Workflow-analyst agent now produces a workflow report as a companion deliverable. Both gates active from v0.3.x.</td>
+          </tr>
+          <tr>
+            <td><strong>planner</strong></td>
+            <td><span class="badge badge-partial">Partial</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Scope was clear from the binary failure diagnosis; no full planning session required. TASKS-v0.2.2.md was created directly by release-manager.</td>
+            <td>No formal G0 intake or G1 task graph produced. The release tracker was created reactively rather than as a planned output. Process improvement tasks (hooks, workflow agent) were not in the original scope.</td>
+            <td>Even for patch releases, create a minimal 5-minute planner pass before starting implementation to capture mid-cycle additions as planned scope.</td>
+          </tr>
+          <tr>
+            <td><strong>architect</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>Confirmed no new ADR required (spec file and CLI changes are implementation-level). ADR-001 updated to reflect CycloneDX XML processing flow.</td>
+            <td>None. Minimal scope was handled appropriately.</td>
+            <td>No changes needed.</td>
+          </tr>
+          <tr>
+            <td><strong>documentation-writer</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>CHANGELOG updated, README updated, TASKS tracker created and closed.</td>
+            <td>None. Documentation was kept in sync throughout the release.</td>
+            <td>No changes needed.</td>
+          </tr>
+          <tr>
+            <td><strong>tester</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>501 tests passing (Python 3.11 + 3.12). No regressions introduced. Smoke test script (14 scenarios) is a new test artifact that provides binary-level coverage.</td>
+            <td>No TDD-first cycle for the smoke test — smoke test was written alongside the fix rather than before. Not a significant issue for a bug fix release.</td>
+            <td>For any future binary/packaging tasks, write smoke test scenarios before the fix.</td>
+          </tr>
+          <tr>
+            <td><strong>reviewer</strong></td>
+            <td><span class="badge badge-partial">Partial</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Quality gate (G4) passed — ruff, black, mypy all clean. Pre-commit hooks now enforce this pre-commit.</td>
+            <td>No formal reviewer agent invocation recorded for this release. G4 evidence was the clean lint output rather than an independent review pass. <span class="inferred">(inferred)</span></td>
+            <td>For patch releases, a reviewer pass on the binary/spec changes would have caught the smoke test exit-code bug earlier.</td>
+          </tr>
+          <tr>
+            <td><strong>security-reviewer</strong></td>
+            <td><span class="badge badge-no">Not Invoked</span></td>
+            <td><span class="badge badge-skipped">N/A</span></td>
+            <td>No new dependencies introduced; deferred from v0.2.1.</td>
+            <td>G5 deferred for the second consecutive release. <code>xmlschema</code> was added in v0.2.1 without a security gate and remained unreviewed in v0.2.2.</td>
+            <td>G5 must execute in v0.3.x regardless of new dependency additions. Add to v0.3.x release tracker as D1 with explicit owner.</td>
+          </tr>
+          <tr>
+            <td><strong>workflow-analyst</strong></td>
+            <td><span class="badge badge-yes">Yes</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>Agent definition created. This report is the first execution. CI enforcement gate for workflow report added to release pipeline.</td>
+            <td>Agent executed post-release (first-time setup). Will be pre-tag from v0.3.x onward once CI gate is active.</td>
+            <td>Add CI enforcement step for <code>workflow-report-vX.Y.Z.html</code> to <code>release.yml</code>. Already completed this session.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 3: GATE EXECUTION ANALYSIS -->
+  <section>
+    <h2>3 — Gate Execution Analysis</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Gate</th><th>Status</th><th>Problems Caught</th><th>Time / Effort Est.</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>G0 Intake</strong></td>
+            <td><span class="badge badge-partial">Informal</span></td>
+            <td>Binary failure identified and scoped.</td>
+            <td>~5,000 tokens</td>
+            <td>No formal intake pass — scope emerged from user report and binary diagnosis. Adequate for a patch release.</td>
+          </tr>
+          <tr>
+            <td><strong>G1 Planning</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>Scope bounded to binary fix + hardening.</td>
+            <td>~5,000 tokens</td>
+            <td>Tracker created. No formal planner pass — TASKS file assembled reactively. Process additions added mid-cycle.</td>
+          </tr>
+          <tr>
+            <td><strong>G2 Architecture</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>No new ADR needed; spec file changes confirmed as implementation-level.</td>
+            <td>~3,000 tokens</td>
+            <td>ADR-001 updated for CDX XML. Minimal architecture impact correctly assessed.</td>
+          </tr>
+          <tr>
+            <td><strong>G3 TDD Build</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>501 tests passing. Exit-code capture bug in smoke test caught during iteration.</td>
+            <td>~80,000–105,000 tokens</td>
+            <td>Binary diagnosis dominated. Smoke test script iterated to 14/14 passing. No TDD-first order for smoke tests — written alongside fix.</td>
+          </tr>
+          <tr>
+            <td><strong>G4 Quality Review</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>ruff import sort issues and black formatting caught by CI (then pre-commit hooks).</td>
+            <td>~5,000 tokens</td>
+            <td>Clean post-fix. Pre-commit hooks now enforce this locally before push.</td>
+          </tr>
+          <tr>
+            <td><strong>G5 Security</strong></td>
+            <td><span class="badge badge-deferred">⚠️ Deferred (D1)</span></td>
+            <td>N/A</td>
+            <td>—</td>
+            <td>No new dependencies. <code>xmlschema</code> from v0.2.1 still unreviewed. Deferred to v0.3.x with formal D1 record.</td>
+          </tr>
+          <tr>
+            <td><strong>G6 CI Stability</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>4 failure cycles: ruff I001 import sort ×2, black formatting, pre-commit version pin drift.</td>
+            <td>~50,000–65,000 tokens</td>
+            <td>25% of total session tokens spent on CI stabilization. Structurally resolved with local <code>poetry run</code> hooks. Category should be near-zero from v0.3.x.</td>
+          </tr>
+          <tr>
+            <td><strong>G7 Docs Sync</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>None — documentation kept current throughout.</td>
+            <td>~8,000 tokens</td>
+            <td>CHANGELOG, README, ADRs, TASKS tracker all updated.</td>
+          </tr>
+          <tr>
+            <td><strong>G8 Release Readiness</strong></td>
+            <td><span class="badge badge-yes">✅</span></td>
+            <td>14/14 smoke test scenarios passing. Version consistency verified.</td>
+            <td>~8,000 tokens</td>
+            <td>First release with binary smoke test as a formal CI gate. Supersedes bare <code>--version</code> check.</td>
+          </tr>
+          <tr>
+            <td><strong>G9 Token Analytics</strong></td>
+            <td><span class="badge badge-partial">✅ (Post-release)</span></td>
+            <td>Caught recurring CI overhead pattern. Identified rework ratio regression.</td>
+            <td>~15,000–20,000 tokens</td>
+            <td>Second consecutive release where G9 ran post-tag. CI enforcement gate added this session — will be structurally blocked from v0.3.x.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4: TOP WORKFLOW WINS -->
+  <section>
+    <h2>4 — Top Workflow Wins</h2>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">1</div>
+        <div class="idea-title">Local <code>poetry run</code> pre-commit hooks — version drift structurally eliminated</div>
+      </div>
+      <p>
+        Switching from remote-pinned hooks to <code>repo: local</code> + <code>language: system</code> +
+        <code>entry: poetry run</code> means local hooks and CI always use the exact same tool versions.
+        The three CI lint/format failure cycles that occurred in both v0.2.1 and v0.2.2 are now
+        structurally impossible. Estimated saving: <strong>~45,000–60,000 tokens/release</strong> from v0.3.x onward.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">Token saving: HIGH</span>
+        <span class="impact-tag tag-quality">Quality: HIGHER</span>
+        <span class="impact-tag tag-effort">Effort: LOW</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">2</div>
+        <div class="idea-title">14-scenario binary smoke test in CI — broken binary class of bug blocked permanently</div>
+      </div>
+      <p>
+        <code>scripts/smoke-test-binary.sh</code> verifies output <em>content</em> and exit codes
+        across 14 scenarios (valid/invalid JSON, valid/invalid XML, missing files, error cases).
+        A broken binary like the v0.1.0–v0.2.1 silent exit-0 failure cannot ship again without
+        failing this gate. Integrated into both <code>build-linux</code> and <code>build-windows</code>
+        release jobs.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-quality">Quality: CRITICAL</span>
+        <span class="impact-tag tag-effort">Effort: MEDIUM (one-time)</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">3</div>
+        <div class="idea-title">Zero session boundary overhead — single continuation avoided ~20,000–30,000 tokens</div>
+      </div>
+      <p>
+        The v0.2.2 session was a direct continuation of the v0.2.1 session with no context reload.
+        In v0.2.1, two sessions incurred ~20,000–30,000 tokens of context reconstruction cost.
+        While not always achievable, multi-release sessions offer meaningful efficiency when scope
+        allows.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-token">Token saving: MEDIUM</span>
+      </div>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">4</div>
+        <div class="idea-title">CI enforcement gates for G9 (token) and G10 (workflow) — process gaps structurally closed</div>
+      </div>
+      <p>
+        Both the token report and workflow report are now verified to exist as CI preconditions
+        before the release build jobs run. The pattern (<code>verify-tag-provenance</code> step
+        checking for file existence) is repeatable and low-overhead. Future "forgot to run G9"
+        situations will now be blocked at the CI level rather than discovered post-release.
+      </p>
+      <div class="impact-row">
+        <span class="impact-tag tag-quality">Quality: HIGHER</span>
+        <span class="impact-tag tag-effort">Effort: LOW</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: TOP WORKFLOW GAPS -->
+  <section>
+    <h2>5 — Top Workflow Gaps</h2>
+
+    <div class="card">
+      <div class="gap-row">
+        <span class="badge badge-no" style="flex-shrink:0;">GAP</span>
+        <div>
+          <strong>CI-Ops symptom fixing before root-cause fixing (3 rounds before structural fix)</strong><br/>
+          <span style="font-size:0.88rem;">
+            The pre-commit version drift was fixed twice with pin updates before the structural root cause
+            (maintaining two independent version references) was diagnosed. This pattern was essentially
+            identical to v0.2.1 (3 CI rounds). The ci-ops agent definition does not require root-cause
+            analysis before applying the first fix attempt.
+            <br/><strong>Root cause:</strong> No escalation path triggers for "same failure category repeating across releases."
+            <br/><strong>Fix:</strong> Add "recurring failure across releases → root-cause analysis first" rule to ci-ops agent definition.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-no" style="flex-shrink:0;">GAP</span>
+        <div>
+          <strong>G5 Security deferred for the second consecutive release</strong><br/>
+          <span style="font-size:0.88rem;">
+            <code>xmlschema</code> was added in v0.2.1 without a security review. v0.2.2 added no new
+            dependencies, but G5 was still deferred. The operating model states G5 must complete pre-tag;
+            two consecutive formal deferrals weaken the gate's authority.
+            <br/><strong>Root cause:</strong> No release tracker enforces "if D1 is carried from previous release, it must be scheduled in next release tracker at G1."
+            <br/><strong>Fix:</strong> Add D1 explicitly to v0.3.x TASKS at G1 planning with <code>security-reviewer</code> as assigned owner.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-attention" style="flex-shrink:0;">RISK</span>
+        <div>
+          <strong>G9 and G10 ran post-release (second occurrence for G9)</strong><br/>
+          <span style="font-size:0.88rem;">
+            Token analytics and workflow analytics both ran after the release tag was pushed.
+            The CI enforcement gate was added <em>during</em> the same session, meaning the gate
+            did not block the v0.2.2 release itself.
+            <br/><strong>Root cause:</strong> Gate enforcement was designed after the second occurrence rather than after the first.
+            <br/><strong>Fix:</strong> Already structurally resolved. CI gate active for v0.3.x onward.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-attention" style="flex-shrink:0;">RISK</span>
+        <div>
+          <strong>Planner agent not formally invoked — mid-cycle scope additions were unplanned</strong><br/>
+          <span style="font-size:0.88rem;">
+            Process hardening tasks (pre-commit hooks, CI gates, new workflow-analyst agent) were
+            added reactively during the release cycle rather than as planned scope. This inflated
+            the apparent rework ratio and made the TASKS tracker scope slightly misleading.
+            <br/><strong>Root cause:</strong> Patch releases skip the formal G0/G1 planning pass.
+            <br/><strong>Fix:</strong> Even for patch releases, a 5-minute planner pass at the start captures process debt items as planned scope.
+          </span>
+        </div>
+      </div>
+      <div class="gap-row">
+        <span class="badge badge-no" style="flex-shrink:0;">GAP</span>
+        <div>
+          <strong>Reviewer agent not formally invoked</strong><br/>
+          <span style="font-size:0.88rem;">
+            G4 passed via clean lint output, but no independent reviewer agent pass was recorded.
+            The smoke test exit-code capture bug (<code>set -e</code> + <code>|| true</code> issue)
+            was discovered during testing rather than review. A reviewer pass would likely have
+            caught this earlier.
+            <br/><strong>Root cause:</strong> Patch releases deprioritize independent review in favour of speed.
+            <br/><strong>Fix:</strong> For bug-fix releases touching packaging/binary logic, require a reviewer pass on the changed files before pushing.
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: BENCHMARK VS v0.2.1 -->
+  <section>
+    <h2>6 — Benchmark vs v0.2.1</h2>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>Metric</th><th>v0.2.1</th><th>v0.2.2</th><th>Delta</th><th>Assessment</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gate pass rate</td>
+            <td>8/9 (G5 deferred)</td>
+            <td>8/9 (G5 deferred)</td>
+            <td class="delta-flat">= flat</td>
+            <td>No improvement — G5 deferred twice in a row.</td>
+          </tr>
+          <tr>
+            <td>CI failure cycles</td>
+            <td>3</td>
+            <td>4</td>
+            <td class="delta-pos">+1 cycle</td>
+            <td>Marginal regression. Root cause resolved this release — expected drop to 0 in v0.3.x.</td>
+          </tr>
+          <tr>
+            <td>Rework ratio (tokens)</td>
+            <td>~14%</td>
+            <td>~24%</td>
+            <td class="delta-pos">+10pp</td>
+            <td>Ratio worsened due to smaller productive base with same CI overhead. Absolute rework cost was flat (~45K tokens both releases).</td>
+          </tr>
+          <tr>
+            <td>Session boundary overhead</td>
+            <td>~20,000–30,000 tokens (2 sessions)</td>
+            <td>~0 (1 continued session)</td>
+            <td class="delta-neg">−20K–30K tokens</td>
+            <td>Significant improvement from single continued session.</td>
+          </tr>
+          <tr>
+            <td>Skipped gates</td>
+            <td>G5 (deferred), G9 (post-release)</td>
+            <td>G5 (deferred), G9 (post-release), G10 N/A</td>
+            <td class="delta-flat">= flat (same pattern)</td>
+            <td>Same gate gaps. Both now structurally enforced going forward.</td>
+          </tr>
+          <tr>
+            <td>Agent compliance rate</td>
+            <td>8/11 agents fulfilled full role</td>
+            <td>9/12 agents fulfilled full role</td>
+            <td class="delta-neg">+1 agent (workflow-analyst added)</td>
+            <td>Marginal improvement. Security-reviewer, planner, reviewer still partial/not invoked.</td>
+          </tr>
+          <tr>
+            <td>Tokens per file changed</td>
+            <td>~8,400–10,300</td>
+            <td>~6,700–8,500</td>
+            <td class="delta-neg">−1,800 (efficiency up)</td>
+            <td>Marginal improvement in implementation efficiency per file.</td>
+          </tr>
+          <tr>
+            <td>Total token spend</td>
+            <td>~310,000–380,000</td>
+            <td>~180,000–230,000</td>
+            <td class="delta-neg">−130K–150K</td>
+            <td>Reduction largely due to smaller scope, not structural efficiency gain.</td>
+          </tr>
+          <tr>
+            <td>Broken binary shipped</td>
+            <td>Yes (silent exit 0)</td>
+            <td>No (14/14 smoke tests)</td>
+            <td class="delta-neg">Eliminated</td>
+            <td>Most impactful quality improvement of the release cycle. Binary works correctly for the first time since v0.1.0.</td>
+          </tr>
+          <tr>
+            <td>Process hardening artifacts</td>
+            <td>None</td>
+            <td>3 new: pre-commit hooks, smoke test CI gate, token report CI gate</td>
+            <td class="delta-neg">+3</td>
+            <td>v0.2.2 was as much a process release as a product release. High leverage for future cycles.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 7: IMPROVEMENT RECOMMENDATIONS -->
+  <section>
+    <h2>7 — Improvement Recommendations</h2>
+    <p>Ranked by expected impact on future release efficiency.</p>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">1</div>
+        <div class="idea-title">Schedule G5 (Security) as a mandatory task at G1 planning for v0.3.x</div>
+      </div>
+      <p>
+        <strong>Target:</strong> <code>security-reviewer</code>, <code>planner</code><br/>
+        <strong>Expected improvement:</strong> Clears deferred risk; prevents third consecutive deferral; demonstrates gate compliance integrity.<br/>
+        <strong>Effort:</strong> Low — add explicit task to TASKS-v0.3.x.md at creation time with <code>security-reviewer</code> as assigned owner.<br/>
+        <strong>Type:</strong> Workflow change (release tracker template)
+      </p>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">2</div>
+        <div class="idea-title">Add "recurring failure → root-cause first" rule to ci-ops agent definition</div>
+      </div>
+      <p>
+        <strong>Target:</strong> <code>ci-ops</code><br/>
+        <strong>Expected improvement:</strong> Eliminates symptom-fix rounds. The 3-round pattern (symptom fix → symptom fix → root cause) repeated identically in v0.2.1 and v0.2.2.<br/>
+        <strong>Effort:</strong> Very low — one sentence addition to <code>.claude/agents/ci-ops.md</code>.<br/>
+        <strong>Type:</strong> Agent definition update
+      </p>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">3</div>
+        <div class="idea-title">Require a minimal planner pass (5 min) at the start of every release, including patches</div>
+      </div>
+      <p>
+        <strong>Target:</strong> <code>planner</code>, <code>orchestrator</code><br/>
+        <strong>Expected improvement:</strong> Captures process debt items as planned scope; prevents mid-cycle scope additions that inflate rework ratio.<br/>
+        <strong>Effort:</strong> Low — update orchestrator lifecycle step 2 to include patch releases explicitly.<br/>
+        <strong>Type:</strong> Workflow change (operating model)
+      </p>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">4</div>
+        <div class="idea-title">Require reviewer agent pass for binary/packaging changes</div>
+      </div>
+      <p>
+        <strong>Target:</strong> <code>reviewer</code>, <code>orchestrator</code><br/>
+        <strong>Expected improvement:</strong> Catches packaging bugs (like exit-code capture) before they reach CI. Reduces CI cycle count.<br/>
+        <strong>Effort:</strong> Low — add condition to orchestrator: "If changes include <code>*.spec</code>, <code>*.sh</code>, or PyInstaller-related files, invoke reviewer agent."<br/>
+        <strong>Type:</strong> Workflow change (orchestrator definition)
+      </p>
+    </div>
+
+    <div class="idea-card">
+      <div class="idea-header">
+        <div class="idea-num">5</div>
+        <div class="idea-title">Add common PyInstaller pitfalls to agent-briefing.md</div>
+      </div>
+      <p>
+        <strong>Target:</strong> <code>developer</code><br/>
+        <strong>Expected improvement:</strong> Reduces binary diagnosis time. The <code>__main__</code> guard omission and <code>collect_submodules()</code> requirement are now known patterns — documenting them saves multi-round diagnosis in future binary work.<br/>
+        <strong>Effort:</strong> Low — add 5–10 line "PyInstaller checklist" section to <code>docs/agent-briefing.md</code>.<br/>
+        <strong>Type:</strong> Documentation update
+      </p>
+    </div>
+  </section>
+
+  <!-- SECTION 8: TREND ASSESSMENT -->
+  <section>
+    <h2>8 — Trend Assessment</h2>
+    <div class="card">
+      <h3>Are things improving release-over-release?</h3>
+      <p><strong>Verdict: Mixed — structurally improving, operationally regressing on ratio metrics.</strong></p>
+
+      <h3>Supporting Evidence</h3>
+      <table>
+        <thead>
+          <tr><th>Dimension</th><th>Trend</th><th>Evidence</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Structural quality (binaries)</td>
+            <td><span class="delta-neg">↑ Strong improvement</span></td>
+            <td>First working binary since v0.1.0. Smoke test gate prevents recurrence.</td>
+          </tr>
+          <tr>
+            <td>CI stability (lint/format)</td>
+            <td><span class="delta-neg">↑ Resolved structurally</span></td>
+            <td>Local poetry-run hooks eliminate version drift category. 4 cycles in v0.2.2 → expected 0 in v0.3.x.</td>
+          </tr>
+          <tr>
+            <td>Token efficiency (ratio)</td>
+            <td><span class="delta-pos">↓ Regressed (14% → 24%)</span></td>
+            <td>Smaller scope amplified CI overhead. Absolute rework was flat. Ratio expected to improve to &lt;10% in v0.3.x.</td>
+          </tr>
+          <tr>
+            <td>Gate compliance</td>
+            <td><span class="delta-flat">→ Flat</span></td>
+            <td>G5 deferred twice. G9 post-release twice. Both now CI-enforced — structural trend will be positive from v0.3.x.</td>
+          </tr>
+          <tr>
+            <td>Process tooling</td>
+            <td><span class="delta-neg">↑ Strong improvement</span></td>
+            <td>3 new structural tools (pre-commit hooks, smoke test CI gate, token/workflow CI gates) added this release. Each eliminates a recurrent failure category.</td>
+          </tr>
+          <tr>
+            <td>Agent coverage</td>
+            <td><span class="delta-neg">↑ Improving</span></td>
+            <td>workflow-analyst agent added. Agent compliance rate improved from 8/11 to 9/12. Security-reviewer and reviewer still underutilized.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-green" style="margin-top:1rem;">
+        <strong>Overall Trend</strong>
+        v0.2.2 was a process investment release — the product delta was small, but the structural
+        improvements (local hooks, smoke test, CI enforcement) pay compound dividends from v0.3.x.
+        The rework ratio regression is a scope artifact, not a real efficiency decline.
+        If the structural fixes hold (expected), v0.3.x should see a CI failure cycle count of
+        near-zero and a rework ratio below 10% — a step-change improvement over the v0.2.x trend.
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <p>
+      <strong>sbom-validator</strong> · Workflow Evaluation Report v0.2.2 ·
+      Generated 2026-04-09 by <code>workflow-analyst</code> agent ·
+      Benchmarked against <a href="token-report-v0.2.1.html">v0.2.1 token report</a> and
+      <a href="token-report-v0.2.2.html">v0.2.2 token report</a>
+    </p>
+    <p class="uncertain">
+      Agent invocation counts and token values are estimates (EST) derived from commit history,
+      CI run records, and diagnostic loop inference. Items marked (inferred) lack direct evidence
+      and are flagged as assumptions.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -85,6 +85,11 @@ Do not mark a release candidate ready until all are true:
      `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`
    - release brief links both reports
 
+8. **Workflow Evaluation Gate**
+   - workflow evaluation report exists: `docs/releases/workflow-report-vX.Y.Z.html`
+   - report includes per-agent evaluation, gate compliance analysis, and benchmark vs previous release
+   - release brief links the workflow report
+
 ## Backward Compatibility Checklist (mandatory)
 
 - [ ] No accidental renaming/removal of CLI commands/options

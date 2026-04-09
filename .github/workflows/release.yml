@@ -45,6 +45,18 @@ jobs:
           fi
           echo "Token report verified: $REPORT"
 
+      - name: Verify workflow evaluation report exists for this release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPORT="docs/releases/workflow-report-v${VERSION}.html"
+          if [ ! -f "$REPORT" ]; then
+            echo "ERROR: Workflow evaluation report not found: $REPORT"
+            echo "The workflow analyst (G10) must run before tagging a release."
+            echo "Generate the report, commit it to the release branch, then re-tag."
+            exit 1
+          fi
+          echo "Workflow report verified: $REPORT"
+
   build-linux:
     needs: verify-tag-provenance
     runs-on: ubuntu-latest

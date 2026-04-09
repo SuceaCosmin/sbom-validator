@@ -53,6 +53,7 @@
 | G7 Docs Sync | ✅ | CHANGELOG, README, ADRs updated |
 | G8 Release Readiness | ✅ | Version consistent; smoke test passes 14/14 |
 | G9 Token Analytics | ✅ | `docs/releases/token-report-v0.2.2.html` and `docs/releases/token-delta-v0.2.1_to_v0.2.2.html` generated. CI gate added to enforce pre-tag execution going forward. |
+| G10 Workflow Evaluation | ✅ | `docs/releases/workflow-report-v0.2.2.html` generated. Per-agent efficiency analysis, gate compliance, and v0.2.1 benchmark included. CI gate added to enforce pre-tag execution going forward. |
 
 ## Deferrals
 
