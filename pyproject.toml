@@ -23,6 +23,7 @@ ruff = ">=0.4"
 mypy = ">=1.9"
 types-jsonschema = "*"
 pyinstaller = {version = ">=6.0", python = ">=3.11,<3.15"}
+pre-commit = ">=3.7"
 
 [tool.poetry.scripts]
 sbom-validator = "sbom_validator.cli:main"
@@ -41,7 +42,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
-ignore = ["E501"]
+ignore = ["E501", "N817"]  # N817: ET alias for xml.etree.ElementTree is universal Python convention
 
 [tool.mypy]
 python_version = "3.11"
