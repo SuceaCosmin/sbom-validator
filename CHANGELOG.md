@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-04-09
+
+### Fixed
+- Standalone binary (`sbom-validator.exe` / `sbom-validator`) was silently exiting with code 0
+  and producing no output on all previous releases. Root cause: missing `if __name__ == '__main__'`
+  guard in `cli.py` — PyInstaller executes the script directly and Click was never invoked.
+- CycloneDX XML support (`xmlschema` / `elementpath` packages) not bundled in the standalone
+  binary due to missing `collect_submodules()` and `collect_data_files()` entries in the
+  PyInstaller spec. Binary would crash silently before processing any XML file.
+- ISO 8601 timestamp validation (FR-10) now enforced strictly in NTIA checker.
+- `ERROR` validation results now always include at least one structured issue entry.
+- Report writer now uses a single UTC timestamp source for both filename and `generated_at` field.
+- Fallback tool version in reports changed from hardcoded `"0.2.0"` to `"unknown"`.
+
+### Added
+- CycloneDX 1.6 XML format support: detection, strict XSD schema validation (Stage 1),
+  and parsing to normalised SBOM model. Full parity with existing JSON pipeline.
+- User-friendly validation output: XML namespace prefixes stripped from field paths,
+  NTIA rule IDs removed from human-facing text/HTML output (retained in JSON),
+  actionable hints added per issue, and a dedicated Hint column in HTML reports.
+- Sandbox demo SBOMs in `sandbox/user-demo/` for manual testing across all supported formats.
+- Binary smoke test script (`scripts/smoke-test-binary.sh`) covering 14 scenarios including
+  startup, PASS/FAIL exit codes across all three formats, JSON output, and report generation.
+- Pre-commit hooks (black + ruff) added to prevent lint/format CI failures at commit time.
+
+### Technical
+- 501 unit and integration tests passing on Python 3.11 and 3.12.
+- Release CI smoke test upgraded from bare `--version` check to full `smoke-test-binary.sh`.
+
 ## [0.2.0] - 2026-04-08
 
 ### Added
@@ -41,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SuceaCosmin/sbom-validator/releases/tag/v0.1.0

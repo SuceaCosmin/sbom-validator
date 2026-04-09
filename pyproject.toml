@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sbom-validator"
-version = "0.2.0"
+version = "0.2.2"
 description = "CLI tool to validate SBOM files against schema and NTIA minimum elements"
 authors = []
 license = "Apache-2.0"
