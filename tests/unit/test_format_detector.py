@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
 from sbom_validator.format_detector import detect_format
 
