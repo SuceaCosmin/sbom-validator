@@ -13,6 +13,7 @@ import string
 from datetime import UTC, datetime
 from pathlib import Path
 
+from sbom_validator.constants import FORMAT_CYCLONEDX, FORMAT_SPDX
 from sbom_validator.models import IssueSeverity, ValidationResult
 from sbom_validator.presentation import (
     humanize_field_path,
@@ -27,8 +28,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _FORMAT_MAP: dict[str | None, str | None] = {
-    "spdx": "spdx-2.3",
-    "cyclonedx": "cyclonedx-1.6",
+    FORMAT_SPDX: "spdx-2.3",
+    FORMAT_CYCLONEDX: "cyclonedx-1.6",
     None: None,
 }
 
