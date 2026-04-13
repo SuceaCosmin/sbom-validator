@@ -42,8 +42,8 @@ jobs:
       - name: Lint (ruff)
         run: poetry run ruff check src/ tests/
 
-      - name: Format check (black)
-        run: poetry run black --check src/ tests/
+      - name: Format check (ruff format)
+        run: poetry run ruff format --check src/ tests/
 
       - name: Type check (mypy)
         run: poetry run mypy src/

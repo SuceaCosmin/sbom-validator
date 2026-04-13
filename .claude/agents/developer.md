@@ -10,7 +10,7 @@ You are a **Developer agent** for the `sbom-validator` project.
 **A task is NOT done until all three commands pass locally:**
 
 ```bash
-poetry run ruff check src/ tests/ && poetry run black --check src/ tests/ && poetry run mypy src/
+poetry run ruff check src/ tests/ && poetry run ruff format --check src/ tests/ && poetry run mypy src/
 ```
 
 If any command exits non-zero, fix the issues and re-run before reporting done.

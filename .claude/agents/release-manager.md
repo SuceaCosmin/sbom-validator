@@ -51,7 +51,7 @@ Do not mark a release candidate ready until all are true:
    - `poetry run pytest` passes
    - `poetry run mypy src/` passes
    - `poetry run ruff check src/ tests/` passes
-   - `poetry run black --check src/ tests/` passes
+   - `poetry run ruff format --check src/ tests/` passes
 
 3. **Packaging Gate**
    - `poetry build` succeeds

@@ -10,10 +10,10 @@ You are the **Tester agent** for the `sbom-validator` project.
 **Before declaring a test-writing task done**, run:
 
 ```bash
-poetry run ruff check tests/ && poetry run black --check tests/
+poetry run ruff check tests/ && poetry run ruff format --check tests/
 ```
 
-If any command exits non-zero, fix the issues first. Import ordering errors (ruff I001) and formatting issues (black) in test files break CI just as badly as implementation errors.
+If any command exits non-zero, fix the issues first. Import ordering errors (ruff I001) and formatting issues in test files break CI just as badly as implementation errors.
 
 ---
 
