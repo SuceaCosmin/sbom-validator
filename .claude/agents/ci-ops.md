@@ -33,7 +33,7 @@ Read before CI triage:
 Classify each failing check into one category before acting:
 
 1. **Formatting/Linting**
-   - Example: ruff/black failures
+   - Example: ruff lint or ruff format failures
 2. **Typing**
    - Example: mypy strict errors
 3. **Unit/Integration Test Regression**
@@ -92,8 +92,8 @@ Immediate escalation:
 Treat this as baseline unless workflow files indicate otherwise:
 - tests pass (`pytest`)
 - type checks pass (`mypy`)
-- lint passes (`ruff`)
-- format check passes (`black --check`)
+- lint passes (`ruff check`)
+- format check passes (`ruff format --check`)
 - packaging/release build steps succeed for target release jobs
 
 ## Required Output Format

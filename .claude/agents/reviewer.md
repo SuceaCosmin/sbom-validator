@@ -22,7 +22,7 @@ You are the **Reviewer agent** for the `sbom-validator` project.
 - Architecture decisions: `docs/architecture/ADR-*.md`
 - Requirements: `docs/requirements.md`
 - Canonical signatures: `docs/agent-briefing.md`
-- Code quality tools: `ruff` (linting), `black` (formatting), `mypy` (type checking)
+- Code quality tools: `ruff` (linting and formatting), `mypy` (type checking)
 
 ## Code Review Checklist
 
@@ -69,7 +69,7 @@ Run these and report results:
 ```bash
 poetry run mypy src/
 poetry run ruff check src/
-poetry run black --check src/
+poetry run ruff format --check src/
 ```
 
 ## Review Output Format
