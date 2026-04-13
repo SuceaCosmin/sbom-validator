@@ -51,10 +51,22 @@ When writing tests for a module that does not yet exist or is only a stub:
 
 **Never write tests that pass against stub implementations (e.g., tests that assert `NotImplementedError` is raised).**
 
+## Test File Organisation — Keep Files Small and Focused
+
+A test file that exceeds ~400 lines is a signal to split. Large files are hard to navigate and slow to reason about.
+
+**Split rules:**
+- Each test file covers one logical concern within the module under test. When a module has multiple distinct responsibilities (e.g., CLI has version/help, text output, JSON output, and advanced options), create one file per concern.
+- Naming pattern: `test_<module>_<concern>.py` — e.g., `test_cli_text_output.py`, `test_cli_json_output.py`, `test_cli_options.py`.
+- Shared fixtures (e.g., `runner`, fixture root paths) belong in a `conftest.py` at the `tests/unit/` level, not duplicated across files.
+- Each split file must independently import everything it needs and pass `poetry run pytest <file> -v` on its own.
+
+**When writing new tests for a large module**, create the sub-files from the start — do not add to an existing file that already exceeds 400 lines. If existing tests already live in an oversized file and you are touching it, split it as part of your task.
+
 ## Test Structure
 
 ```python
-# tests/unit/test_<module>.py
+# tests/unit/test_<module>_<concern>.py
 import pytest
 from sbom_validator.<module> import <function>
 

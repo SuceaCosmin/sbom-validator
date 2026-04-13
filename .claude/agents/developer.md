@@ -86,6 +86,20 @@ The human reviews and approves the PR before it is merged into `develop`.
 - Use `pathlib.Path` for all file operations (never `os.path` strings)
 - Line length: 100 characters (configured in `pyproject.toml`)
 
+## Code Readability — Human-Friendly Code
+
+Write code that a human can read without high cognitive effort. Prefer clarity over cleverness:
+
+- **No magic strings in logic** — use named constants from `src/sbom_validator/constants.py` for format names (`FORMAT_SPDX`, `FORMAT_CYCLONEDX`), validation rule codes (`RULE_SUPPLIER`, etc.), version strings, and any value that appears in more than one place or carries domain meaning.
+- **Descriptive names** — variables and functions must communicate intent, not just type. `component_has_supplier` beats `flag`. `qualifying_rel_types` beats `q`.
+- **One idea per line** — avoid stacking multiple operations in one expression when two lines would be clearer.
+- **Flat over nested** — use early returns and guard clauses to keep nesting shallow. Aim for ≤ 3 levels of indentation in function bodies.
+- **Named intermediate values** — when a sub-expression is non-obvious, assign it to a well-named variable before using it, even if it is only used once.
+- **Short helper functions** — if a block inside a function needs a comment to explain what it does, extract it into a named helper instead.
+- **Comments on the *why***, not the *what* — the code shows what; comments explain why an unusual approach was taken, or what invariant is being enforced.
+
+Apply these rules to every file you touch, not just the file under active development.
+
 ## Key Architecture Constraints
 
 - The NTIA checker (`ntia_checker.py`) must only operate on `NormalizedSBOM` — never import from parsers directly

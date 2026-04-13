@@ -6,6 +6,7 @@ import json
 import logging
 from pathlib import Path
 
+from sbom_validator.constants import FORMAT_SPDX, RULE_FORMAT_DETECTION
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
 from sbom_validator.format_detector import detect_format
 from sbom_validator.models import (
@@ -59,7 +60,7 @@ def validate(file_path: str | Path) -> ValidationResult:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(_error_issue(str(e), rule="FR-01"),),
+            issues=(_error_issue(str(e), rule=RULE_FORMAT_DETECTION),),
             format_detected=None,
         )
     except Exception as e:
@@ -75,7 +76,7 @@ def validate(file_path: str | Path) -> ValidationResult:
     logger.debug("Stage %s \u2192 %s", "format_detection", "schema_validation")
     try:
         raw_text = file_path.read_text(encoding="utf-8")
-        if format_name == "spdx":
+        if format_name == FORMAT_SPDX:
             raw_doc: dict[str, object] | str = json.loads(raw_text)
         else:
             try:
@@ -107,7 +108,7 @@ def validate(file_path: str | Path) -> ValidationResult:
     # Stage 3: Parse into normalized SBOM (only if schema passed)
     logger.debug("Stage %s \u2192 %s", "schema_validation", "parsing")
     try:
-        if format_name == "spdx":
+        if format_name == FORMAT_SPDX:
             sbom = parse_spdx(file_path)
         else:
             sbom = parse_cyclonedx(file_path)
