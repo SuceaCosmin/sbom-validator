@@ -85,6 +85,13 @@ The human reviews and approves the PR before it is merged into `develop`.
 - No `eval()`, no shell injection, no unsafe file path handling
 - Use `pathlib.Path` for all file operations (never `os.path` strings)
 - Line length: 100 characters (configured in `pyproject.toml`)
+- **Import ordering (isort / ruff I001)** — always write imports in this exact order, with a blank line between each group:
+  1. `from __future__ import annotations`
+  2. Standard library (`import json`, `from pathlib import Path`, …)
+  3. Third-party packages (`import pytest`, `from click.testing import CliRunner`, …)
+  4. First-party / project imports (`from sbom_validator.models import …`)
+
+  Never mix third-party and first-party imports in the same block. Write them correctly from the start — do not rely on `ruff --fix` to sort them for you.
 
 ## Code Readability — Human-Friendly Code
 
@@ -129,6 +136,8 @@ Do not run the full suite after every individual edit. Run the targeted test fil
 2. Full suite passes (phase end): `poetry run pytest`
 3. **Mandatory lint gate passes** (see top of this file — no exceptions)
 4. The implemented module can be imported without error
+
+> **After any rebase or merge**: the lint gate must be re-run from scratch. Pre-commit hooks do not fire automatically during `git rebase`, so fixes applied at commit time can be lost. Run the full gate again and create a new commit if any issues are found before pushing.
 
 ## Reference Files
 

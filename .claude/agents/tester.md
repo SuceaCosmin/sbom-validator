@@ -67,8 +67,18 @@ A test file that exceeds ~400 lines is a signal to split. Large files are hard t
 
 ```python
 # tests/unit/test_<module>_<concern>.py
+from __future__ import annotations
+
+# stdlib imports (if any)
+from pathlib import Path
+
+# third-party imports — blank line separating from first-party below
 import pytest
+from click.testing import CliRunner
+
+# first-party imports — always in their own block
 from sbom_validator.<module> import <function>
+
 
 class Test<ClassName>:
     def test_<scenario>_<expected_outcome>(self):
@@ -79,6 +89,8 @@ class Test<ClassName>:
         # Assert
         assert ...
 ```
+
+**Import ordering (ruff I001)** — always write imports in four groups separated by blank lines: `__future__`, stdlib, third-party, first-party. Never mix third-party (`pytest`, `click`) and first-party (`sbom_validator`) imports in the same block. Write them correctly from the start — do not rely on `ruff --fix` to sort them.
 
 ## Key Test Scenarios to Always Cover
 
