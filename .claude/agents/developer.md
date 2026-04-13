@@ -49,6 +49,17 @@ git push -u origin feature/<name>
 
 The human reviews and approves the PR before it is merged into `develop`.
 
+**Branch cleanup — mandatory after merge:**
+GitHub is configured to delete the remote head branch automatically when a PR is merged. After the PR is merged, also delete the local branch:
+
+```bash
+git checkout develop
+git pull origin develop
+git branch -d feature/<name>
+```
+
+Never leave merged feature branches open locally or remotely. A branch that has been merged into `develop` and still exists is stale clutter — it creates ambiguity about what is in progress.
+
 ---
 
 ## Before Implementing Any Module
