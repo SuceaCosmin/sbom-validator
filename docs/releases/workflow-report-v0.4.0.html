@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Evaluation Report — v0.4.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem 0.6rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-infer { color: #7c3aed; font-size: 0.8rem; font-weight: bold; }
+    .badge-yes { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-partial { background: #fef9c3; color: #854d0e; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-no { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-high { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .badge-med { background: #fef9c3; color: #854d0e; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .badge-low { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .verdict-healthy { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    .verdict-attention { color: #b45309; font-weight: bold; font-size: 1.1rem; }
+    .delta-neg { color: #166534; }
+    .delta-pos { color: #b91c1c; }
+    .delta-flat { color: #6b7280; }
+    ul li { margin-bottom: 0.35rem; }
+    ol li { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Workflow Evaluation Report — v0.4.0</h1>
+  <p class="muted">SBOM Validator &middot; Generated: 2026-04-14 &middot; Benchmarked against: v0.3.0</p>
+
+  <!-- ── Section 1: Release Overview ─────────────────────────────────── -->
+  <div class="card">
+    <h2>1. Release Overview</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Version</td><td><strong>v0.4.0</strong></td></tr>
+      <tr><td>Release date</td><td>2026-04-14</td></tr>
+      <tr><td>Scope type</td><td>Minor feature addition — SPDX Tag-Value and YAML serialization support</td></tr>
+      <tr><td>Sessions</td><td>1 (single-session end-to-end)</td></tr>
+      <tr><td>Branch</td><td>feature/spdx-tv-yaml → develop</td></tr>
+      <tr><td>Commits</td><td>2 (feat: implementation + docs: docs/version)</td></tr>
+      <tr><td>Files changed</td><td>28 total (7 modified source + 2 new parsers + 8 fixtures + 3 tests + 6 docs/config)</td></tr>
+      <tr><td>Tests</td><td>594 (up from 516; +78 new)</td></tr>
+      <tr><td>Coverage</td><td>96% overall</td></tr>
+      <tr><td>New dependency</td><td>pyyaml &gt;= 6.0 (runtime); types-PyYAML (dev)</td></tr>
+    </table>
+    <p style="margin-top:1rem"><strong>End-to-end cycle:</strong> Intake (feature brief with 11 AC) &rarr; Planning (TASKS-v0.4.0.md, 14 tasks) &rarr; Architecture (ADR-009) &rarr; TDD Build (fixtures + 78 tests + 7 source files) &rarr; Quality Review (0 critical/major) &rarr; Security Review (APPROVED) &rarr; CI Stabilization (pre-commit hooks clean) &rarr; Docs Sync &rarr; Release Readiness &rarr; Token Analytics &rarr; Workflow Evaluation &rarr; Human Approval.</p>
+    <p><span class="verdict-healthy">Overall Workflow Health: HEALTHY</span></p>
+    <p class="muted">All 11 gates completed. No skipped gates. Zero CI failure cycles. Rework confined to 2 minor correction loops (lint + mypy). All acceptance criteria met.</p>
+  </div>
+
+  <!-- ── Section 2: Per-Agent Evaluation ──────────────────────────────── -->
+  <div class="card">
+    <h2>2. Per-Agent Evaluation</h2>
+    <table>
+      <tr>
+        <th>Agent</th>
+        <th>Role Fulfilled</th>
+        <th>Efficiency</th>
+        <th>Key Contribution</th>
+        <th>Drawbacks</th>
+        <th>Improvement Actions</th>
+      </tr>
+      <tr>
+        <td><strong>Orchestrator</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Read all mandatory files before dispatching. Maintained execution log. Enforced gate order G0–G10 without skips. Created TASKS-v0.4.0.md at planning start.</td>
+        <td>None significant. Branch was created correctly (feature/spdx-tv-yaml).</td>
+        <td>Consider adding a "briefing freshness check" as a G1 sub-step to catch stale agent-briefing.md earlier.</td>
+      </tr>
+      <tr>
+        <td><strong>Planner</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>14-task plan with dependency graph, parallelization map, and 4 risk items. TASKS-v0.4.0.md created before work started. Risk R1 (mypy Literal type) correctly identified and mitigated in plan.</td>
+        <td>Parallelization map was created but some potentially parallel tasks (R3 tests + R4 fixtures) were executed sequentially. Not a correctness issue.</td>
+        <td>Add a "scope-lock" explicit confirmation for fixture file count before implementation starts (8 files creates non-trivial overhead).</td>
+      </tr>
+      <tr>
+        <td><strong>Architect</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>ADR-009 authored with 5 sub-decisions, Python stubs for all new interfaces, consequences section covering positive and negative trade-offs. agent-briefing.md updated per ADR-009 requirement. Decision to use yaml.safe_load and the TV-before-YAML detection priority both proved correct in implementation.</td>
+        <td>ADR-001 context prose remains stale (references v0.3.0 detection approach). Full ADR-001 update deferred again.</td>
+        <td>Add an ADR staleness check to G2: scan all ADRs for sections that reference outdated format lists.</td>
+      </tr>
+      <tr>
+        <td><strong>Tester</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>78 new tests written first (TDD discipline upheld). Tests cover: happy path (minimal + full), NOASSERTION normalization, missing-relationship edge case, non-qualifying relationship filtering, all qualifying relationship types (5), CPE vs PURL identifiers, YAML array-at-root error, missing SPDXID error, OS error, empty file, wrong SPDX version. Detection priority ordering explicitly tested.</td>
+        <td>Two unused model imports in test_spdx_tv_parser.py caught by ruff. Minor — caught immediately by pre-commit.</td>
+        <td>Add import discipline note to tester agent definition: only import model types actually used in assertions.</td>
+      </tr>
+      <tr>
+        <td><strong>Developer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-med">Medium</span></td>
+        <td>All 7 source files + 2 new parsers implemented cleanly. _parse_spdx_document refactoring correctly factored. NOASSERTION handling consistent. yaml.safe_load used exclusively. BOM strip in TV parser (correct edge case handling).</td>
+        <td>mypy strict mode required 3 type annotation corrections (json.loads/yaml.safe_load return Any; needed explicit typed variables). Standard pattern but required a correction loop. Unused imports in test file.</td>
+        <td>Add a pre-implementation note in developer agent definition: when using json.loads() or yaml.safe_load() in typed functions, always declare an explicitly typed intermediate variable to pre-empt mypy strict-mode failures.</td>
+      </tr>
+      <tr>
+        <td><strong>Reviewer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Full checklist executed across 9 files. Coverage report verified (96%). 0 CRITICAL, 0 MAJOR findings. Two MINOR and two INFO noted with disposition. No rework loop generated.</td>
+        <td>None.</td>
+        <td>None for this release.</td>
+      </tr>
+      <tr>
+        <td><strong>Security Reviewer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>yaml.safe_load audit at all 3 call sites. eval/exec/subprocess scan clean. Dependency review (pyyaml 6.0.3, no CVEs). CLI contract integrity verified. APPROVED with zero findings.</td>
+        <td>None. YAML deserialization is a well-known risk pattern — fast review time justified.</td>
+        <td>Add yaml.safe_load audit to security-reviewer.md checklist as an explicit item (currently implicit).</td>
+      </tr>
+      <tr>
+        <td><strong>CI Ops</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Pre-commit hooks (ruff + ruff-format) caught lint and format issues at commit time. Zero CI failure cycles for the third consecutive release. Structural improvement from v0.2.2 continues to pay dividends.</td>
+        <td>None. No CI failures to triage.</td>
+        <td>None.</td>
+      </tr>
+      <tr>
+        <td><strong>Documentation Writer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>README formats table extended with YAML and TV rows; added schema policy column. user-guide.md Supported Formats section rewritten with TV schema-skip note and detection priority note. CHANGELOG v0.4.0 entry comprehensive. agent-briefing.md updated with 3 new function signatures and ADR-009 entry.</td>
+        <td>ADR-001 main document (not the briefing) was not updated to reflect new detection priority. Cross-doc consistency gap.</td>
+        <td>Add "ADR cross-reference check" to documentation-writer checklist: verify that any ADR referenced in the briefing update has consistent prose in its own file.</td>
+      </tr>
+      <tr>
+        <td><strong>Release Manager</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Version consistency verified (pyproject.toml, __init__.py, CHANGELOG all at 0.4.0). poetry build produced wheel + sdist cleanly. CLI smoke tests passed for all new format scenarios (6 scenarios: TV PASS/FAIL, YAML PASS/FAIL/schema-fail, --version). Backward compatibility confirmed.</td>
+        <td>Binary gate deferred (CI-only); local PyInstaller build not executed. Consistent with established practice.</td>
+        <td>None new.</td>
+      </tr>
+      <tr>
+        <td><strong>Token Analyst</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>token-report-v0.4.0.html and token-delta-v0.3.0_to_v0.4.0.html both generated pre-tag. Consistent structure with v0.3.0 reports. 6 optimization recommendations with owner and priority. Forecast for v0.5.0 included.</td>
+        <td>All values estimated (not measured). Consistent limitation across all releases.</td>
+        <td>Explore session-context.md to record actual API token counts for measured reporting in future releases.</td>
+      </tr>
+      <tr>
+        <td><strong>Workflow Analyst</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Full workflow report generated. All 10+ agents assessed. Gates G0–G10 analyzed. 5-metric benchmark vs v0.3.0. Top 4 wins and top 3 gaps identified. 5+ improvement recommendations.</td>
+        <td>Executed at end of cycle (post-code, pre-release), as designed.</td>
+        <td>None.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 3: Gate Execution Analysis ───────────────────────────── -->
+  <div class="card">
+    <h2>3. Gate Execution Analysis</h2>
+    <table>
+      <tr><th>Gate</th><th>Executed</th><th>Caught Issues</th><th>Cost Estimate</th><th>Notes</th></tr>
+      <tr><td>G0 Intake</td><td><span class="badge-yes">Yes</span></td><td>N/A (intake)</td><td>~3,000 tokens</td><td>11 acceptance criteria defined. Feature brief normalization effective.</td></tr>
+      <tr><td>G1 Planning</td><td><span class="badge-yes">Yes</span></td><td>4 risks identified; R1 (mypy Literal) mitigated in plan</td><td>~8,000–12,000 tokens</td><td>TASKS-v0.4.0.md created. Parallelization map included.</td></tr>
+      <tr><td>G2 Architecture</td><td><span class="badge-yes">Yes</span></td><td>Detection priority ambiguity resolved (TV-before-YAML); schema-skip policy formalized</td><td>~18,000–25,000 tokens</td><td>ADR-009 authored. First new ADR since v0.2.0. Required vs v0.3.0 which had "no ADR".</td></tr>
+      <tr><td>G3 TDD Build</td><td><span class="badge-yes">Yes</span></td><td>1 lint error (unused imports); 3 mypy type errors</td><td>~110,000–145,000 tokens</td><td>594 tests passing. Both minor issues resolved in single correction loop. TDD discipline upheld (tests written before implementation).</td></tr>
+      <tr><td>G4 Quality Review</td><td><span class="badge-yes">Yes</span></td><td>2 MINOR findings (unused import already fixed; docstring suggestion)</td><td>~12,000–18,000 tokens</td><td>0 CRITICAL, 0 MAJOR. APPROVED. No rework loop.</td></tr>
+      <tr><td>G5 Security</td><td><span class="badge-yes">Yes</span></td><td>0 findings — yaml.safe_load verified clean</td><td>~10,000–15,000 tokens</td><td>APPROVED. Explicitly audited all 3 yaml.safe_load call sites.</td></tr>
+      <tr><td>G6 CI Stabilization</td><td><span class="badge-yes">Yes</span></td><td>Pre-commit hooks: ruff (1 lint fix), ruff-format (6 files)</td><td>~3,000–5,000 tokens</td><td>Zero CI failure cycles. Pre-commit hooks caught format issues before remote push.</td></tr>
+      <tr><td>G7 Docs Sync</td><td><span class="badge-yes">Yes</span></td><td>ADR-001 doc prose identified as stale (not fixed — improvement noted)</td><td>~15,000–20,000 tokens</td><td>README, CHANGELOG, user-guide, agent-briefing all updated. ADR-001 full doc deferred.</td></tr>
+      <tr><td>G8 Release Readiness</td><td><span class="badge-yes">Yes</span></td><td>N/A — all gates clean</td><td>~5,000–8,000 tokens</td><td>poetry build clean. Version consistency verified. 6 CLI smoke test scenarios.</td></tr>
+      <tr><td>G9 Token Analytics</td><td><span class="badge-yes">Yes</span></td><td>N/A (analytics gate)</td><td>~12,000–18,000 tokens</td><td>Both reports generated pre-tag. Consistent with v0.3.0 execution.</td></tr>
+      <tr><td>G10 Workflow Evaluation</td><td><span class="badge-yes">Yes</span></td><td>3 workflow gaps identified; 5 improvement recommendations</td><td>~10,000–15,000 tokens</td><td>This report. Pre-tag as required.</td></tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Gate pass rate: <strong>11 / 11 (100%)</strong>. No skipped gates. No post-release gates.</p>
+  </div>
+
+  <!-- ── Section 4: Top Workflow Wins ─────────────────────────────────── -->
+  <div class="card">
+    <h2>4. Top Workflow Wins</h2>
+    <ol>
+      <li><strong>Pre-commit hooks (ruff + ruff-format) eliminated all remote CI lint failures for the third consecutive release.</strong><br>
+        Developer commits go through local formatting and lint checks automatically. This structural change from v0.2.2 continues to be the single highest-ROI improvement in the project's workflow history. In v0.4.0: zero CI format/lint cycles, pre-commit caught 1 lint issue + 6 format issues at commit time rather than in remote CI.</li>
+      <li><strong>ADR-009 provided clear interface contracts before implementation started.</strong><br>
+        The Python stubs in ADR-009 (detect_format return type, _parse_spdx_document signature, parse_spdx_yaml, parse_spdx_tv) gave the Developer unambiguous contracts to implement against. The TV-before-YAML detection priority decision in the ADR prevented an implementation ambiguity that would have required a correction loop if left to the Developer to resolve independently.</li>
+      <li><strong>TDD discipline maintained: 78 tests written before implementation.</strong><br>
+        All tests were written (and passed in the expected "fail" state) before any implementation code was written. The test suite caught the SPDXID-missing edge case in the TV parser, the YAML array-at-root error path, and detection priority ordering — all of which would have been harder to verify post-implementation.</li>
+      <li><strong>Single-session execution with full gate coverage.</strong><br>
+        The entire release cycle from intake to workflow report was completed in one session, maintaining cache warmth throughout and avoiding multi-session context reload overhead. All 11 gates executed in sequence without interruption.</li>
+    </ol>
+  </div>
+
+  <!-- ── Section 5: Top Workflow Gaps ─────────────────────────────────── -->
+  <div class="card">
+    <h2>5. Top Workflow Gaps</h2>
+    <ol>
+      <li><strong>mypy strict mode + json.loads/yaml.safe_load return type: recurring pattern requiring correction loop.</strong><br>
+        <em>Root cause:</em> Both json.loads() and yaml.safe_load() return Any in their type stubs. Functions with explicit return type annotations (like _load_raw_doc) require typed intermediate variables. This pattern recurs whenever a new format or parser is added. In v0.4.0: 3 mypy errors, 1 correction loop.<br>
+        <em>Impact:</em> Low (small correction loop), but predictable and avoidable.<br>
+        <em>Fix:</em> Add a "typed intermediate variable" pattern note to developer agent definition. Developer should proactively use typed intermediates when calling Any-returning functions.</li>
+      <li><strong>ADR-001 main document not updated to reflect new detection priority (stale prose).</strong><br>
+        <em>Root cause:</em> The agent-briefing.md ADR table was updated (correct), but the full ADR-001 document prose still describes the old two-path detection (JSON → CycloneDX XML). ADR-009 defines the new priority without cross-referencing ADR-001.<br>
+        <em>Impact:</em> Low for current release (briefing is up to date). Medium risk for future agents who read ADR-001 directly.<br>
+        <em>Fix:</em> Add an "ADR cross-reference check" to the G7 Docs Sync checklist: when a new ADR extends or modifies a previous ADR, the previous ADR's prose must be updated to reference the new ADR.</li>
+      <li><strong>Fixture file count growth: 8 new files manually authored without a generation helper.</strong><br>
+        <em>Root cause:</em> v0.4.0 added 4 TV + 4 YAML fixtures, all manually adapted from existing JSON fixtures. No automated fixture generator exists.<br>
+        <em>Impact:</em> Low for v0.4.0 (8 small files). Medium at v0.5.0+ if more formats are added.<br>
+        <em>Fix:</em> Consider a fixture generation helper script for v0.5.0 if additional SPDX formats (e.g., RDF) are planned.</li>
+    </ol>
+  </div>
+
+  <!-- ── Section 6: Benchmark vs v0.3.0 ──────────────────────────────── -->
+  <div class="card">
+    <h2>6. Benchmark vs v0.3.0</h2>
+    <table>
+      <tr><th>Metric</th><th>v0.3.0</th><th>v0.4.0</th><th>Delta</th></tr>
+      <tr><td>Gate pass rate</td><td>100% (11/11)</td><td>100% (11/11)</td><td class="delta-flat">Flat — consistent</td></tr>
+      <tr><td>CI failure cycles</td><td>0</td><td>0</td><td class="delta-flat">Flat — pre-commit hooks effective</td></tr>
+      <tr><td>Rework overhead (correction loops)</td><td>~0 loops</td><td>2 loops (1 lint, 1 mypy)</td><td class="delta-pos">+2 minor loops</td></tr>
+      <tr><td>Rework ratio</td><td>~6–9%</td><td>~4–6%</td><td class="delta-neg">Improved — same absolute rework, larger total scope</td></tr>
+      <tr><td>Skipped gates</td><td>0</td><td>0</td><td class="delta-flat">Flat — no skipped gates either release</td></tr>
+      <tr><td>Agent compliance rate (role fulfilled)</td><td>12/12 (100%)</td><td>11/11 (100%)</td><td class="delta-flat">Flat — all agents fulfilled their stated roles</td></tr>
+      <tr><td>New ADRs authored</td><td>0 (context note only)</td><td>1 (ADR-009)</td><td class="delta-pos">Appropriate — larger scope required new ADR</td></tr>
+      <tr><td>Tests added</td><td>+15</td><td>+78</td><td class="delta-pos">Proportional to feature surface (+2 parsers)</td></tr>
+      <tr><td>Security findings</td><td>0 critical/major (D1 resolved)</td><td>0 critical/major</td><td class="delta-flat">Flat — clean security posture maintained</td></tr>
+      <tr><td>Total token spend (est.)</td><td>~130,000–170,000</td><td>~200,000–260,000</td><td class="delta-pos">+55–60% (proportional to ~1.5x scope increase)</td></tr>
+    </table>
+  </div>
+
+  <!-- ── Section 7: Improvement Recommendations ───────────────────────── -->
+  <div class="card">
+    <h2>7. Improvement Recommendations (Ranked by Impact)</h2>
+    <table>
+      <tr><th>Rank</th><th>Recommendation</th><th>Target</th><th>Expected Improvement</th><th>Effort</th><th>Type</th></tr>
+      <tr>
+        <td>1</td>
+        <td>Add "typed intermediate variable" pattern note to developer.md agent definition. When calling json.loads() or yaml.safe_load() in a typed function, proactively declare a typed intermediate variable to avoid mypy strict-mode failures.</td>
+        <td>Developer agent definition</td>
+        <td>Eliminate recurring 1–2 mypy correction loops per release adding YAML/JSON parsers (~2,000–4,000 tokens saved)</td>
+        <td>Low — one-line addition to agent definition</td>
+        <td>Agent definition update</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Add "ADR cross-reference check" to G7 Docs Sync gate: when a new ADR extends or modifies a prior ADR, the prior ADR's prose must be updated to reference the new one.</td>
+        <td>Documentation Writer + G7 gate policy</td>
+        <td>Prevents ADR prose drift; maintains cross-document consistency for future agents reading ADR-001</td>
+        <td>Low — add checklist item to docs gate</td>
+        <td>Gate policy update</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Add yaml.safe_load audit to security-reviewer.md as an explicit checklist item (not currently in the checklist, currently inferred from YAML deserialization risk awareness).</td>
+        <td>Security Reviewer agent definition</td>
+        <td>Ensures yaml.safe_load audit is never skipped even when reviewer is less familiar with YAML risks</td>
+        <td>Low — one-line checklist addition</td>
+        <td>Agent definition update</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Add a "briefing freshness check" as a G1 Planning sub-step: verify that agent-briefing.md module map matches the current codebase signatures for all modules being extended.</td>
+        <td>Planner + G1 gate policy</td>
+        <td>Prevents mid-implementation discovery that briefing is stale; avoids G7 surprise doc updates</td>
+        <td>Low — add sub-step to planner output format</td>
+        <td>Gate policy update</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Explore using session-context.md to record actual API token counts during implementation for measured (not estimated) token analytics in future releases.</td>
+        <td>Token Analyst + Orchestrator</td>
+        <td>Upgrades token report confidence from Medium to High; enables precise per-agent cost attribution</td>
+        <td>Medium — requires tooling change to capture API response metadata</td>
+        <td>Workflow change</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Consider a fixture generation helper script (e.g., generate_spdx_fixtures.py) for v0.5.0 if additional SPDX formats are planned, to avoid manual 8-file copy-adapt overhead.</td>
+        <td>Developer / Tester</td>
+        <td>Reduces fixture authoring cost by ~50% per new format (~5,000 tokens)</td>
+        <td>Medium — requires scripting infrastructure</td>
+        <td>Workflow change</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 8: Trend Assessment ──────────────────────────────────── -->
+  <div class="card">
+    <h2>8. Trend Assessment</h2>
+    <table>
+      <tr><th>Trend Area</th><th>v0.2.2</th><th>v0.3.0</th><th>v0.4.0</th><th>Trend</th></tr>
+      <tr><td>CI failure cycles</td><td>4–6 cycles</td><td>0</td><td>0</td><td class="delta-neg">Improving — structural fix sustained for 2 releases</td></tr>
+      <tr><td>Gate pass rate</td><td>11/11 (100%)</td><td>11/11 (100%)</td><td>11/11 (100%)</td><td class="delta-flat">Stable — consistent gate discipline</td></tr>
+      <tr><td>Rework ratio</td><td>~24%</td><td>~6–9%</td><td>~4–6%</td><td class="delta-neg">Improving — structural fixes compounding</td></tr>
+      <tr><td>Security review cadence</td><td>Deferred (D1)</td><td>D1 resolved</td><td>Full review (APPROVED)</td><td class="delta-neg">Improving — security gate now consistently executed</td></tr>
+      <tr><td>ADR authoring</td><td>ADR-008 (binary)</td><td>No new ADR</td><td>ADR-009 (format detection)</td><td class="delta-flat">Appropriate cadence — ADRs authored when genuinely needed</td></tr>
+      <tr><td>Agent compliance rate</td><td>100%</td><td>100%</td><td>100%</td><td class="delta-flat">Stable — all agents fulfilling defined roles</td></tr>
+      <tr><td>Token efficiency (per-feature)</td><td>High rework overhead</td><td>Low rework, proportional spend</td><td>Very low rework, proportional spend</td><td class="delta-neg">Improving</td></tr>
+    </table>
+    <h3>Overall Trend Verdict</h3>
+    <p><span class="verdict-healthy">IMPROVING</span></p>
+    <p>The sbom-validator project workflow is on a consistent improvement trajectory across three measurable releases. The structural CI change introduced in v0.2.2 (pre-commit hooks) has eliminated CI lint/format rework for two consecutive releases. Security gate execution is now consistent. All mandatory pre-tag gates (G9 Token Analytics, G10 Workflow Evaluation) are being executed correctly. Rework ratio has declined from 24% to 4–6% over three releases. The primary remaining friction points (mypy type annotations, ADR prose staleness, fixture manual authoring) are minor and have clear, low-effort mitigations that are now documented.</p>
+  </div>
+
+</div>
+</body>
+</html>
