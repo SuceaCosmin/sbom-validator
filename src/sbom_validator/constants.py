@@ -7,7 +7,9 @@ imported by the modules that need them.
 
 # ── Format identifiers ─────────────────────────────────────────────────────
 # Returned by detect_format() and threaded through the whole pipeline.
-FORMAT_SPDX = "spdx"
+FORMAT_SPDX = "spdx"  # SPDX 2.3 JSON
+FORMAT_SPDX_TV = "spdx-tv"  # SPDX 2.3 Tag-Value
+FORMAT_SPDX_YAML = "spdx-yaml"  # SPDX 2.3 YAML
 FORMAT_CYCLONEDX = "cyclonedx"
 
 # ── Supported specification versions ───────────────────────────────────────

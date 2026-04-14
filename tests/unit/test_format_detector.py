@@ -235,3 +235,101 @@ class TestDetectFormatErrorCases:
         with patch.object(type(f), "read_text", side_effect=OSError("permission denied")):
             with pytest.raises(ParseError):
                 detect_format(f)
+
+
+# ---------------------------------------------------------------------------
+# SPDX Tag-Value detection
+# ---------------------------------------------------------------------------
+
+
+SPDX_TV_FIXTURE = FIXTURES_DIR / "spdx" / "valid-minimal.spdx"
+SPDX_YAML_FIXTURE = FIXTURES_DIR / "spdx" / "valid-minimal.spdx.yaml"
+
+
+class TestDetectFormatSpdxTagValue:
+    def test_tv_fixture_returns_spdx_tv(self):
+        assert detect_format(SPDX_TV_FIXTURE) == "spdx-tv"
+
+    def test_tv_file_with_spdxversion_line_returns_spdx_tv(self, tmp_path: Path):
+        f = tmp_path / "test.spdx"
+        f.write_text("SPDXVersion: SPDX-2.3\nDataLicense: CC0-1.0\n", encoding="utf-8")
+        assert detect_format(f) == "spdx-tv"
+
+    def test_tv_file_wrong_spdx_version_raises_unsupported_format_error(self, tmp_path: Path):
+        """A TV file with SPDX-2.2 header must raise UnsupportedFormatError."""
+        f = tmp_path / "old.spdx"
+        f.write_text("SPDXVersion: SPDX-2.2\nDataLicense: CC0-1.0\n", encoding="utf-8")
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_tv_detection_requires_spdxversion_at_start(self, tmp_path: Path):
+        """A file that does not begin with SPDXVersion: is not detected as TV."""
+        f = tmp_path / "not_tv.spdx"
+        f.write_text("PackageName: foo\nSPDXVersion: SPDX-2.3\n", encoding="utf-8")
+        # Should raise UnsupportedFormatError because it does not start with SPDXVersion:
+        # (and is not valid JSON or CycloneDX XML or valid YAML SPDX)
+        with pytest.raises((UnsupportedFormatError, ParseError)):
+            detect_format(f)
+
+
+# ---------------------------------------------------------------------------
+# SPDX YAML detection
+# ---------------------------------------------------------------------------
+
+
+class TestDetectFormatSpdxYaml:
+    def test_yaml_fixture_returns_spdx_yaml(self):
+        assert detect_format(SPDX_YAML_FIXTURE) == "spdx-yaml"
+
+    def test_yaml_file_with_spdxversion_key_returns_spdx_yaml(self, tmp_path: Path):
+        f = tmp_path / "test.spdx.yaml"
+        f.write_text("spdxVersion: SPDX-2.3\ndataLicense: CC0-1.0\n", encoding="utf-8")
+        assert detect_format(f) == "spdx-yaml"
+
+    def test_yaml_without_spdxversion_raises_unsupported_format_error(self, tmp_path: Path):
+        f = tmp_path / "unknown.spdx.yaml"
+        f.write_text("name: my-sbom\nversion: 1.0\n", encoding="utf-8")
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_yaml_with_wrong_spdx_version_raises_unsupported_format_error(self, tmp_path: Path):
+        f = tmp_path / "old.spdx.yaml"
+        f.write_text("spdxVersion: SPDX-2.2\ndataLicense: CC0-1.0\n", encoding="utf-8")
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+
+# ---------------------------------------------------------------------------
+# Detection priority ordering
+# ---------------------------------------------------------------------------
+
+
+class TestDetectFormatPriorityOrdering:
+    def test_json_spdx_takes_priority_over_tv_startswith(self, tmp_path: Path):
+        """A valid SPDX JSON file must be detected as 'spdx', not 'spdx-tv'."""
+        f = tmp_path / "spdx.json"
+        f.write_text('{"spdxVersion": "SPDX-2.3", "dataLicense": "CC0-1.0"}', encoding="utf-8")
+        assert detect_format(f) == "spdx"
+
+    def test_cyclonedx_xml_takes_priority_over_yaml(self, tmp_path: Path):
+        """A valid CycloneDX XML file must be detected as 'cyclonedx', not 'spdx-yaml'."""
+        f = tmp_path / "test.cdx.xml"
+        f.write_text(
+            '<bom xmlns="http://cyclonedx.org/schema/bom/1.6" version="1" />',
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
+
+    def test_tv_content_returned_before_yaml_attempt(self, tmp_path: Path):
+        """Content starting with 'SPDXVersion:' must be TV, not YAML (even though
+        a TV file is also technically parseable as YAML in many cases)."""
+        f = tmp_path / "tv_before_yaml.spdx"
+        f.write_text("SPDXVersion: SPDX-2.3\nDataLicense: CC0-1.0\n", encoding="utf-8")
+        assert detect_format(f) == "spdx-tv"
+
+    def test_pure_yaml_without_tv_prefix_returns_spdx_yaml(self, tmp_path: Path):
+        """Valid YAML SPDX without 'SPDXVersion:' at line start is 'spdx-yaml'."""
+        content = "---\nspdxVersion: SPDX-2.3\ndataLicense: CC0-1.0\n"
+        f = tmp_path / "yaml_no_tv.spdx.yaml"
+        f.write_text(content, encoding="utf-8")
+        assert detect_format(f) == "spdx-yaml"

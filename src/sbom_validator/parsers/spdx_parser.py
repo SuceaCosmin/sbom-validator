@@ -1,4 +1,9 @@
-"""Parser for SPDX 2.3 JSON SBOM files."""
+"""Parser for SPDX 2.3 JSON SBOM files.
+
+Exports:
+  parse_spdx(file_path)          -- public entry point for JSON files
+  _parse_spdx_document(doc, lbl) -- shared core used by YAML and TV parsers
+"""
 
 from __future__ import annotations
 
@@ -96,28 +101,25 @@ def _parse_relationship(rel: dict[str, Any]) -> NormalizedRelationship:
     )
 
 
-def parse_spdx(file_path: Path) -> NormalizedSBOM:
-    """Parse an SPDX 2.3 JSON file into a NormalizedSBOM.
+def _parse_spdx_document(document: dict[str, Any], source_label: str) -> NormalizedSBOM:
+    """Parse a loaded SPDX 2.3 document dict into a NormalizedSBOM.
+
+    This is the shared core used by both the JSON parser (parse_spdx) and the
+    YAML parser (parse_spdx_yaml). The caller is responsible for loading the
+    raw document from disk and passing an appropriate source_label for error
+    messages.
+
+    Args:
+        document: A dict representing the parsed SPDX document (JSON or YAML).
+        source_label: Human-readable identifier used in ParseError messages
+            (typically the file path as a string).
+
+    Returns:
+        NormalizedSBOM with format set by the caller's wrapper function.
 
     Raises:
-        ParseError: If the file cannot be read or parsed.
+        ParseError: If required fields are missing or malformed.
     """
-    # --- Read file -----------------------------------------------------------
-    try:
-        raw_text = file_path.read_text(encoding="utf-8")
-    except OSError as e:
-        raise ParseError(f"Cannot read SPDX file '{file_path}': {e}") from e
-
-    # --- Decode JSON ---------------------------------------------------------
-    if not raw_text.strip():
-        raise ParseError(f"SPDX file '{file_path}' is empty.")
-
-    try:
-        document: dict[str, Any] = json.loads(raw_text)
-    except json.JSONDecodeError as e:
-        raise ParseError(f"SPDX file '{file_path}' contains invalid JSON: {e}") from e
-
-    # --- Extract top-level fields --------------------------------------------
     try:
         creation_info: dict[str, Any] = document.get("creationInfo", {})
 
@@ -143,7 +145,7 @@ def parse_spdx(file_path: Path) -> NormalizedSBOM:
         )
 
     except KeyError as e:
-        raise ParseError(f"SPDX file '{file_path}' is missing required field: {e}") from e
+        raise ParseError(f"SPDX file '{source_label}' is missing required field: {e}") from e
 
     return NormalizedSBOM(
         format="spdx",
@@ -152,3 +154,27 @@ def parse_spdx(file_path: Path) -> NormalizedSBOM:
         components=components,
         relationships=relationships,
     )
+
+
+def parse_spdx(file_path: Path) -> NormalizedSBOM:
+    """Parse an SPDX 2.3 JSON file into a NormalizedSBOM.
+
+    Raises:
+        ParseError: If the file cannot be read or parsed.
+    """
+    # --- Read file -----------------------------------------------------------
+    try:
+        raw_text = file_path.read_text(encoding="utf-8")
+    except OSError as e:
+        raise ParseError(f"Cannot read SPDX file '{file_path}': {e}") from e
+
+    # --- Decode JSON ---------------------------------------------------------
+    if not raw_text.strip():
+        raise ParseError(f"SPDX file '{file_path}' is empty.")
+
+    try:
+        document: dict[str, Any] = json.loads(raw_text)
+    except json.JSONDecodeError as e:
+        raise ParseError(f"SPDX file '{file_path}' contains invalid JSON: {e}") from e
+
+    return _parse_spdx_document(document, str(file_path))

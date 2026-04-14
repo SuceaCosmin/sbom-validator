@@ -17,6 +17,8 @@ from sbom_validator.constants import (
     CYCLONEDX_SUPPORTED_VERSIONS,
     FORMAT_CYCLONEDX,
     FORMAT_SPDX,
+    FORMAT_SPDX_TV,
+    FORMAT_SPDX_YAML,
     RULE_CDX_SCHEMA,
     RULE_SPDX_SCHEMA,
 )
@@ -132,25 +134,33 @@ def validate_schema(
 
     Args:
         raw_doc: Parsed JSON document as a dict, or XML string for CycloneDX XML.
-        format_name: Either 'spdx' or 'cyclonedx'.
+            For 'spdx-yaml', pass the already-loaded YAML dict (same structure
+            as SPDX JSON). For 'spdx-tv', pass any value — schema is skipped.
+        format_name: One of 'spdx', 'spdx-yaml', 'spdx-tv', or 'cyclonedx'.
         cdx_version: CycloneDX spec version (e.g. '1.3', '1.5'). Required when
             format_name is 'cyclonedx'. If None, the version is inferred from the
             document itself (JSON: specVersion field; XML: root namespace).
 
     Returns:
-        List of ValidationIssue objects (empty if valid).
+        List of ValidationIssue objects (empty if valid or schema skipped).
 
     Raises:
-        ValueError: If format_name is not 'spdx' or 'cyclonedx'.
+        ValueError: If format_name is not a recognised format string.
     """
-    if format_name not in (FORMAT_SPDX, FORMAT_CYCLONEDX):
-        raise ValueError(f"Unknown format: {format_name!r}. Expected 'spdx' or 'cyclonedx'.")
+    _known = (FORMAT_SPDX, FORMAT_SPDX_YAML, FORMAT_SPDX_TV, FORMAT_CYCLONEDX)
+    if format_name not in _known:
+        raise ValueError(f"Unknown format: {format_name!r}. Expected one of {_known!r}.")
 
     logger.debug("Running schema validation for format %s version %s", format_name, cdx_version)
 
-    if format_name == FORMAT_SPDX:
+    # SPDX Tag-Value: no formal schema — explicitly skip
+    if format_name == FORMAT_SPDX_TV:
+        logger.info("Schema validation skipped for spdx-tv: no formal schema available")
+        return []
+
+    if format_name in (FORMAT_SPDX, FORMAT_SPDX_YAML):
         if not isinstance(raw_doc, dict):
-            raise ValueError("SPDX schema validation expects a JSON object document.")
+            raise ValueError(f"{format_name} schema validation expects a JSON/YAML dict document.")
         issues = _validate_json_schema(raw_doc, _load_spdx_schema(), RULE_SPDX_SCHEMA)
     else:
         # Resolve version if not provided

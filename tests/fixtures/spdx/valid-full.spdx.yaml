@@ -1,0 +1,54 @@
+spdxVersion: SPDX-2.3
+dataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+name: acmecorp-webapp-2.5.0
+documentNamespace: https://example.com/sbom/acmecorp-webapp-2.5.0-yaml
+creationInfo:
+  created: "2024-01-15T10:00:00Z"
+  creators:
+    - "Tool: sbom-generator-1.0"
+    - "Organization: AcmeCorp"
+packages:
+  - SPDXID: SPDXRef-Package-requests
+    name: requests
+    versionInfo: "2.31.0"
+    supplier: "Organization: AcmeCorp"
+    downloadLocation: https://pypi.org/project/requests/2.31.0/
+    filesAnalyzed: false
+    externalRefs:
+      - referenceCategory: PACKAGE-MANAGER
+        referenceType: purl
+        referenceLocator: pkg:pypi/requests@2.31.0
+      - referenceCategory: SECURITY
+        referenceType: cpe23Type
+        referenceLocator: "cpe:2.3:a:python-requests:requests:2.31.0:*:*:*:*:*:*:*"
+  - SPDXID: SPDXRef-Package-urllib3
+    name: urllib3
+    versionInfo: "2.1.0"
+    supplier: "Organization: AcmeCorp"
+    downloadLocation: https://pypi.org/project/urllib3/2.1.0/
+    filesAnalyzed: false
+    externalRefs:
+      - referenceCategory: PACKAGE-MANAGER
+        referenceType: purl
+        referenceLocator: pkg:pypi/urllib3@2.1.0
+  - SPDXID: SPDXRef-Package-certifi
+    name: certifi
+    versionInfo: "2024.2.2"
+    supplier: "Organization: ExampleSoft Ltd"
+    downloadLocation: https://pypi.org/project/certifi/2024.2.2/
+    filesAnalyzed: false
+    externalRefs:
+      - referenceCategory: PACKAGE-MANAGER
+        referenceType: purl
+        referenceLocator: pkg:pypi/certifi@2024.2.2
+relationships:
+  - spdxElementId: SPDXRef-Package-requests
+    relationshipType: DEPENDS_ON
+    relatedSpdxElement: SPDXRef-Package-urllib3
+  - spdxElementId: SPDXRef-Package-requests
+    relationshipType: DEPENDS_ON
+    relatedSpdxElement: SPDXRef-Package-certifi
+  - spdxElementId: SPDXRef-DOCUMENT
+    relationshipType: DEPENDS_ON
+    relatedSpdxElement: SPDXRef-Package-requests
