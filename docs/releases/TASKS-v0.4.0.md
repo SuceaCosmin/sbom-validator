@@ -9,7 +9,7 @@
 - **Base branch:** `develop`
 - **Target merge branch:** `develop` (then `master` per release flow)
 - **Owner:** Orchestrator
-- **Status:** `✅ Ready for Release`
+- **Status:** `✅ Released`
 
 ## Status Legend
 
@@ -65,7 +65,7 @@
 | R11 | Generate release token report | Token Analyst | `feature/spdx-tv-yaml` | R10 | ✅ | `docs/releases/token-report-v0.4.0.html` | Report generated |
 | R12 | Generate release token delta report | Token Analyst | `feature/spdx-tv-yaml` | R11 | ✅ | `docs/releases/token-delta-v0.3.0_to_v0.4.0.html` | Delta report generated |
 | R13 | Generate workflow evaluation report | Workflow Analyst | `feature/spdx-tv-yaml` | R11 | ✅ | `docs/releases/workflow-report-v0.4.0.html` | Workflow report generated |
-| R14 | Final human gate and release action | Human + Release Manager | `develop` / `master` | R12,R13 | ⏳ | GO/NO-GO record | Human approves release |
+| R14 | Final human gate and release action | Human + Release Manager | `develop` / `master` | R12,R13 | ✅ | GO/NO-GO record | Human approves release |
 
 ---
 
@@ -139,7 +139,7 @@
 
 ## Final Verdict
 
-- **Recommendation:** `GO` (pending human approval — R14)
-- **Approved by (Human):** Pending
-- **Date:**
-- **Notes:** All agent gates (G0–G10) pass. 594/594 tests green. No backward-compatibility breaks. No security findings. Awaiting human merge approval and tag push.
+- **Recommendation:** `GO`
+- **Approved by (Human):** Approved
+- **Date:** 2026-04-14
+- **Notes:** All gates passed. PR #9 merged to develop. develop merged to master. Tag v0.4.0 pushed. GitHub Release workflow triggered.
