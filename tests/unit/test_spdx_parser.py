@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from sbom_validator.exceptions import ParseError
 from sbom_validator.models import NormalizedComponent, NormalizedRelationship, NormalizedSBOM
 from sbom_validator.parsers.spdx_parser import parse_spdx
@@ -415,12 +416,10 @@ class TestParseSpdxFull:
         for component in result.components:
             assert component.supplier is not None
             assert not component.supplier.startswith("Organization: "), (
-                f"Supplier prefix not stripped for {component.component_id}: "
-                f"{component.supplier!r}"
+                f"Supplier prefix not stripped for {component.component_id}: {component.supplier!r}"
             )
             assert not component.supplier.startswith("Tool: "), (
-                f"Supplier prefix not stripped for {component.component_id}: "
-                f"{component.supplier!r}"
+                f"Supplier prefix not stripped for {component.component_id}: {component.supplier!r}"
             )
 
     def test_different_suppliers_in_full_fixture(self, fixtures_path: Path) -> None:

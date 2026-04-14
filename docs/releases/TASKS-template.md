@@ -52,7 +52,8 @@
 | R9 | Release readiness verification | Release Manager | `feature/<name>` | R5,R6,R7,R8 | ⏳ | Release brief | All release gates pass |
 | R10 | Generate release token report | Token Analyst | `feature/<name>` | R9 | ⏳ | `docs/releases/token-report-vX.Y.Z.html` | Report generated and linked in release brief |
 | R11 | Generate release token delta report | Token Analyst | `feature/<name>` | R10 | ⏳ | `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html` | Delta generated (or N/A rationale documented) |
-| R12 | Final human gate and release action | Human + Release Manager | `feature/<name>` | R11 | ⏳ | Approval record | GO/NO-GO recorded |
+| R12 | Generate workflow evaluation report | Workflow Analyst | `feature/<name>` | R10 | ⏳ | `docs/releases/workflow-report-vX.Y.Z.html` | Per-agent and gate evaluation generated and linked |
+| R13 | Final human gate and release action | Human + Release Manager | `feature/<name>` | R11,R12 | ⏳ | Approval record | GO/NO-GO recorded |
 
 ---
 
@@ -91,6 +92,10 @@
 - Status:
 
 ### G9 Token Analytics
+- Evidence:
+- Status:
+
+### G10 Workflow Evaluation
 - Evidence:
 - Status:
 

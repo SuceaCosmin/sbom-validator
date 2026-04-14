@@ -10,7 +10,7 @@ You are a **Developer agent** for the `sbom-validator` project.
 **A task is NOT done until all three commands pass locally:**
 
 ```bash
-poetry run ruff check src/ tests/ && poetry run black --check src/ tests/ && poetry run mypy src/
+poetry run ruff check src/ tests/ && poetry run ruff format --check src/ tests/ && poetry run mypy src/
 ```
 
 If any command exits non-zero, fix the issues and re-run before reporting done.
@@ -49,6 +49,17 @@ git push -u origin feature/<name>
 
 The human reviews and approves the PR before it is merged into `develop`.
 
+**Branch cleanup — mandatory after merge:**
+GitHub is configured to delete the remote head branch automatically when a PR is merged. After the PR is merged, also delete the local branch:
+
+```bash
+git checkout develop
+git pull origin develop
+git branch -d feature/<name>
+```
+
+Never leave merged feature branches open locally or remotely. A branch that has been merged into `develop` and still exists is stale clutter — it creates ambiguity about what is in progress.
+
 ---
 
 ## Before Implementing Any Module
@@ -85,6 +96,27 @@ The human reviews and approves the PR before it is merged into `develop`.
 - No `eval()`, no shell injection, no unsafe file path handling
 - Use `pathlib.Path` for all file operations (never `os.path` strings)
 - Line length: 100 characters (configured in `pyproject.toml`)
+- **Import ordering (isort / ruff I001)** — always write imports in this exact order, with a blank line between each group:
+  1. `from __future__ import annotations`
+  2. Standard library (`import json`, `from pathlib import Path`, …)
+  3. Third-party packages (`import pytest`, `from click.testing import CliRunner`, …)
+  4. First-party / project imports (`from sbom_validator.models import …`)
+
+  Never mix third-party and first-party imports in the same block. Write them correctly from the start — do not rely on `ruff --fix` to sort them for you.
+
+## Code Readability — Human-Friendly Code
+
+Write code that a human can read without high cognitive effort. Prefer clarity over cleverness:
+
+- **No magic strings in logic** — use named constants from `src/sbom_validator/constants.py` for format names (`FORMAT_SPDX`, `FORMAT_CYCLONEDX`), validation rule codes (`RULE_SUPPLIER`, etc.), version strings, and any value that appears in more than one place or carries domain meaning.
+- **Descriptive names** — variables and functions must communicate intent, not just type. `component_has_supplier` beats `flag`. `qualifying_rel_types` beats `q`.
+- **One idea per line** — avoid stacking multiple operations in one expression when two lines would be clearer.
+- **Flat over nested** — use early returns and guard clauses to keep nesting shallow. Aim for ≤ 3 levels of indentation in function bodies.
+- **Named intermediate values** — when a sub-expression is non-obvious, assign it to a well-named variable before using it, even if it is only used once.
+- **Short helper functions** — if a block inside a function needs a comment to explain what it does, extract it into a named helper instead.
+- **Comments on the *why***, not the *what* — the code shows what; comments explain why an unusual approach was taken, or what invariant is being enforced.
+
+Apply these rules to every file you touch, not just the file under active development.
 
 ## Key Architecture Constraints
 
@@ -115,6 +147,8 @@ Do not run the full suite after every individual edit. Run the targeted test fil
 2. Full suite passes (phase end): `poetry run pytest`
 3. **Mandatory lint gate passes** (see top of this file — no exceptions)
 4. The implemented module can be imported without error
+
+> **After any rebase or merge**: the lint gate must be re-run from scratch. Pre-commit hooks do not fire automatically during `git rebase`, so fixes applied at commit time can be lost. Run the full gate again and create a new commit if any issues are found before pushing.
 
 ## Reference Files
 

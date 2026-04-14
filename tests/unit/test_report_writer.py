@@ -132,9 +132,9 @@ class TestFileCreation:
         result = _pass_result(file_path="/data/my-sbom.cdx.json")
         html_path, _ = write_reports(result, tmp_path)
         # Path("my-sbom.cdx.json").stem == "my-sbom.cdx"
-        assert html_path.name.startswith(
-            "sbom-report-my-sbom.cdx-"
-        ), f"Expected stem 'my-sbom.cdx' in filename, got: {html_path.name}"
+        assert html_path.name.startswith("sbom-report-my-sbom.cdx-"), (
+            f"Expected stem 'my-sbom.cdx' in filename, got: {html_path.name}"
+        )
 
     def test_report_dir_created_if_not_exists(self, tmp_path: Path) -> None:
         """write_reports must create report_dir (and parents) when it doesn't exist."""
@@ -252,9 +252,9 @@ class TestJsonReportContent:
         """generated_at must match the format ``YYYY-MM-DDTHH:MM:SSZ``."""
         data = self._load_json(_pass_result(), tmp_path)
         iso_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-        assert iso_pattern.match(
-            data["generated_at"]
-        ), f"generated_at is not ISO 8601 UTC: {data['generated_at']}"
+        assert iso_pattern.match(data["generated_at"]), (
+            f"generated_at is not ISO 8601 UTC: {data['generated_at']}"
+        )
 
     def test_json_summary_has_error_count(self, tmp_path: Path) -> None:
         data = self._load_json(_fail_result(), tmp_path)
@@ -333,9 +333,9 @@ class TestJsonReportContent:
         data = self._load_json(_multi_issue_result(), tmp_path)
         severity_order = {"ERROR": 0, "WARNING": 1, "INFO": 2}
         severities = [severity_order[i["severity"]] for i in data["issues"]]
-        assert severities == sorted(
-            severities
-        ), f"Issues not sorted by severity: {[i['severity'] for i in data['issues']]}"
+        assert severities == sorted(severities), (
+            f"Issues not sorted by severity: {[i['severity'] for i in data['issues']]}"
+        )
 
 
 # ===========================================================================
@@ -384,9 +384,9 @@ class TestHtmlReportContent:
     def test_html_contains_issues_table_structure(self, tmp_path: Path) -> None:
         """When there are issues, the HTML must contain a table element."""
         html = self._load_html(_fail_result(), tmp_path)
-        assert (
-            "<table" in html.lower() or "<th" in html.lower()
-        ), "HTML does not contain a table or table-header element"
+        assert "<table" in html.lower() or "<th" in html.lower(), (
+            "HTML does not contain a table or table-header element"
+        )
 
     def test_html_contains_issue_message(self, tmp_path: Path) -> None:
         """Each issue message must appear in the HTML body."""

@@ -51,7 +51,7 @@ Do not mark a release candidate ready until all are true:
    - `poetry run pytest` passes
    - `poetry run mypy src/` passes
    - `poetry run ruff check src/ tests/` passes
-   - `poetry run black --check src/ tests/` passes
+   - `poetry run ruff format --check src/ tests/` passes
 
 3. **Packaging Gate**
    - `poetry build` succeeds
@@ -84,6 +84,11 @@ Do not mark a release candidate ready until all are true:
    - delta report exists (or explicitly N/A for first reportable release):
      `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`
    - release brief links both reports
+
+8. **Workflow Evaluation Gate**
+   - workflow evaluation report exists: `docs/releases/workflow-report-vX.Y.Z.html`
+   - report includes per-agent evaluation, gate compliance analysis, and benchmark vs previous release
+   - release brief links the workflow report
 
 ## Backward Compatibility Checklist (mandatory)
 

@@ -18,8 +18,7 @@ The human should be asked to intervene only for:
 ## Core Responsibilities
 
 - Intake and normalize feature requests into execution-ready work packets
-- Sequence and dispatch work across Planner, Architect, Tester, Developer, Reviewer, Documentation Writer, CI Ops, Security Reviewer, and Release Manager
-- Sequence and dispatch work across Planner, Architect, Tester, Developer, Reviewer, Documentation Writer, CI Ops, Security Reviewer, Token Analyst, and Release Manager
+- Sequence and dispatch work across Planner, Architect, Tester, Developer, Reviewer, Documentation Writer, CI Ops, Security Reviewer, Token Analyst, Workflow Analyst, and Release Manager
 - Enforce gate order and stop rule on failed gates
 - Enforce creation and maintenance of a release-specific task tracker for each release cycle
 - Maintain a concise execution log with pass/fail status by gate
@@ -85,10 +84,14 @@ If the task affects architecture or public behavior, require an Architect pass b
    - Token Analyst generates release token report and previous-release delta report.
    - Output: `docs/releases/token-report-vX.Y.Z.html` and `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`.
 
-10. **Gate 9 - Human Approval**
+10. **Gate 9 - Workflow Evaluation**
+    - Workflow Analyst evaluates per-agent efficiency, gate compliance, and benchmarks against previous release.
+    - Output: `docs/releases/workflow-report-vX.Y.Z.html`.
+
+11. **Gate 10 - Human Approval**
    - Human decides go/no-go.
 
-Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-8 all pass. Gates 5 (Security) and 8 (Token Analytics) are mandatory pre-tag gates — if either cannot be completed, record a formal deferral in the release tracker with justification before proceeding. Silent omission is a process violation.
+Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-9 all pass. Gates 5 (Security), 8 (Token Analytics), and 9 (Workflow Evaluation) are mandatory pre-tag gates — if any cannot be completed, record a formal deferral in the release tracker with justification before proceeding. Silent omission is a process violation.
 
 ## Release Tracker Policy (mandatory)
 
@@ -152,6 +155,7 @@ Maintain this concise table during orchestration:
 | G6 CI | CI Ops | PASS/FAIL | checks status |
 | G7 Release | Release Manager | PASS/FAIL | release brief |
 | G8 Token Analytics | Token Analyst | PASS/FAIL | token report + delta report |
+| G9 Workflow Evaluation | Workflow Analyst | PASS/FAIL | workflow-report-vX.Y.Z.html |
 
 ## Handoff to Human (required)
 

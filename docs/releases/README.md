@@ -27,14 +27,17 @@ Before release approval:
 2. Ensure tracker contents align with changelog and release brief
 3. Link the tracker in PR/release notes when possible
 
-## Token Analytics Reports (required for each release)
+## Required Analytics Reports (mandatory for each release)
 
-Each release should also include:
+Each release must include the following reports before the release tag is pushed.
+Both are CI-enforced in `.github/workflows/release.yml`.
 
 1. `docs/releases/token-report-vX.Y.Z.html`
    - Token usage evaluation for the release
 2. `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`
    - Delta analysis vs previous release
+3. `docs/releases/workflow-report-vX.Y.Z.html`
+   - Per-agent efficiency evaluation, gate compliance analysis, and benchmark vs previous release
 
 If a release spans multiple work sessions, aggregate all sessions into the same
 release token report and provide per-session subtotals plus a release total.

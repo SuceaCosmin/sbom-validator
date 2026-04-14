@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+
 from sbom_validator.cli import main
 
 SPDX_FIXTURES = Path("tests/fixtures/spdx")
@@ -317,3 +318,30 @@ class TestLargeFixturePipeline:
         assert data["status"] == "FAIL"
         rules = {i["rule"] for i in data["issues"]}
         assert "FR-08" in rules
+
+
+class TestCycloneDXMultiVersion:
+    """End-to-end PASS scenarios for CycloneDX 1.3, 1.4, and 1.5 (JSON + XML)."""
+
+    @pytest.mark.parametrize("version", ["1.3", "1.4", "1.5"])
+    def test_valid_cdx_json_all_versions_pass(self, runner, version):
+        fixture = CDX_FIXTURES / f"valid-minimal-{version}.cdx.json"
+        result = runner.invoke(main, ["validate", str(fixture)])
+        assert result.exit_code == 0, result.output
+        assert "PASS" in result.output
+
+    @pytest.mark.parametrize("version", ["1.3", "1.4", "1.5"])
+    def test_valid_cdx_xml_all_versions_pass(self, runner, version):
+        fixture = CDX_FIXTURES / f"valid-minimal-{version}.cdx.xml"
+        result = runner.invoke(main, ["validate", str(fixture)])
+        assert result.exit_code == 0, result.output
+        assert "PASS" in result.output
+
+    @pytest.mark.parametrize("version", ["1.3", "1.4", "1.5"])
+    def test_valid_cdx_json_format_detected_is_cyclonedx(self, runner, version):
+        fixture = CDX_FIXTURES / f"valid-minimal-{version}.cdx.json"
+        result = runner.invoke(main, ["validate", str(fixture), "--format", "json"])
+        assert result.exit_code == 0, result.output
+        data = json.loads(result.output)
+        assert data["format_detected"] == "cyclonedx"
+        assert data["status"] == "PASS"

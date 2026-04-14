@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-14
+
+### Added
+- CycloneDX multi-version support: the validator now accepts CycloneDX 1.3, 1.4, and 1.5 in addition
+  to the previously supported 1.6, for both JSON and XML formats. Format detection, schema validation
+  (Stage 1), and NTIA checking (Stage 2) all operate correctly across all four versions.
+- Bundled official CycloneDX JSON schemas and XSD files for versions 1.3, 1.4, and 1.5
+  (`cyclonedx-1.3.schema.json`, `cyclonedx-1.3.schema.xsd`, `cyclonedx-1.4.schema.json`,
+  `cyclonedx-1.4.schema.xsd`, `cyclonedx-1.5.schema.json`, `cyclonedx-1.5.schema.xsd`).
+  No network access is required at validation time.
+- `CYCLONEDX_SUPPORTED_VERSIONS` constant expanded to `frozenset({"1.3", "1.4", "1.5", "1.6"})`,
+  replacing the previously implicit single-version assumption.
+
+### Technical
+- 516 unit and integration tests passing on Python 3.11.
+- Zero mypy errors, zero ruff lint/format errors.
+- D1 security deferral from v0.2.2 resolved: `xmlschema`-based XSD loading path formally reviewed;
+  no path traversal or unsafe XML parsing risk identified (see `docs/releases/TASKS-v0.3.0.md` G5).
+
 ## [0.2.2] - 2026-04-09
 
 ### Fixed
@@ -70,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/SuceaCosmin/sbom-validator/releases/tag/v0.1.0

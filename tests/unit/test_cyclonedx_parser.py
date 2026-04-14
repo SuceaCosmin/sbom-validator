@@ -18,6 +18,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from sbom_validator.exceptions import ParseError
 from sbom_validator.models import (
     NormalizedComponent,

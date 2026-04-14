@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Usage Report — v0.2.2</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .bar-outer { background: #e5e7eb; border-radius: 4px; height: 12px; width: 100%; }
+    .bar-inner { background: #3b82f6; border-radius: 4px; height: 12px; }
+    .verdict-improved { color: #166534; font-weight: bold; }
+    .verdict-flat { color: #b45309; font-weight: bold; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Usage Report — v0.2.2</h1>
+  <p class="muted">SBOM Validator · Release: v0.2.2 · Generated: 2026-04-09</p>
+
+  <div class="card">
+    <h2>Release Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Release</td><td><strong>v0.2.2</strong></td></tr>
+      <tr><td>Date range</td><td>2026-04-09 (single session, continuation of v0.2.1 session)</td></tr>
+      <tr><td>Sessions included</td><td>1 (continuation — no session boundary overhead)</td></tr>
+      <tr><td>Compared baseline</td><td>v0.2.1 — see delta report</td></tr>
+      <tr><td>Commits</td><td>6</td></tr>
+      <tr><td>Files changed</td><td>27 files, 764 insertions, 41 deletions</td></tr>
+      <tr><td>Scope type</td><td>Bug fixes + process hardening (no new user-facing features)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Summary Metrics</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span> derived from commit count, files changed, CI run history, and diagnostic loop count.</p>
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      <tr><td>Total tokens (input + output)</td><td>~180,000 – 230,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Productive tokens</td><td>~120,000 – 155,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework tokens (CI failures, version drift fixes)</td><td>~40,000 – 55,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework ratio</td><td>~22–24%</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Top single sink</td><td>Recurring CI lint/format failure cycles (pre-commit version drift)</td><td>analysis</td></tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Note: rework ratio is higher than v0.2.1 (~14%) despite smaller scope. The pre-commit version drift issue required 3 separate diagnosis-fix-push cycles before the structural root cause was resolved.</p>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Token Breakdown</h2>
+    <table>
+      <tr><th>Agent / Role</th><th>Est. Tokens</th><th>Share</th><th>Notes</th></tr>
+      <tr>
+        <td>Developer (binary fix)</td>
+        <td>~50,000 – 65,000</td>
+        <td>~28%
+          <div class="bar-outer"><div class="bar-inner" style="width:28%"></div></div>
+        </td>
+        <td>Root cause diagnosis (silent exit 0), <code>__main__</code> guard fix, xmlschema hidden imports, spec update. Included multi-round binary testing via Python subprocess.</td>
+      </tr>
+      <tr>
+        <td>CI-Ops (lint/format drift cycles)</td>
+        <td>~45,000 – 60,000</td>
+        <td>~25%
+          <div class="bar-outer"><div class="bar-inner" style="width:25%"></div></div>
+        </td>
+        <td>4 CI failure rounds: ruff import sort × 2, black format, pre-commit version pin fix, final structural fix (local hooks). Each round: log fetch → diagnosis → fix → push → watch.</td>
+      </tr>
+      <tr>
+        <td>Developer (smoke test script)</td>
+        <td>~30,000 – 40,000</td>
+        <td>~17%
+          <div class="bar-outer"><div class="bar-inner" style="width:17%"></div></div>
+        </td>
+        <td>Wrote <code>scripts/smoke-test-binary.sh</code>, debugged exit-code capture bug, fixed valid-full.cdx.xml XSD ordering, iterated to 14/14 passing.</td>
+      </tr>
+      <tr>
+        <td>Release Manager + Orchestrator</td>
+        <td>~25,000 – 30,000</td>
+        <td>~13%
+          <div class="bar-outer"><div class="bar-inner" style="width:13%"></div></div>
+        </td>
+        <td>Version bump, changelog, TASKS-v0.2.2.md, tag, release workflow watch.</td>
+      </tr>
+      <tr>
+        <td>Token Analyst (this report)</td>
+        <td>~15,000 – 20,000</td>
+        <td>~8%
+          <div class="bar-outer"><div class="bar-inner" style="width:8%"></div></div>
+        </td>
+        <td>Post-release as before. Workflow fix to enforce pre-release execution included.</td>
+      </tr>
+      <tr>
+        <td>Process/workflow improvements</td>
+        <td>~15,000 – 20,000</td>
+        <td>~8%
+          <div class="bar-outer"><div class="bar-inner" style="width:8%"></div></div>
+        </td>
+        <td>Operating model updates, release-manager agent gate addition, CI enforcement for token reports.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Gate / Phase Token Breakdown</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>Est. Tokens</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>G1 Planning (scope confirmation)</td><td>~5,000</td><td>✅</td><td>Minimal — patch scope was clear from binary failure diagnosis.</td></tr>
+      <tr><td>G2 Architecture</td><td>~3,000</td><td>✅</td><td>No ADR changes. Spec file and CLI entry point fixes only.</td></tr>
+      <tr><td>G3 TDD Build</td><td>~80,000 – 105,000</td><td>✅</td><td>Binary diagnosis + fix + smoke test script development dominated. 501 tests passing.</td></tr>
+      <tr><td>G4 Quality Review</td><td>~5,000</td><td>✅</td><td>ruff/black/mypy clean after fixes.</td></tr>
+      <tr><td>G5 Security</td><td>—</td><td>⚠️ Deferred</td><td>Carried forward again — no new dependencies introduced this release.</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~50,000 – 65,000</td><td>✅</td><td>4 CI failure cycles. Structurally resolved with local poetry-run hooks.</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~8,000</td><td>✅</td><td>CHANGELOG, TASKS-v0.2.2.md.</td></tr>
+      <tr><td>G8 Release Readiness</td><td>~8,000</td><td>✅</td><td>Version bump, tag, release workflow green (14/14 smoke tests).</td></tr>
+      <tr><td>G9 Token Analytics</td><td>~15,000 – 20,000</td><td>✅</td><td>Post-release again — workflow enforcement being added this session.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Top Token Sinks</h2>
+    <ol>
+      <li><strong>Pre-commit version drift (4 CI cycles, ~25% of total)</strong><br>
+        The single largest avoidable cost. Root cause: remote-pinned pre-commit hooks diverged from poetry-installed versions. Required 3 rounds of symptom fixing before the structural cause was diagnosed and resolved with local poetry-run hooks.</li>
+      <li><strong>Binary diagnosis — silent exit 0 (~15% of total)</strong><br>
+        Diagnosing why a PyInstaller binary produces no output required many subprocess capture attempts across cmd.exe, PowerShell, and Python before the missing <code>__main__</code> guard was identified. Avoidable if smoke test script had existed earlier.</li>
+      <li><strong>Token analyst post-release execution (2 releases in a row)</strong><br>
+        Each time: reports generated after the tag instead of before. Small per-occurrence cost but a consistent process gap that now needs structural enforcement.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Optimization Actions for Next Release</h2>
+    <table>
+      <tr><th>Action</th><th>Owner</th><th>Est. Savings</th><th>Status</th></tr>
+      <tr>
+        <td>Local poetry-run pre-commit hooks (eliminates version drift)</td>
+        <td>Done</td>
+        <td>~45,000–60,000 tokens/release</td>
+        <td>✅ Implemented this release</td>
+      </tr>
+      <tr>
+        <td>Binary smoke test script in CI release workflow</td>
+        <td>Done</td>
+        <td>Prevents broken binary releases entirely</td>
+        <td>✅ Implemented this release</td>
+      </tr>
+      <tr>
+        <td>Token report existence check in release workflow (CI gate)</td>
+        <td>CI-Ops / Developer</td>
+        <td>Structural enforcement — prevents G9 skip</td>
+        <td>🔄 In progress this session</td>
+      </tr>
+      <tr>
+        <td>G5 Security review for <code>xmlschema</code></td>
+        <td>Security Reviewer</td>
+        <td>Clears deferred risk</td>
+        <td>⏳ v0.3.x</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span>. Derived from: 6 commits, 27 files changed, 4 CI failure cycles (observable from gh run list), binary diagnosis loop count (inferred from tool call sequence), and relative task complexity. Confidence: <strong>Medium</strong>. Rework ratio may be slightly underestimated due to untracked exploratory diagnostic attempts.</p>
+  </div>
+
+</div>
+</body>
+</html>

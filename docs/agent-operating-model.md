@@ -31,6 +31,7 @@ Goal: maximize automation while preserving quality, backward compatibility, and 
 | `ci-ops` | CI failure triage, safe auto-fixes, rerun loops | On any failing CI check |
 | `documentation-writer` | User-facing docs/changelog updates | Any feature affecting behavior, usage, or release notes |
 | `token-analyst` | Token usage evaluation and release-to-release delta reporting | After release readiness evidence is available, before final release approval |
+| `workflow-analyst` | Per-agent efficiency evaluation, gate compliance analysis, and release-over-release workflow benchmarking | After token analytics, before final release approval |
 | `release-manager` | Release gates, versioning, artifact/release readiness | Once code/test/review/security gates pass |
 
 ---
@@ -71,7 +72,11 @@ Use this sequence for every feature:
 10. **Token analytics reporting** (`token-analyst`)
    - Generate release token report and previous-release delta report.
 
-11. **Human final approval**
+11. **Workflow evaluation** (`workflow-analyst`)
+   - Evaluate per-agent efficiency and gate compliance for the completed release cycle.
+   - Generate `docs/releases/workflow-report-vX.Y.Z.html` benchmarked against previous release.
+
+12. **Human final approval**
    - Approve or block release.
 
 ---
@@ -104,8 +109,9 @@ Everything else should be automated by agents.
 | G7 Docs Sync | `documentation-writer` | Behavior docs/changelog/version references aligned |
 | G8 Release Readiness | `release-manager` | Version consistency, packaging, compatibility gates pass |
 | G9 Token Analytics | `token-analyst` | `token-report-vX.Y.Z.html` and delta report generated |
+| G10 Workflow Evaluation | `workflow-analyst` | `workflow-report-vX.Y.Z.html` generated and benchmarked against previous release |
 
-No gate skipping is allowed. Gates G5 (Security) and G9 (Token Analytics) must be completed **before** the release tag is pushed. If either cannot be completed, it must be formally recorded as a deferral in the release tracker with an explicit justification — silent omission is not acceptable.
+No gate skipping is allowed. Gates G5 (Security), G9 (Token Analytics), and G10 (Workflow Evaluation) must be completed **before** the release tag is pushed. If any cannot be completed, it must be formally recorded as a deferral in the release tracker with an explicit justification — silent omission is not acceptable.
 
 ---
 

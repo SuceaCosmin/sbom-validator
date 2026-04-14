@@ -417,9 +417,9 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         rules_found = {i.rule for i in issues}
         for expected_rule in ("FR-04", "FR-06", "FR-07", "FR-08", "FR-09", "FR-10"):
-            assert (
-                expected_rule in rules_found
-            ), f"{expected_rule} not reported; rules found: {rules_found}"
+            assert expected_rule in rules_found, (
+                f"{expected_rule} not reported; rules found: {rules_found}"
+            )
 
     def test_each_issue_has_severity_error(self) -> None:
         """Every issue returned by check_ntia must carry ERROR severity."""
@@ -427,9 +427,9 @@ class TestNtiaCheckerCollectAll:
         issues = check_ntia(sbom)
         assert len(issues) > 0, "Expected at least one issue from a broken SBOM"
         for issue in issues:
-            assert (
-                issue.severity == IssueSeverity.ERROR
-            ), f"Issue {issue.rule!r} has severity {issue.severity!r}; expected ERROR"
+            assert issue.severity == IssueSeverity.ERROR, (
+                f"Issue {issue.rule!r} has severity {issue.severity!r}; expected ERROR"
+            )
 
     def test_each_issue_has_non_empty_message(self) -> None:
         """Every issue must carry a non-empty human-readable message."""
@@ -450,9 +450,9 @@ class TestNtiaCheckerCollectAll:
         sbom = self._make_maximally_broken_sbom()
         issues = check_ntia(sbom)
         for item in issues:
-            assert isinstance(
-                item, ValidationIssue
-            ), f"Expected ValidationIssue, got {type(item).__name__}"
+            assert isinstance(item, ValidationIssue), (
+                f"Expected ValidationIssue, got {type(item).__name__}"
+            )
 
     def test_each_issue_has_non_empty_rule(self) -> None:
         """Every issue must carry a non-empty rule identifier (e.g., 'FR-04')."""

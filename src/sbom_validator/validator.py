@@ -4,8 +4,15 @@ from __future__ import annotations
 
 import json
 import logging
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from sbom_validator.constants import (
+    CDX_FIELD_SPEC_VERSION,
+    CYCLONEDX_XML_NAMESPACE_PREFIX,
+    FORMAT_SPDX,
+    RULE_FORMAT_DETECTION,
+)
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
 from sbom_validator.format_detector import detect_format
 from sbom_validator.models import (
@@ -20,6 +27,22 @@ from sbom_validator.parsers.spdx_parser import parse_spdx
 from sbom_validator.schema_validator import validate_schema
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_cdx_version(raw_doc: dict[str, object] | str) -> str | None:
+    """Extract the CycloneDX spec version from a parsed JSON doc or XML string."""
+    if isinstance(raw_doc, dict):
+        val = raw_doc.get(CDX_FIELD_SPEC_VERSION)
+        return str(val) if val is not None else None
+    try:
+        root = ET.fromstring(raw_doc)
+        if root.tag.startswith("{") and "}" in root.tag:
+            ns = root.tag[1 : root.tag.index("}")]
+            if ns.startswith(CYCLONEDX_XML_NAMESPACE_PREFIX):
+                return ns[len(CYCLONEDX_XML_NAMESPACE_PREFIX) :]
+    except ET.ParseError:
+        pass
+    return None
 
 
 def _error_issue(message: str, rule: str = "SYS-ERROR") -> ValidationIssue:
@@ -59,7 +82,7 @@ def validate(file_path: str | Path) -> ValidationResult:
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
-            issues=(_error_issue(str(e), rule="FR-01"),),
+            issues=(_error_issue(str(e), rule=RULE_FORMAT_DETECTION),),
             format_detected=None,
         )
     except Exception as e:
@@ -75,7 +98,7 @@ def validate(file_path: str | Path) -> ValidationResult:
     logger.debug("Stage %s \u2192 %s", "format_detection", "schema_validation")
     try:
         raw_text = file_path.read_text(encoding="utf-8")
-        if format_name == "spdx":
+        if format_name == FORMAT_SPDX:
             raw_doc: dict[str, object] | str = json.loads(raw_text)
         else:
             try:
@@ -92,7 +115,12 @@ def validate(file_path: str | Path) -> ValidationResult:
         )
 
     # Stage 2: Schema validation
-    schema_issues = validate_schema(raw_doc, format_name)
+    cdx_version: str | None = None
+    if format_name != FORMAT_SPDX:
+        cdx_version = _extract_cdx_version(raw_doc)
+        logger.debug("CycloneDX spec version extracted: %s", cdx_version)
+
+    schema_issues = validate_schema(raw_doc, format_name, cdx_version)
     logger.info("Schema validation complete, %d issues found", len(schema_issues))
     if schema_issues:
         result = ValidationResult(
@@ -107,7 +135,7 @@ def validate(file_path: str | Path) -> ValidationResult:
     # Stage 3: Parse into normalized SBOM (only if schema passed)
     logger.debug("Stage %s \u2192 %s", "schema_validation", "parsing")
     try:
-        if format_name == "spdx":
+        if format_name == FORMAT_SPDX:
             sbom = parse_spdx(file_path)
         else:
             sbom = parse_cyclonedx(file_path)
