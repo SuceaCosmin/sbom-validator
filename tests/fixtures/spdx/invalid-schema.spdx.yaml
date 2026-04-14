@@ -1,0 +1,15 @@
+spdxVersion: SPDX-2.3
+dataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+name: acmecorp-myapp-1.0.0
+documentNamespace: https://example.com/sbom/acmecorp-myapp-1.0.0-invalid-yaml
+creationInfo:
+  created: "not-a-valid-iso8601-timestamp"
+  creators:
+    - "Tool: sbom-generator-1.0"
+packages:
+  - SPDXID: 12345
+    name: requests
+    versionInfo: "2.31.0"
+    downloadLocation: https://pypi.org/project/requests/2.31.0/
+    filesAnalyzed: false

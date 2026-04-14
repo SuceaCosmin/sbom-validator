@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-14
+
+### Added
+- SPDX 2.3 Tag-Value (`.spdx`) format support: format detection, schema validation
+  explicitly skipped (no formal TV schema exists; a logged INFO notice is emitted),
+  full NTIA compliance checking via a new line-oriented Tag-Value parser.
+  `format_detected` surfaces `"spdx-tv"` in JSON output.
+- SPDX 2.3 YAML (`.spdx.yaml`) format support: format detection, schema validation
+  against the existing bundled `spdx-2.3.schema.json` (YAML is structurally identical
+  to SPDX JSON), full NTIA compliance checking via a YAML-loading wrapper around the
+  shared SPDX document parser. `format_detected` surfaces `"spdx-yaml"` in JSON output.
+- New format constants `FORMAT_SPDX_TV = "spdx-tv"` and `FORMAT_SPDX_YAML = "spdx-yaml"`
+  in `constants.py`.
+- `pyyaml >= 6.0` runtime dependency (used via `yaml.safe_load` exclusively).
+- `types-PyYAML` development dependency for mypy strict-mode compliance.
+- ADR-009 documenting the multi-format detection strategy, schema validation policy,
+  parser factoring, and YAML library choice.
+- Fixture files for both new formats:
+  `valid-full.spdx`, `valid-minimal.spdx`, `missing-supplier.spdx`, `missing-relationships.spdx`,
+  `valid-full.spdx.yaml`, `valid-minimal.spdx.yaml`, `missing-supplier.spdx.yaml`,
+  `invalid-schema.spdx.yaml`.
+
+### Changed
+- `detect_format()` detection priority extended: JSON → CycloneDX XML → SPDX Tag-Value
+  → SPDX YAML → `UnsupportedFormatError`. Existing JSON and CycloneDX detection is unchanged.
+- `validate_schema()` now accepts `"spdx-tv"` (returns empty list + log) and `"spdx-yaml"`
+  (validates as JSON schema) in addition to existing `"spdx"` and `"cyclonedx"`.
+- `spdx_parser.py` refactored to expose `_parse_spdx_document(document, source_label)` shared
+  helper; `parse_spdx()` is a backward-compatible thin wrapper.
+
+### Technical
+- 594 unit and integration tests passing on Python 3.11 (78 new tests added).
+- Zero mypy errors (strict mode), zero ruff lint/format errors.
+- 96% overall code coverage.
+
 ## [0.3.0] - 2026-04-14
 
 ### Added
@@ -89,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.1.0...v0.2.0

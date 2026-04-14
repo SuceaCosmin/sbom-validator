@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Delta Report — v0.3.0 to v0.4.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #4c1d95; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #f5f3ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .delta-pos { color: #b91c1c; }
+    .delta-neg { color: #166534; }
+    .delta-flat { color: #6b7280; }
+    .verdict-regressed { color: #b91c1c; font-weight: bold; font-size: 1.1rem; }
+    .verdict-improved { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    .verdict-flat { color: #b45309; font-weight: bold; font-size: 1.1rem; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Delta Report — v0.3.0 to v0.4.0</h1>
+  <p class="muted">SBOM Validator &middot; Generated: 2026-04-14</p>
+
+  <div class="card">
+    <h2>Release Comparison Overview</h2>
+    <table>
+      <tr><th>Dimension</th><th>v0.3.0 (Baseline)</th><th>v0.4.0 (Current)</th><th>Delta</th></tr>
+      <tr><td>Release date</td><td>2026-04-14</td><td>2026-04-14</td><td class="delta-flat">Same day (sequential)</td></tr>
+      <tr><td>Sessions</td><td>1</td><td>1</td><td class="delta-flat">Flat</td></tr>
+      <tr><td>Feature scope</td><td>CycloneDX multi-version (1.3/1.4/1.5)</td><td>SPDX TV + YAML formats</td><td class="delta-pos">Larger scope</td></tr>
+      <tr><td>Files changed (total)</td><td>~18 files</td><td>~28 files</td><td class="delta-pos">+10 files (+56%)</td></tr>
+      <tr><td>Test count</td><td>516</td><td>594</td><td class="delta-pos">+78 tests (+15%)</td></tr>
+      <tr><td>New parsers</td><td>0</td><td>2 (spdx_tv_parser.py, spdx_yaml_parser.py)</td><td class="delta-pos">+2 parsers</td></tr>
+      <tr><td>New ADRs</td><td>0 (context note only)</td><td>1 (ADR-009)</td><td class="delta-pos">+1 ADR</td></tr>
+      <tr><td>Rework cycles</td><td>~0</td><td>~2 (1 lint, 1 mypy)</td><td class="delta-pos">+2 minor cycles</td></tr>
+      <tr><td>Rework ratio</td><td>~6–9%</td><td>~4–6%</td><td class="delta-neg">Improved</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Token Comparison Table</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span>.</p>
+    <table>
+      <tr><th>Category</th><th>v0.3.0 Est.</th><th>v0.4.0 Est.</th><th>Delta</th><th>Notes</th></tr>
+      <tr>
+        <td>Total tokens</td>
+        <td>~130,000 – 170,000</td>
+        <td>~200,000 – 260,000</td>
+        <td class="delta-pos">+55% – +60%</td>
+        <td>Higher scope: 2 new parsers vs 0 new parsers in v0.3.0</td>
+      </tr>
+      <tr>
+        <td>Productive tokens</td>
+        <td>~115,000 – 155,000</td>
+        <td>~185,000 – 245,000</td>
+        <td class="delta-pos">+60%</td>
+        <td>Proportional to expanded feature surface</td>
+      </tr>
+      <tr>
+        <td>Rework tokens</td>
+        <td>~8,000 – 15,000</td>
+        <td>~8,000 – 15,000</td>
+        <td class="delta-flat">Flat</td>
+        <td>Same absolute rework despite larger scope = better efficiency ratio</td>
+      </tr>
+      <tr>
+        <td>Rework ratio</td>
+        <td>~6–9%</td>
+        <td>~4–6%</td>
+        <td class="delta-neg">-2pp to -3pp</td>
+        <td>Slight improvement; pre-commit hooks continue to prevent lint cycles</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Phase Token Comparison</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>v0.3.0 Est.</th><th>v0.4.0 Est.</th><th>Delta</th><th>Notes</th></tr>
+      <tr><td>G0 Intake</td><td>~2,000</td><td>~3,000</td><td class="delta-pos">+1,000</td><td>v0.4.0 had 11 explicit acceptance criteria vs simpler v0.3.0 scope</td></tr>
+      <tr><td>G1 Planning</td><td>~5,000</td><td>~8,000 – 12,000</td><td class="delta-pos">+3,000 – 7,000</td><td>TASKS-v0.4.0.md more detailed (14 tasks, parallelization map, risk map)</td></tr>
+      <tr><td>G2 Architecture</td><td>~8,000 – 12,000</td><td>~18,000 – 25,000</td><td class="delta-pos">+10,000</td><td>ADR-009 authored (new); v0.3.0 was "no ADR change" determination only</td></tr>
+      <tr><td>G3 TDD Build</td><td>~70,000 – 90,000</td><td>~110,000 – 145,000</td><td class="delta-pos">+40,000 – 55,000</td><td>Proportional: 2 new parsers + 78 tests vs schema wiring + 15 tests</td></tr>
+      <tr><td>G4 Quality Review</td><td>~4,000 – 6,000</td><td>~12,000 – 18,000</td><td class="delta-pos">+8,000 – 12,000</td><td>More files to review; also ruff/mypy fix loop added review evidence</td></tr>
+      <tr><td>G5 Security</td><td>~12,000 – 18,000</td><td>~10,000 – 15,000</td><td class="delta-neg">-2,000 – 3,000</td><td>v0.3.0 included D1 resolution overhead; v0.4.0 YAML risk is well-known pattern</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~3,000 – 5,000</td><td>~3,000 – 5,000</td><td class="delta-flat">Flat</td><td>Zero CI failure cycles both releases</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~5,000 – 8,000</td><td>~15,000 – 20,000</td><td class="delta-pos">+10,000 – 12,000</td><td>Larger doc surface: README table schema changed, user-guide rewritten, briefing updated with 3 new signatures</td></tr>
+      <tr><td>G8 Release Readiness</td><td>~5,000 – 8,000</td><td>~5,000 – 8,000</td><td class="delta-flat">Flat</td><td>Same scope: version bump + build + smoke tests</td></tr>
+      <tr><td>G9 Token Analytics</td><td>~12,000 – 18,000</td><td>~12,000 – 18,000</td><td class="delta-flat">Flat</td><td>Consistent per-release analytics overhead</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Token Comparison</h2>
+    <table>
+      <tr><th>Agent Family</th><th>v0.3.0 Share</th><th>v0.4.0 Share</th><th>Delta</th><th>Notes</th></tr>
+      <tr><td>Developer</td><td>~46%</td><td>~46%</td><td class="delta-flat">Flat</td><td>Consistent as largest consumer; v0.4.0 has more code but same proportional weight</td></tr>
+      <tr><td>Tester</td><td>~15%</td><td>~15%</td><td class="delta-flat">Flat</td><td>Proportional to test count increase (+78 new tests)</td></tr>
+      <tr><td>Architect</td><td>~6%</td><td>~8%</td><td class="delta-pos">+2pp</td><td>ADR-009 authoring required vs no ADR in v0.3.0</td></tr>
+      <tr><td>Security Reviewer</td><td>~10%</td><td>~5%</td><td class="delta-neg">-5pp</td><td>v0.3.0 had D1 resolution overhead; v0.4.0 YAML risk fast to review</td></tr>
+      <tr><td>Reviewer (quality)</td><td>~3% (bundled in Tester)</td><td>~6%</td><td class="delta-pos">+3pp</td><td>Explicit full checklist review for v0.4.0 with documented findings table</td></tr>
+      <tr><td>Documentation Writer</td><td>~4%</td><td>~7%</td><td class="delta-pos">+3pp</td><td>More doc surface updated this release</td></tr>
+      <tr><td>Release Manager + Orchestrator</td><td>~11%</td><td>~7%</td><td class="delta-neg">-4pp</td><td>v0.3.0 included more coordination overhead (D1 carry-forward)</td></tr>
+      <tr><td>Token Analyst</td><td>~10%</td><td>~6%</td><td class="delta-neg">-4pp</td><td>Same absolute cost but smaller proportional share due to larger total</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Improvements Adopted from v0.3.0 Recommendations</h2>
+    <table>
+      <tr><th>v0.3.0 Recommendation</th><th>v0.4.0 Status</th></tr>
+      <tr>
+        <td>Schema version dispatch table driven by constants (data-driven)</td>
+        <td>Not applicable to v0.4.0 scope (no new CDX versions). Pattern continued: TV/YAML added as branches in the same dispatch logic.</td>
+      </tr>
+      <tr>
+        <td>Maintain G5 security review cadence</td>
+        <td>Adopted. G5 executed with full checklist for v0.4.0. yaml.safe_load explicitly audited at all 3 call sites.</td>
+      </tr>
+      <tr>
+        <td>Token Analyst pre-tag CI enforcement (G9 gate)</td>
+        <td>Active and effective. G9 executed before any tag push recommendation.</td>
+      </tr>
+      <tr>
+        <td>ADR maintenance: update ADR-001 for current CDX version set</td>
+        <td>Partially adopted. ADR-001 context reference updated in agent-briefing.md ADR table. Full ADR-001 document update deferred.</td>
+      </tr>
+      <tr>
+        <td>Fixture SBOM generation script</td>
+        <td>Not implemented. Scope grew (8 new fixture files manually authored). Recommend revisiting for v0.5.0 if more formats are added.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>New Friction Points Identified in v0.4.0</h2>
+    <ul>
+      <li><strong>mypy strict mode + json.loads/yaml.safe_load return type:</strong> Both functions return <code>Any</code>. Requires explicit typed intermediate variables to satisfy <code>--strict</code>. Two correction cycles needed (3 errors). Low cost individually but a recurring pattern as new parsers are added.</li>
+      <li><strong>Fixture file count growth:</strong> v0.4.0 added 8 fixture files (4 TV + 4 YAML). Each new serialization format doubles the fixture set. Without a generation script, this will become a manual maintenance burden at v0.5.0+.</li>
+      <li><strong>agent-briefing.md becoming stale between releases:</strong> The Module Map section required updates to three function signatures and the NormalizedSBOM.format field type. A per-release "briefing freshness check" step in the planning gate would catch this earlier.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Net Efficiency Verdict</h2>
+    <p><span class="verdict-flat">FLAT (scope-adjusted)</span></p>
+    <p>Raw token spend increased ~55–60% vs v0.3.0, but this is proportional to the ~1.5x increase in implementation surface (2 new parsers vs 0, 78 new tests vs 15, new ADR vs no ADR). Rework ratio improved slightly (4–6% vs 6–9%). The absolute rework token cost held flat despite larger scope — a positive signal that the structural CI improvements (pre-commit hooks, mypy-first development) are mature and consistently effective.</p>
+    <p>The per-token efficiency (quality outcomes per token spent) is approximately flat vs v0.3.0. No significant regression or improvement in process efficiency; the increase in raw tokens is justified by feature scope.</p>
+  </div>
+
+  <div class="card">
+    <h2>Forecast for v0.5.0</h2>
+    <table>
+      <tr><th>Scenario</th><th>Estimated Token Budget</th><th>Key Driver</th></tr>
+      <tr>
+        <td>Small scope (bug fixes, one new CLI option)</td>
+        <td>~80,000 – 120,000</td>
+        <td>Sub-ADR-level change; limited parser work; &lt;20 new tests</td>
+      </tr>
+      <tr>
+        <td>Medium scope (one new SBOM format or CycloneDX 1.7 support)</td>
+        <td>~140,000 – 180,000</td>
+        <td>Similar to v0.3.0 profile: schema wiring + fixture set + parameterized tests</td>
+      </tr>
+      <tr>
+        <td>Large scope (second new SPDX format OR two concurrent features)</td>
+        <td>~200,000 – 280,000</td>
+        <td>Similar to v0.4.0: 2+ new parsers, ADR required, large test/fixture set</td>
+      </tr>
+    </table>
+    <p class="muted">Forecast confidence: <strong>Medium</strong>. Assumes single-session execution, no multi-session aggregation, and continued effectiveness of pre-commit hooks.</p>
+  </div>
+
+  <div class="card">
+    <h2>Methodology</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span>. Baseline (v0.3.0) values taken from <code>docs/releases/token-report-v0.3.0.html</code>. v0.4.0 values from <code>docs/releases/token-report-v0.4.0.html</code>. Delta calculations use midpoints of estimate ranges where appropriate. Confidence: <strong>Medium</strong> for both release estimates, <strong>Medium-Low</strong> for delta precision (ranges overlap in some phases).</p>
+  </div>
+
+</div>
+</body>
+</html>

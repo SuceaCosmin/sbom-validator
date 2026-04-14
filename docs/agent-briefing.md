@@ -21,7 +21,7 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 
 | ADR | Decision |
 |-----|----------|
-| ADR-001 | Format detected by root JSON keys: `spdxVersion=="SPDX-2.3"` → SPDX; `bomFormat=="CycloneDX" && specVersion=="1.6"` → CycloneDX. Wrong version or no match → `UnsupportedFormatError` (exit 2). |
+| ADR-001 | Format detected by root JSON keys: `spdxVersion=="SPDX-2.3"` → SPDX; `bomFormat=="CycloneDX" && specVersion in {"1.3","1.4","1.5","1.6"}` → CycloneDX. Wrong version or no match → `UnsupportedFormatError` (exit 2). |
 | ADR-002 | Parsers accept a file path and return `NormalizedSBOM`. NTIA checker only receives `NormalizedSBOM` — it has no imports from the parser layer. |
 | ADR-003 | Two-stage pipeline: schema validation (collect-all), then NTIA checks (collect-all, all 7 run independently). **Schema failure blocks the NTIA stage entirely.** |
 | ADR-004 | Frozen dataclasses for all result types. `ValidationStatus` and `IssueSeverity` inherit from `str` for JSON serialization. |
@@ -29,6 +29,7 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 | ADR-006 | Logging uses Python stdlib `logging`. New `--log-level` CLI option (default: WARNING). All log output goes to stderr only. Logger hierarchy: `sbom_validator.<module>`. `configure_logging(level)` called once at CLI startup. |
 | ADR-007 | New `--report-dir PATH` CLI option writes paired HTML + JSON reports when supplied. Both reports always written together. Filenames: `sbom-report-<basename>-<YYYYMMDD-HHMMSS>.{html,json}`. HTML uses `string.Template` (no Jinja2). `report_writer.py` does not modify `models.py`. |
 | ADR-008 | Standalone binary via PyInstaller >= 6.0, `--onefile` mode. Targets: Linux amd64 and Windows amd64. Schema files bundled via `datas` in `sbom_validator.spec`. `spdx-tools` and `cyclonedx-bom` excluded from binary. Release triggered by `v*.*.*` tags via `.github/workflows/release.yml`. |
+| ADR-009 | SPDX TV and YAML sub-formats: `FORMAT_SPDX_TV="spdx-tv"`, `FORMAT_SPDX_YAML="spdx-yaml"`. Detection priority: JSON → CycloneDX XML → TV (`startswith("SPDXVersion: ")`) → YAML (`safe_load`+`spdxVersion`). TV skips schema validation with logged INFO. YAML validates against existing `spdx-2.3.schema.json`. Shared `_parse_spdx_document` helper in `spdx_parser.py`. `pyyaml>=6.0` runtime dep. |
 
 ---
 
@@ -37,10 +38,20 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 ```python
 # src/sbom_validator/format_detector.py
 def detect_format(file_path: Path) -> str: ...
-# Returns "spdx" or "cyclonedx". Raises UnsupportedFormatError on failure.
+# Returns "spdx", "spdx-tv", "spdx-yaml", or "cyclonedx". Raises UnsupportedFormatError on failure.
 
 # src/sbom_validator/parsers/spdx_parser.py
 def parse_spdx(file_path: Path) -> NormalizedSBOM: ...
+def _parse_spdx_document(document: dict[str, Any], source_label: str) -> NormalizedSBOM: ...
+# _parse_spdx_document is the shared core used by spdx_yaml_parser.py
+
+# src/sbom_validator/parsers/spdx_yaml_parser.py
+def parse_spdx_yaml(file_path: Path) -> NormalizedSBOM: ...
+# Returns NormalizedSBOM with format="spdx-yaml"
+
+# src/sbom_validator/parsers/spdx_tv_parser.py
+def parse_spdx_tv(file_path: Path) -> NormalizedSBOM: ...
+# Returns NormalizedSBOM with format="spdx-tv"
 
 # src/sbom_validator/parsers/cyclonedx_parser.py
 def parse_cyclonedx(file_path: Path) -> NormalizedSBOM: ...
@@ -81,7 +92,7 @@ All three types are `@dataclass(frozen=True)`.
 
 | Field | Type | NTIA FR |
 |-------|------|---------|
-| `format` | `Literal["spdx", "cyclonedx"]` | — |
+| `format` | `str` — one of `"spdx"`, `"spdx-tv"`, `"spdx-yaml"`, `"cyclonedx"` | — |
 | `author` | `str \| None` | FR-09 |
 | `timestamp` | `str \| None` | FR-10 |
 | `components` | `tuple[NormalizedComponent, ...]` | — |
