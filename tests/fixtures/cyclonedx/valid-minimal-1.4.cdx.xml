@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.4" serialNumber="urn:uuid:b2c3d4e5-2345-6789-bcde-f01234567890" version="1">
+  <metadata>
+    <timestamp>2024-01-15T10:00:00Z</timestamp>
+    <authors>
+      <author>
+        <name>AcmeCorp SBOM Team</name>
+      </author>
+    </authors>
+    <component type="application" bom-ref="app-ref">
+      <supplier>
+        <name>AcmeCorp</name>
+      </supplier>
+      <name>MyApp</name>
+      <version>1.0.0</version>
+    </component>
+  </metadata>
+  <components>
+    <component type="library" bom-ref="pkg:pypi/requests@2.29.0">
+      <supplier>
+        <name>AcmeCorp</name>
+      </supplier>
+      <name>requests</name>
+      <version>2.29.0</version>
+      <purl>pkg:pypi/requests@2.29.0</purl>
+    </component>
+  </components>
+  <dependencies>
+    <dependency ref="app-ref">
+      <dependency ref="pkg:pypi/requests@2.29.0" />
+    </dependency>
+  </dependencies>
+</bom>

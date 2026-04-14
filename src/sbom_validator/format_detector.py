@@ -11,8 +11,8 @@ from sbom_validator.constants import (
     CDX_FIELD_BOM_FORMAT,
     CDX_FIELD_SPEC_VERSION,
     CYCLONEDX_BOM_FORMAT_VALUE,
-    CYCLONEDX_SUPPORTED_VERSION,
-    CYCLONEDX_XML_NAMESPACE,
+    CYCLONEDX_SUPPORTED_VERSIONS,
+    CYCLONEDX_SUPPORTED_XML_NAMESPACES,
     FORMAT_CYCLONEDX,
     FORMAT_SPDX,
     SPDX_FIELD_VERSION,
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def _is_cyclonedx_xml(content: str) -> bool:
-    """Return True when content is CycloneDX 1.6 XML."""
+    """Return True when content is CycloneDX XML for any supported version."""
     try:
         root = ET.fromstring(content)
     except ET.ParseError:
@@ -37,7 +37,7 @@ def _is_cyclonedx_xml(content: str) -> bool:
 
     if local_name != "bom":
         return False
-    if namespace != CYCLONEDX_XML_NAMESPACE:
+    if namespace not in CYCLONEDX_SUPPORTED_XML_NAMESPACES:
         return False
     return root.attrib.get("version") == "1"
 
@@ -57,13 +57,18 @@ def detect_format(file_path: Path) -> str:
     except OSError as exc:
         raise ParseError(f"Cannot read file: {file_path}") from exc
 
+    _supported_versions_str = ", ".join(sorted(CYCLONEDX_SUPPORTED_VERSIONS))
+
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
         if _is_cyclonedx_xml(content):
             logger.info("Format detected: cyclonedx XML (file: %s)", file_path)
             return FORMAT_CYCLONEDX
-        msg = f"Cannot determine SBOM format from {file_path}: invalid JSON and not CycloneDX 1.6 XML."
+        msg = (
+            f"Cannot determine SBOM format from {file_path}: "
+            f"invalid JSON and not CycloneDX XML ({_supported_versions_str})."
+        )
         logger.warning("Unsupported format in %s: %s", file_path, msg)
         raise UnsupportedFormatError(msg)
 
@@ -85,14 +90,14 @@ def detect_format(file_path: Path) -> str:
 
     if data.get(CDX_FIELD_BOM_FORMAT) == CYCLONEDX_BOM_FORMAT_VALUE:
         spec = data.get(CDX_FIELD_SPEC_VERSION)
-        if spec != CYCLONEDX_SUPPORTED_VERSION:
+        if spec not in CYCLONEDX_SUPPORTED_VERSIONS:
             msg = (
                 f"Unsupported CycloneDX version: {spec!r}. "
-                f"Only {CYCLONEDX_SUPPORTED_VERSION} is supported."
+                f"Supported versions: {_supported_versions_str}."
             )
             logger.warning("Unsupported format in %s: %s", file_path, msg)
             raise UnsupportedFormatError(msg)
-        logger.info("Format detected: cyclonedx (file: %s)", file_path)
+        logger.info("Format detected: cyclonedx %s (file: %s)", spec, file_path)
         return FORMAT_CYCLONEDX
 
     msg = (

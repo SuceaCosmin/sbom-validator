@@ -12,9 +12,12 @@ FORMAT_CYCLONEDX = "cyclonedx"
 
 # ── Supported specification versions ───────────────────────────────────────
 SPDX_SUPPORTED_VERSION = "SPDX-2.3"
-CYCLONEDX_SUPPORTED_VERSION = "1.6"
+CYCLONEDX_SUPPORTED_VERSIONS: frozenset[str] = frozenset({"1.3", "1.4", "1.5", "1.6"})
 CYCLONEDX_BOM_FORMAT_VALUE = "CycloneDX"  # value of the "bomFormat" JSON field
-CYCLONEDX_XML_NAMESPACE = "http://cyclonedx.org/schema/bom/1.6"
+CYCLONEDX_XML_NAMESPACE_PREFIX = "http://cyclonedx.org/schema/bom/"
+CYCLONEDX_SUPPORTED_XML_NAMESPACES: frozenset[str] = frozenset(
+    f"{CYCLONEDX_XML_NAMESPACE_PREFIX}{v}" for v in CYCLONEDX_SUPPORTED_VERSIONS
+)
 
 # ── JSON field names used for format detection ─────────────────────────────
 SPDX_FIELD_VERSION = "spdxVersion"

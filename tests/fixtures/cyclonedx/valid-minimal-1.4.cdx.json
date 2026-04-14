@@ -1,0 +1,43 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "version": 1,
+  "serialNumber": "urn:uuid:b2c3d4e5-2345-6789-bcde-f01234567890",
+  "metadata": {
+    "timestamp": "2024-01-15T10:00:00Z",
+    "authors": [
+      {
+        "name": "AcmeCorp SBOM Team"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app-ref",
+      "name": "MyApp",
+      "version": "1.0.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      }
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/requests@2.29.0",
+      "name": "requests",
+      "version": "2.29.0",
+      "supplier": {
+        "name": "AcmeCorp"
+      },
+      "purl": "pkg:pypi/requests@2.29.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "app-ref",
+      "dependsOn": [
+        "pkg:pypi/requests@2.29.0"
+      ]
+    }
+  ]
+}
