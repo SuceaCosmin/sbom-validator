@@ -103,11 +103,38 @@ class TestDetectFormatEdgeCases:
         with pytest.raises(UnsupportedFormatError):
             detect_format(f)
 
-    def test_cyclonedx_spec_version_15_raises_unsupported_format_error(self, tmp_path: Path):
-        """CycloneDX 1.5 is not supported; only 1.6 is accepted."""
+    def test_cyclonedx_spec_version_15_returns_cyclonedx(self, tmp_path: Path):
+        """CycloneDX 1.5 is now supported."""
         f = tmp_path / "cdx15.json"
         f.write_text(
             json.dumps({"bomFormat": "CycloneDX", "specVersion": "1.5"}),
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
+
+    def test_cyclonedx_spec_version_14_returns_cyclonedx(self, tmp_path: Path):
+        """CycloneDX 1.4 is supported."""
+        f = tmp_path / "cdx14.json"
+        f.write_text(
+            json.dumps({"bomFormat": "CycloneDX", "specVersion": "1.4"}),
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
+
+    def test_cyclonedx_spec_version_13_returns_cyclonedx(self, tmp_path: Path):
+        """CycloneDX 1.3 is supported."""
+        f = tmp_path / "cdx13.json"
+        f.write_text(
+            json.dumps({"bomFormat": "CycloneDX", "specVersion": "1.3"}),
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
+
+    def test_cyclonedx_spec_version_12_raises_unsupported_format_error(self, tmp_path: Path):
+        """CycloneDX 1.2 is not supported; only 1.3–1.6 are accepted."""
+        f = tmp_path / "cdx12.json"
+        f.write_text(
+            json.dumps({"bomFormat": "CycloneDX", "specVersion": "1.2"}),
             encoding="utf-8",
         )
         with pytest.raises(UnsupportedFormatError):
@@ -147,11 +174,35 @@ class TestDetectFormatErrorCases:
     def test_xml_with_unsupported_namespace_raises_unsupported_format_error(self, tmp_path: Path):
         f = tmp_path / "bad-version.cdx.xml"
         f.write_text(
-            '<bom xmlns="http://cyclonedx.org/schema/bom/1.5" version="1" />',
+            '<bom xmlns="http://cyclonedx.org/schema/bom/1.2" version="1" />',
             encoding="utf-8",
         )
         with pytest.raises(UnsupportedFormatError):
             detect_format(f)
+
+    def test_xml_with_supported_13_namespace_returns_cyclonedx(self, tmp_path: Path):
+        f = tmp_path / "cdx13.cdx.xml"
+        f.write_text(
+            '<bom xmlns="http://cyclonedx.org/schema/bom/1.3" version="1" />',
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
+
+    def test_xml_with_supported_14_namespace_returns_cyclonedx(self, tmp_path: Path):
+        f = tmp_path / "cdx14.cdx.xml"
+        f.write_text(
+            '<bom xmlns="http://cyclonedx.org/schema/bom/1.4" version="1" />',
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
+
+    def test_xml_with_supported_15_namespace_returns_cyclonedx(self, tmp_path: Path):
+        f = tmp_path / "cdx15.cdx.xml"
+        f.write_text(
+            '<bom xmlns="http://cyclonedx.org/schema/bom/1.5" version="1" />',
+            encoding="utf-8",
+        )
+        assert detect_format(f) == "cyclonedx"
 
     def test_file_with_json_array_raises_unsupported_format_error_or_parse_error(
         self, tmp_path: Path
