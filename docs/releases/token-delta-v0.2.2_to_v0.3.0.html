@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Delta Report — v0.2.2 to v0.3.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #4c1d95; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #f5f3ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .delta-pos { color: #b91c1c; }
+    .delta-neg { color: #166534; }
+    .delta-flat { color: #6b7280; }
+    .verdict-regressed { color: #b91c1c; font-weight: bold; font-size: 1.1rem; }
+    .verdict-improved { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Delta Report — v0.2.2 to v0.3.0</h1>
+  <p class="muted">SBOM Validator · Generated: 2026-04-14</p>
+
+  <div class="card">
+    <h2>Comparison Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>v0.2.2</th><th>v0.3.0</th></tr>
+      <tr><td>Scope type</td><td>Bug fixes + process hardening (no new user features)</td><td>Minor feature addition: CycloneDX 1.3/1.4/1.5 multi-version support + D1 security resolution</td></tr>
+      <tr><td>Sessions</td><td>1 (continuation, no boundary)</td><td>1 (single session)</td></tr>
+      <tr><td>Feature PRs</td><td>0 (direct to develop)</td><td>1 (feature/cyclonedx-multi-version)</td></tr>
+      <tr><td>Files changed</td><td>27 files, ~800 net lines</td><td>18 files (4 modified + 6 new schemas + 6 new fixtures + 2 test files)</td></tr>
+      <tr><td>Tests passing</td><td>501</td><td>516 (+15)</td></tr>
+      <tr><td>CI failure cycles</td><td>4</td><td>0</td></tr>
+      <tr><td>Security gate (G5)</td><td>Deferred (D1)</td><td>Executed and APPROVED (D1 resolved)</td></tr>
+      <tr><td>New dependencies</td><td>None</td><td>None (xmlschema already present; schemas are static files)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Topline Delta</h2>
+    <table>
+      <tr><th>Metric</th><th>v0.2.2 <span class="tag-est">EST</span></th><th>v0.3.0 <span class="tag-est">EST</span></th><th>Delta</th><th>Assessment</th></tr>
+      <tr>
+        <td>Total tokens</td>
+        <td>~180,000 – 230,000</td>
+        <td>~130,000 – 170,000</td>
+        <td class="delta-neg">−40,000 to −60,000</td>
+        <td>Moderate reduction despite v0.3.0 being a feature release. Structural CI fixes from v0.2.2 paid off — zero rework cycles this release.</td>
+      </tr>
+      <tr>
+        <td>Rework tokens</td>
+        <td>~40,000 – 55,000 (~24% ratio)</td>
+        <td>~8,000 – 15,000 (~6–9% ratio)</td>
+        <td class="delta-neg">Ratio −15–18pp</td>
+        <td>Major rework reduction. CI pre-commit fix from v0.2.2 eliminated the dominant rework category entirely.</td>
+      </tr>
+      <tr>
+        <td>CI failure cycles</td>
+        <td>4 cycles</td>
+        <td>0 cycles</td>
+        <td class="delta-neg">−4 cycles</td>
+        <td>Full elimination. Local poetry-run hooks effective. Confirms v0.2.2 structural fix worked as intended.</td>
+      </tr>
+      <tr>
+        <td>Session boundary overhead</td>
+        <td>~0 (no boundary)</td>
+        <td>~0 (no boundary)</td>
+        <td class="delta-flat">0</td>
+        <td>Both releases single-session. No change.</td>
+      </tr>
+      <tr>
+        <td>Security gate tokens</td>
+        <td>0 (deferred)</td>
+        <td>~12,000 – 18,000</td>
+        <td class="delta-pos">+12,000 – 18,000</td>
+        <td>One-time cost to close D1. Appropriate — clears accumulated debt. Not a regression; a deliberate investment.</td>
+      </tr>
+      <tr>
+        <td>Tokens per file changed</td>
+        <td>~6,700 – 8,500</td>
+        <td>~7,200 – 9,400</td>
+        <td class="delta-pos">+500 – 900</td>
+        <td>Slight increase, attributable to security review overhead not present in v0.2.2. Implementation efficiency per file is comparable.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Phase Delta</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>v0.2.2 <span class="tag-est">EST</span></th><th>v0.3.0 <span class="tag-est">EST</span></th><th>Delta</th><th>Comment</th></tr>
+      <tr><td>G1 Planning</td><td>~5,000</td><td>~5,000</td><td class="delta-flat">0</td><td>Consistent. Scope was well-defined in both releases.</td></tr>
+      <tr><td>G2 Architecture</td><td>~3,000</td><td>~8,000 – 12,000</td><td class="delta-pos">+5,000 – 9,000</td><td>ADR review more thorough in v0.3.0 (three ADRs assessed). ADR-001 staleness note required written record.</td></tr>
+      <tr><td>G3 TDD Build</td><td>~80,000 – 105,000</td><td>~70,000 – 90,000</td><td class="delta-neg">−10,000 – 15,000</td><td>Smaller feature surface than v0.2.2 binary diagnosis + smoke test work. Clean first-pass implementation.</td></tr>
+      <tr><td>G4 Quality Review</td><td>~5,000</td><td>~4,000 – 6,000</td><td class="delta-flat">flat</td><td>Consistent overhead. Clean on first pass in both releases.</td></tr>
+      <tr><td>G5 Security</td><td>0 (deferred)</td><td>~12,000 – 18,000</td><td class="delta-pos">+12,000 – 18,000</td><td>D1 resolved. Expected one-time cost — not a recurring overhead if review discipline maintained.</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~50,000 – 65,000</td><td>~3,000 – 5,000</td><td class="delta-neg">−45,000 – 60,000</td><td>Largest single improvement. Zero lint/format cycles vs 4 in v0.2.2. Structural fix confirmed effective.</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~8,000</td><td>~5,000 – 8,000</td><td class="delta-flat">flat</td><td>Comparable docs overhead. README supported-formats table update added minor extra work.</td></tr>
+      <tr><td>G8 Release Readiness</td><td>~8,000</td><td>~5,000 – 8,000</td><td class="delta-flat">flat</td><td>Standard version bump and readiness verification.</td></tr>
+      <tr><td>G9 Token Analytics</td><td>~15,000 – 20,000</td><td>~12,000 – 18,000</td><td class="delta-neg">−2,000 – 5,000</td><td>Slightly more efficient. Pre-tag execution (no rework). CI gate enforcement confirmed working.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Delta</h2>
+    <table>
+      <tr><th>Agent</th><th>v0.2.2 <span class="tag-est">EST</span></th><th>v0.3.0 <span class="tag-est">EST</span></th><th>Delta</th><th>Comment</th></tr>
+      <tr><td>Developer (implementation)</td><td>~80,000 – 105,000</td><td>~60,000 – 80,000</td><td class="delta-neg">−20,000 – 25,000</td><td>Smaller scope. No binary diagnosis loop. Schema wiring is mechanical but lighter than v0.2.2 PyInstaller debugging.</td></tr>
+      <tr><td>CI-Ops</td><td>~45,000 – 60,000</td><td>~3,000 – 5,000</td><td class="delta-neg">−42,000 – 55,000</td><td>Near-elimination. Local hooks removed the recurring lint/format cycle category entirely.</td></tr>
+      <tr><td>Tester / Quality Reviewer</td><td>~included in Developer</td><td>~20,000 – 30,000</td><td class="delta-flat">comparable</td><td>Explicitly tracked separately in v0.3.0. 15 new parameterized tests for CDX 1.3/1.4/1.5.</td></tr>
+      <tr><td>Security Reviewer</td><td>0 (skipped)</td><td>~12,000 – 18,000</td><td class="delta-pos">+12,000 – 18,000</td><td>D1 resolution executed. One-time investment. Recommend maintaining G5 execution each release.</td></tr>
+      <tr><td>Architect</td><td>~3,000</td><td>~8,000 – 12,000</td><td class="delta-pos">+5,000 – 9,000</td><td>More thorough ADR review in v0.3.0. ADR-001 context staleness note required.</td></tr>
+      <tr><td>Release Manager / Orchestrator</td><td>~25,000 – 30,000</td><td>~15,000 – 20,000</td><td class="delta-neg">−10,000</td><td>Simpler release — no workflow enforcement additions needed this cycle.</td></tr>
+      <tr><td>Token Analyst</td><td>~15,000 – 20,000</td><td>~12,000 – 18,000</td><td class="delta-neg">−2,000 – 5,000</td><td>Pre-tag execution. No delta report rework. Marginal efficiency gain.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Adopted Improvements and Regressions</h2>
+    <h3>Improvements Adopted vs v0.2.2</h3>
+    <ul>
+      <li><strong>CI lint/format cycles eliminated (−4 cycles):</strong> Local poetry-run pre-commit hooks fully effective. This was the single largest token sink in v0.2.2 (~25% of total). Confirmed zero cycles in v0.3.0.</li>
+      <li><strong>G5 Security gate executed for first time (D1 resolved):</strong> D1 had been deferred across two prior releases. Formal review conducted, path traversal risk bounded, verdict APPROVED. Accumulated risk closed.</li>
+      <li><strong>G9 Token Analytics executed pre-tag:</strong> CI enforcement gate from v0.2.2 worked as intended. This report is being generated before the v0.3.0 tag — first time in the project. Prevents post-tag report rework.</li>
+      <li><strong>Feature branch PR workflow:</strong> v0.3.0 used a proper feature branch (feature/cyclonedx-multi-version) with PR merge, rather than committing directly to develop. Cleaner history; enables independent review.</li>
+      <li><strong>Zero rework on first CI push:</strong> G4 and G6 both passed on first attempt. Structural tooling improvements compounded — no correction loops needed.</li>
+    </ul>
+    <h3>Regressions / New Friction</h3>
+    <ul>
+      <li><strong>ADR-001 context section is stale:</strong> References CDX 1.6 only; now describes a narrower truth than the implementation. Low severity — the decision itself is unchanged. Should be updated in v0.4.x planning to avoid repeated G2 staleness notes.</li>
+      <li><strong>Security review as one-time catch-up (not recurring):</strong> D1 was resolved but no recurring security review cadence was established. Risk: future dependency additions accumulate without review. Mitigation: trigger G5 on each new dependency, not just each release.</li>
+      <li><strong>Fixture file proliferation:</strong> 6 new fixture SBOMs (one per CDX version x format). No generator script exists. Adding CDX 1.7 would require manual fixture creation again.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Efficiency Verdict and Forecast</h2>
+    <p>Verdict: <span class="verdict-improved">IMPROVED</span></p>
+    <p>v0.3.0 delivered a new user-facing feature (CycloneDX multi-version support) and resolved a deferred security item at a lower total token cost than v0.2.2's pure bug-fix/hardening scope. The structural improvements shipped in v0.2.2 (local hooks, smoke test, G9 CI enforcement) paid compound dividends this release — CI overhead dropped from the dominant cost category to near-zero. The rework ratio improved from ~24% to ~6–9%.</p>
+
+    <h3>Projected v0.4.x Token Budget</h3>
+    <table>
+      <tr><th>Scenario</th><th>Estimated Total</th><th>Key Assumptions</th></tr>
+      <tr>
+        <td>Feature release (similar scope — e.g., SPDX 2.3 XML or new output format)</td>
+        <td>~140,000 – 190,000</td>
+        <td>Zero CI cycles (structural fix holds). G5 security review per new dependency (~10,000–15,000 if new deps added). G9 pre-tag (enforced). Single session.</td>
+      </tr>
+      <tr>
+        <td>Patch release (bug fix or minor hardening)</td>
+        <td>~70,000 – 100,000</td>
+        <td>Same structural baseline. No security gate cost if no new deps. G9 pre-tag (~12,000–18,000).</td>
+      </tr>
+      <tr>
+        <td>Larger feature release (multi-session, e.g., new report format + API)</td>
+        <td>~250,000 – 330,000</td>
+        <td>Session boundary overhead (~20,000–30,000). Additional agents. G5 likely needed. CI overhead remains low.</td>
+      </tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">CI overhead is projected to remain near-zero for all scenarios. The primary variable for v0.4.x is scope size and whether multiple sessions are required. Security review overhead is now a predictable line item (~10,000–15,000 per release with new dependencies).</p>
+  </div>
+
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">v0.2.2 values from <code>docs/releases/token-report-v0.2.2.html</code>. v0.3.0 values estimated from TASKS-v0.3.0.md gate evidence (G1–G9), CHANGELOG.md scope description, file change count (18 files), test count delta (501 → 516), and CI cycle count (0). Comparison baseline consistency: same methodology as v0.2.2 report. Confidence: <strong>Medium</strong> for both releases. Delta direction and ratio improvement are reliable; absolute magnitudes carry ±20% uncertainty. The CI cycle reduction from 4 to 0 is an observed fact (gate evidence in TASKS-v0.3.0.md G6), not an estimate.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Usage Report — v0.3.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .bar-outer { background: #e5e7eb; border-radius: 4px; height: 12px; width: 100%; }
+    .bar-inner { background: #3b82f6; border-radius: 4px; height: 12px; }
+    .verdict-improved { color: #166534; font-weight: bold; }
+    .verdict-flat { color: #b45309; font-weight: bold; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Usage Report — v0.3.0</h1>
+  <p class="muted">SBOM Validator · Release: v0.3.0 · Generated: 2026-04-14</p>
+
+  <div class="card">
+    <h2>Release Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Release</td><td><strong>v0.3.0</strong></td></tr>
+      <tr><td>Date range</td><td>2026-04-14 (single session)</td></tr>
+      <tr><td>Sessions included</td><td>1</td></tr>
+      <tr><td>Compared baseline</td><td>v0.2.2 — see delta report</td></tr>
+      <tr><td>Feature PR</td><td>1 (feature/cyclonedx-multi-version)</td></tr>
+      <tr><td>Files changed</td><td>4 source files modified + 6 new schema files + 6 new fixture files + 2 test files modified</td></tr>
+      <tr><td>Tests</td><td>516 passing (up from 501 in v0.2.2; +15 new tests covering CDX 1.3/1.4/1.5)</td></tr>
+      <tr><td>Scope type</td><td>Minor feature addition: CycloneDX multi-version support (1.3, 1.4, 1.5) + D1 security resolution</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Summary Metrics</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span> derived from commit count, files changed, CI run history, gate evidence in TASKS-v0.3.0.md, and comparison with v0.2.2 baseline.</p>
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      <tr><td>Total tokens (input + output)</td><td>~130,000 – 170,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Productive tokens</td><td>~115,000 – 155,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework tokens (CI retries, correction loops)</td><td>~8,000 – 15,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework ratio</td><td>~6–9%</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Top single sink</td><td>Schema file integration and test parameterization across three new CDX versions</td><td>analysis</td></tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Note: rework ratio is markedly lower than v0.2.2 (~24%), validating that the structural CI improvements (local poetry-run hooks, smoke test) shipped in v0.2.2 eliminated the recurring lint/format failure cycles. G6 CI Stability passed on first push this release.</p>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Token Breakdown</h2>
+    <table>
+      <tr><th>Agent / Role</th><th>Est. Tokens</th><th>Share</th><th>Notes</th></tr>
+      <tr>
+        <td>Developer (multi-version implementation)</td>
+        <td>~60,000 – 80,000</td>
+        <td>~46%
+          <div class="bar-outer"><div class="bar-inner" style="width:46%"></div></div>
+        </td>
+        <td>Core work: extending <code>CYCLONEDX_SUPPORTED_VERSIONS</code>, schema dispatch in <code>schema_validator.py</code>, bundling 6 schema files (3 JSON + 3 XSD). Parameterised test loops for 1.3/1.4/1.5 JSON and XML paths.</td>
+      </tr>
+      <tr>
+        <td>Tester / Quality Reviewer</td>
+        <td>~20,000 – 30,000</td>
+        <td>~15%
+          <div class="bar-outer"><div class="bar-inner" style="width:15%"></div></div>
+        </td>
+        <td>Tests-first for new version detection and schema validation paths. Independent quality review (G4): ruff, mypy all clean on first pass. 516 tests green.</td>
+      </tr>
+      <tr>
+        <td>Security Reviewer (D1 resolution)</td>
+        <td>~12,000 – 18,000</td>
+        <td>~10%
+          <div class="bar-outer"><div class="bar-inner" style="width:10%"></div></div>
+        </td>
+        <td>D1 deferred from v0.2.2 formally resolved: xmlschema XSD loading path traced end-to-end; no path traversal or unsafe XML parsing risk identified. G5 passed.</td>
+      </tr>
+      <tr>
+        <td>Architect</td>
+        <td>~8,000 – 12,000</td>
+        <td>~6%
+          <div class="bar-outer"><div class="bar-inner" style="width:6%"></div></div>
+        </td>
+        <td>ADR-001 context staleness note recorded. ADR-002 and ADR-003 confirmed unchanged — no structural ADR change needed. G2 passed efficiently.</td>
+      </tr>
+      <tr>
+        <td>Release Manager + Orchestrator</td>
+        <td>~15,000 – 20,000</td>
+        <td>~11%
+          <div class="bar-outer"><div class="bar-inner" style="width:11%"></div></div>
+        </td>
+        <td>Version bump to 0.3.0, CHANGELOG, README supported-formats table, TASKS-v0.3.0.md, release readiness gate (G8).</td>
+      </tr>
+      <tr>
+        <td>Token Analyst (this report)</td>
+        <td>~12,000 – 18,000</td>
+        <td>~10%
+          <div class="bar-outer"><div class="bar-inner" style="width:10%"></div></div>
+        </td>
+        <td>Token report + delta report. Executed pre-tag as required by CI gate enforcement (G9). No post-tag rework needed.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Gate / Phase Token Breakdown</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>Est. Tokens</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>G1 Planning (scope confirmation)</td><td>~5,000</td><td>&#10003;</td><td>Scope was well-defined: extend CDX version set + resolve D1. Minimal planning overhead.</td></tr>
+      <tr><td>G2 Architecture</td><td>~8,000 – 12,000</td><td>&#10003;</td><td>ADR-001/002/003 reviewed. No new ADR required. Context note recorded. Efficient pass.</td></tr>
+      <tr><td>G3 TDD Build</td><td>~70,000 – 90,000</td><td>&#10003;</td><td>Dominant phase. Schema bundling, constants update, schema_validator dispatch logic, 15 new/updated tests. 516 tests passing in 10.70s.</td></tr>
+      <tr><td>G4 Quality Review</td><td>~4,000 – 6,000</td><td>&#10003;</td><td>ruff check, ruff format, mypy --strict all clean on first pass. No rework needed.</td></tr>
+      <tr><td>G5 Security</td><td>~12,000 – 18,000</td><td>&#10003;</td><td>D1 from v0.2.2 formally resolved this release. xmlschema path traversal review, ET.fromstring() safety assessment, frozenset key validation traced. APPROVED (MEDIUM residual).</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~3,000 – 5,000</td><td>&#10003;</td><td>Zero CI lint/format cycles — structural fix from v0.2.2 (local poetry-run hooks) effective. Passes on first push.</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~5,000 – 8,000</td><td>&#10003;</td><td>CHANGELOG, README supported-formats table, __init__.py docstring updated.</td></tr>
+      <tr><td>G8 Release Readiness</td><td>~5,000 – 8,000</td><td>&#10003;</td><td>pyproject.toml + __init__.py version bumped. Build artifact verified. CLI contract unchanged.</td></tr>
+      <tr><td>G9 Token Analytics</td><td>~12,000 – 18,000</td><td>&#10003;</td><td>Executed pre-tag per CI enforcement. Token report + delta report generated and committed.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Top Token Sinks</h2>
+    <ol>
+      <li><strong>Schema integration across three CDX versions (~35% of total)</strong><br>
+        Bundling 6 schema files (cyclonedx-1.3/1.4/1.5 JSON + XSD), wiring them into the schema dispatcher via version-keyed dictionaries, and confirming schema paths resolve correctly at runtime. Well-defined but unavoidably mechanical work for each added version.</li>
+      <li><strong>Parameterized test coverage for new version paths (~20% of total)</strong><br>
+        Writing and verifying parameterized test cases covering JSON detection, XSD validation, and NTIA parsing for 1.3, 1.4, and 1.5 formats. Required fixture SBOMs for each version and format combination. Inherent cost of correctness-first approach.</li>
+      <li><strong>G5 Security review (D1 resolution) (~10% of total)</strong><br>
+        First release where the security gate was fully executed (previously deferred as D1). One-time cost that clears the accumulated risk. The D1 review itself was well-scoped and concluded efficiently.</li>
+      <li><strong>Token Analyst reports (~10% of total)</strong><br>
+        Consistent per-release overhead. Pre-tag execution enforced by CI gate — no post-tag rework cost this cycle.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Repetition and Avoidable Overhead</h2>
+    <table>
+      <tr><th>Pattern</th><th>Observed</th><th>Assessment</th></tr>
+      <tr>
+        <td>CI lint/format failure cycles</td>
+        <td>0 cycles</td>
+        <td>Eliminated. Local poetry-run pre-commit hooks from v0.2.2 fully effective. No version drift.</td>
+      </tr>
+      <tr>
+        <td>Session boundary context reload</td>
+        <td>None (single session)</td>
+        <td>Zero cost. Single-session release avoids context reload overhead.</td>
+      </tr>
+      <tr>
+        <td>Schema file boilerplate repetition</td>
+        <td>Low</td>
+        <td>Three schema versions are structurally similar. Some copy-adapt overhead for XSD/JSON pairs, but mechanical and fast.</td>
+      </tr>
+      <tr>
+        <td>Token Analytics skipped / deferred</td>
+        <td>No — executed pre-tag</td>
+        <td>CI enforcement worked. G9 executed correctly for first time in project history.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Quality Impact Assessment</h2>
+    <table>
+      <tr><th>Area</th><th>Token Spend</th><th>Quality Outcome</th><th>Verdict</th></tr>
+      <tr>
+        <td>TDD build (G3)</td>
+        <td>~70,000 – 90,000 (largest gate)</td>
+        <td>516 tests passing; zero mypy/ruff errors. Schema dispatch verified across all 4 CDX versions x 2 formats.</td>
+        <td>Justified — proportional to feature surface area</td>
+      </tr>
+      <tr>
+        <td>Security review (G5)</td>
+        <td>~12,000 – 18,000</td>
+        <td>D1 formally closed. xmlschema risk formally bounded. No blocking findings.</td>
+        <td>High value — clears long-standing deferred risk</td>
+      </tr>
+      <tr>
+        <td>Quality review (G4)</td>
+        <td>~4,000 – 6,000</td>
+        <td>All quality tools clean on first pass — no rework loop generated.</td>
+        <td>Efficient — structural improvements paid off</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Optimization Actions for Next Release</h2>
+    <table>
+      <tr><th>Action</th><th>Owner</th><th>Est. Savings</th><th>Status</th></tr>
+      <tr>
+        <td>Schema version dispatch table driven by constants (no per-version code changes)</td>
+        <td>Developer</td>
+        <td>~5,000 – 10,000 tokens per future CDX version added</td>
+        <td>Partially implemented — verify schema_validator.py is fully data-driven before next version addition</td>
+      </tr>
+      <tr>
+        <td>Fixture SBOM generation script (auto-produce minimal valid SBOMs for each supported CDX version)</td>
+        <td>Developer / Tester</td>
+        <td>~8,000 – 15,000 tokens per version set expansion</td>
+        <td>Not yet implemented — recommend for v0.4.x if more CDX versions are added</td>
+      </tr>
+      <tr>
+        <td>Maintain G5 security review cadence (do not defer to next release)</td>
+        <td>Security Reviewer</td>
+        <td>Avoids accumulated D1-style debt; saves ~5,000 tokens of cross-release carry tracking</td>
+        <td>D1 resolved — establish review trigger on new dependency additions</td>
+      </tr>
+      <tr>
+        <td>Token Analyst pre-tag CI enforcement (G9 gate)</td>
+        <td>Already in place</td>
+        <td>Eliminates post-tag report rework overhead (~5,000 – 8,000 tokens)</td>
+        <td>Active and verified effective this release</td>
+      </tr>
+      <tr>
+        <td>ADR maintenance: update ADR-001 context section to reflect current CDX version set</td>
+        <td>Architect</td>
+        <td>Avoids repeated staleness notes in future G2 reviews (~2,000 tokens/release)</td>
+        <td>Recommend updating ADR-001 prose as part of v0.4.x planning</td>
+      </tr>
+      <tr>
+        <td>Consolidate session context documents to reduce ramp-up tokens</td>
+        <td>Orchestrator / Planner</td>
+        <td>~5,000 – 15,000 tokens per multi-session release</td>
+        <td>Relevant if v0.4.x spans multiple sessions</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span>. Derived from: TASKS-v0.3.0.md gate evidence (G1–G9), CHANGELOG.md scope description (4 source files + 6 schema files + 6 fixture files + 2 test files, 516 tests), comparison with v0.2.2 token profile (180,000–230,000 tokens for 27 files, 6 commits, 4 CI cycles), and agent role complexity scaling. Confidence: <strong>Medium</strong>. v0.3.0 scope is smaller and cleaner than v0.2.2, supporting a lower total estimate. Rework ratio is expected to be well below v0.2.2 given zero CI lint cycles and single-session execution.</p>
+  </div>
+
+</div>
+</body>
+</html>
