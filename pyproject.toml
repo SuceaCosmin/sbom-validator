@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sbom-validator"
-version = "0.3.0"
+version = "0.4.0"
 description = "CLI tool to validate SBOM files against schema and NTIA minimum elements"
 authors = []
 license = "Apache-2.0"
@@ -11,6 +11,7 @@ packages = [{include = "sbom_validator", from = "src"}]
 python = ">=3.11,<4.0"
 click = ">=8.1"
 jsonschema = ">=4.21"
+pyyaml = ">=6.0"
 spdx-tools = ">=0.8"
 cyclonedx-bom = ">=4.0"
 xmlschema = ">=3.3"
@@ -23,6 +24,7 @@ mypy = ">=1.9"
 types-jsonschema = "*"
 pyinstaller = {version = ">=6.0", python = ">=3.11,<3.15"}
 pre-commit = ">=3.7"
+types-pyyaml = "^6.0.12.20260408"
 
 [tool.poetry.scripts]
 sbom-validator = "sbom_validator.cli:main"

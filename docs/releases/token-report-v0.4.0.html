@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Usage Report — v0.4.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .bar-outer { background: #e5e7eb; border-radius: 4px; height: 12px; width: 100%; }
+    .bar-inner { background: #3b82f6; border-radius: 4px; height: 12px; }
+    .verdict-improved { color: #166534; font-weight: bold; }
+    .verdict-flat { color: #b45309; font-weight: bold; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Usage Report — v0.4.0</h1>
+  <p class="muted">SBOM Validator &middot; Release: v0.4.0 &middot; Generated: 2026-04-14</p>
+
+  <div class="card">
+    <h2>Release Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Release</td><td><strong>v0.4.0</strong></td></tr>
+      <tr><td>Date range</td><td>2026-04-14 (single session)</td></tr>
+      <tr><td>Sessions included</td><td>1</td></tr>
+      <tr><td>Compared baseline</td><td>v0.3.0 — see delta report</td></tr>
+      <tr><td>Feature branch</td><td>feature/spdx-tv-yaml</td></tr>
+      <tr><td>Files changed</td><td>7 source files modified + 2 new parser files + 8 new fixture files + 3 test files modified/created + 4 doc files + ADR</td></tr>
+      <tr><td>Tests</td><td>594 passing (up from 516 in v0.3.0; +78 new tests covering TV parser, YAML parser, format detector extensions)</td></tr>
+      <tr><td>Coverage</td><td>96% overall (all new modules above 90%)</td></tr>
+      <tr><td>Scope type</td><td>Minor feature addition: SPDX Tag-Value and YAML serialization support</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Summary Metrics</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span> derived from: TASKS-v0.4.0.md gate evidence, CHANGELOG.md scope description, commit diff analysis (22 files changed, 1739 insertions), comparison with v0.3.0 token profile (~130,000–170,000 tokens), and agent role complexity scaling.</p>
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      <tr><td>Total tokens (input + output)</td><td>~200,000 – 260,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Productive tokens</td><td>~185,000 – 245,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework tokens (lint fixes, type annotation corrections)</td><td>~8,000 – 15,000</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Rework ratio</td><td>~4–6%</td><td><span class="tag-est">EST</span></td></tr>
+      <tr><td>Top single sink</td><td>TDD build: new TV parser + YAML parser + refactored spdx_parser + 78 new tests</td><td>analysis</td></tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Note: v0.4.0 total token spend is higher than v0.3.0 due to significantly larger implementation surface: two new parsers, 8 fixture files, 78 new tests, and a full mypy strict-mode type annotation correction loop. Rework ratio stayed low (4–6%) thanks to pre-commit hooks eliminating lint/format failures at commit time.</p>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Token Breakdown</h2>
+    <table>
+      <tr><th>Agent / Role</th><th>Est. Tokens</th><th>Share</th><th>Notes</th></tr>
+      <tr>
+        <td>Developer (implementation)</td>
+        <td>~90,000 – 120,000</td>
+        <td>~46%
+          <div class="bar-outer"><div class="bar-inner" style="width:46%"></div></div>
+        </td>
+        <td>Two new parsers (<code>spdx_tv_parser.py</code>, <code>spdx_yaml_parser.py</code>), refactored <code>spdx_parser.py</code> (shared <code>_parse_spdx_document</code> helper), <code>format_detector.py</code> extension, <code>schema_validator.py</code> TV/YAML branches, <code>validator.py</code> pipeline update, 8 fixture files, pyproject.toml + poetry install.</td>
+      </tr>
+      <tr>
+        <td>Tester</td>
+        <td>~35,000 – 45,000</td>
+        <td>~15%
+          <div class="bar-outer"><div class="bar-inner" style="width:15%"></div></div>
+        </td>
+        <td>78 new tests across 3 test files (test_spdx_tv_parser.py: 41 tests, test_spdx_yaml_parser.py: 22 tests, test_format_detector.py extensions: 15 new tests). All 594 green on first full run.</td>
+      </tr>
+      <tr>
+        <td>Architect</td>
+        <td>~18,000 – 25,000</td>
+        <td>~8%
+          <div class="bar-outer"><div class="bar-inner" style="width:8%"></div></div>
+        </td>
+        <td>ADR-009 authored (multi-format detection strategy, schema validation policy, parser factoring, YAML library choice). agent-briefing.md updated. G2 pass.</td>
+      </tr>
+      <tr>
+        <td>Security Reviewer</td>
+        <td>~10,000 – 15,000</td>
+        <td>~5%
+          <div class="bar-outer"><div class="bar-inner" style="width:5%"></div></div>
+        </td>
+        <td>yaml.safe_load audit (verified 3 call sites, none use bare yaml.load), dependency review (pyyaml 6.0.3), CLI contract integrity check. APPROVED with zero findings. G5 pass.</td>
+      </tr>
+      <tr>
+        <td>Reviewer (code quality)</td>
+        <td>~12,000 – 18,000</td>
+        <td>~6%
+          <div class="bar-outer"><div class="bar-inner" style="width:6%"></div></div>
+        </td>
+        <td>Full checklist review across 9 new/modified source files. 0 CRITICAL, 0 MAJOR findings. 2 MINOR (unused import fixed; docstring note). 96% coverage verified. G4 APPROVED.</td>
+      </tr>
+      <tr>
+        <td>Documentation Writer</td>
+        <td>~15,000 – 20,000</td>
+        <td>~7%
+          <div class="bar-outer"><div class="bar-inner" style="width:7%"></div></div>
+        </td>
+        <td>README supported-formats table extended (added YAML and TV rows with schema policy column), user-guide.md Supported Formats section rewritten, CHANGELOG v0.4.0 entry, agent-briefing.md updated with ADR-009, new parser signatures, format field type.</td>
+      </tr>
+      <tr>
+        <td>Release Manager + Orchestrator</td>
+        <td>~15,000 – 20,000</td>
+        <td>~7%
+          <div class="bar-outer"><div class="bar-inner" style="width:7%"></div></div>
+        </td>
+        <td>Version bump (pyproject.toml, __init__.py), packaging gate (poetry build), CLI smoke tests, TASKS-v0.4.0.md lifecycle, execution log maintenance.</td>
+      </tr>
+      <tr>
+        <td>Token Analyst (this report)</td>
+        <td>~12,000 – 18,000</td>
+        <td>~6%
+          <div class="bar-outer"><div class="bar-inner" style="width:6%"></div></div>
+        </td>
+        <td>Token report + delta report. Executed pre-tag per CI gate enforcement (G9). Consistent with v0.3.0 baseline.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Gate / Phase Token Breakdown</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>Est. Tokens</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>G0 Intake</td><td>~3,000</td><td>&#10003;</td><td>Well-specified requirement from human. 11 acceptance criteria formalized. Minimal overhead.</td></tr>
+      <tr><td>G1 Planning</td><td>~8,000 – 12,000</td><td>&#10003;</td><td>TASKS-v0.4.0.md created. 14-task dependency graph with parallelization map. Risk map with 4 risks identified.</td></tr>
+      <tr><td>G2 Architecture</td><td>~18,000 – 25,000</td><td>&#10003;</td><td>ADR-009 authored (full format, interface contracts, consequences). Higher token spend than v0.3.0 G2 because new ADR required (not just a "no ADR change" determination).</td></tr>
+      <tr><td>G3 TDD Build</td><td>~110,000 – 145,000</td><td>&#10003;</td><td>Dominant gate as expected. Fixtures (8 files), 78 tests, 5 source files modified, 2 new parser files. One ruff lint fix (unused import) and one mypy type annotation correction loop (3 errors). 594 tests green.</td></tr>
+      <tr><td>G4 Quality Review</td><td>~12,000 – 18,000</td><td>&#10003;</td><td>Full checklist. 0 CRITICAL, 0 MAJOR. 2 MINOR noted. Coverage at 96%. Clean pass.</td></tr>
+      <tr><td>G5 Security</td><td>~10,000 – 15,000</td><td>&#10003;</td><td>yaml.safe_load audit — 3 call sites verified. APPROVED with no findings. Efficient execution (YAML deserialization risk is well-understood pattern).</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~3,000 – 5,000</td><td>&#10003;</td><td>Pre-commit hooks (ruff + ruff-format) passed on commit. No CI failure cycles. Same structural win as v0.3.0.</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~15,000 – 20,000</td><td>&#10003;</td><td>Higher than v0.3.0 G7 due to more doc surface: README table expanded, user-guide.md Supported Formats rewritten with new TV schema-skip note, agent-briefing.md ADR table + module map updated.</td></tr>
+      <tr><td>G8 Release Readiness</td><td>~5,000 – 8,000</td><td>&#10003;</td><td>poetry build clean. CLI smoke tests (6 scenarios: TV PASS/FAIL, YAML PASS/FAIL/schema-fail, --version). Version consistency verified.</td></tr>
+      <tr><td>G9 Token Analytics</td><td>~12,000 – 18,000</td><td>&#10003;</td><td>Token report + delta report generated and committed. Executed pre-tag as required.</td></tr>
+      <tr><td>G10 Workflow Evaluation</td><td>~10,000 – 15,000</td><td>&#10003;</td><td>Workflow report generated. Benchmarked against v0.3.0.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Top Token Sinks</h2>
+    <ol>
+      <li><strong>TDD build — new parsers and tests (~50% of total)</strong><br>
+        The Tag-Value parser required a full custom line-by-line parser (not just a wrapper around existing logic). The YAML parser is a thin wrapper but required understanding how to correctly override the <code>format</code> field in the returned <code>NormalizedSBOM</code>. Together with 78 new tests covering happy paths, edge cases, and error paths, this is the justified dominant cost for a two-format feature addition.</li>
+      <li><strong>mypy type annotation correction loop (~4% of total)</strong><br>
+        <code>json.loads()</code> returns <code>Any</code>; explicit typed variables needed to satisfy mypy strict mode in <code>_load_raw_doc</code>. Also required <code>types-PyYAML</code> stubs to be installed. Two correction cycles: one lint (unused import), one type (3 mypy errors). Total rework cost was modest.</li>
+      <li><strong>ADR-009 authoring (~8% of total)</strong><br>
+        First new ADR since v0.2.0. Required designing five architectural sub-decisions (detection priority, constants naming, schema policies for two formats, parser factoring, YAML library). Time well spent given the decision complexity.</li>
+      <li><strong>Documentation sync (~7% of total)</strong><br>
+        Adding the new SPDX serialization rows to the README and user-guide, plus updating the agent-briefing.md module map with three new function signatures. Higher than v0.3.0 because the formats table schema is more complex (added schema policy column).</li>
+      <li><strong>Token analytics reports (~6% of total)</strong><br>
+        Consistent per-release overhead. Pre-tag execution enforced by CI — no post-tag rework.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Repetition and Avoidable Overhead</h2>
+    <table>
+      <tr><th>Pattern</th><th>Observed</th><th>Assessment</th></tr>
+      <tr>
+        <td>CI lint/format failure cycles</td>
+        <td>0 cycles (pre-commit hooks active)</td>
+        <td>Eliminated. Third consecutive release with zero CI format/lint failures at push time.</td>
+      </tr>
+      <tr>
+        <td>mypy type annotation corrections</td>
+        <td>1 correction loop (3 errors)</td>
+        <td>Unavoidable for new json.loads() + yaml.safe_load() return type patterns. Resolved in single loop. Low cost (~3,000 tokens).</td>
+      </tr>
+      <tr>
+        <td>Unused import lint fix</td>
+        <td>1 fix (NormalizedComponent, NormalizedRelationship in test file)</td>
+        <td>Minor. TDD tests initially imported unused types. Ruff caught immediately. One-line fix.</td>
+      </tr>
+      <tr>
+        <td>Session boundary context reload</td>
+        <td>None (single session)</td>
+        <td>Zero cost. Single-session execution maintains cache warmth throughout.</td>
+      </tr>
+      <tr>
+        <td>Fixture duplication across formats</td>
+        <td>Low — fixtures are minimal and format-specific</td>
+        <td>8 fixture files created (4 TV + 4 YAML). Some structural similarity to JSON fixtures but content is format-specific. No avoidable duplication.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Quality Impact Assessment</h2>
+    <table>
+      <tr><th>Area</th><th>Token Spend</th><th>Quality Outcome</th><th>Verdict</th></tr>
+      <tr>
+        <td>TDD build (G3)</td>
+        <td>~110,000 – 145,000 (largest gate)</td>
+        <td>594 tests passing; zero mypy/ruff errors; 96% coverage. Both parsers fully tested including error paths and NOASSERTION edge cases.</td>
+        <td>Justified — proportional to two-parser feature surface</td>
+      </tr>
+      <tr>
+        <td>ADR-009 authoring (G2)</td>
+        <td>~18,000 – 25,000</td>
+        <td>Five clear architectural sub-decisions with Python stubs. No implementation ambiguity. Developer had clear contracts to implement against.</td>
+        <td>High value — prevents divergence between design and implementation</td>
+      </tr>
+      <tr>
+        <td>Security review (G5)</td>
+        <td>~10,000 – 15,000</td>
+        <td>yaml.safe_load verified at all 3 call sites. Zero findings. APPROVED status achieved efficiently.</td>
+        <td>Efficient — YAML deserialization is a known risk pattern, review was fast</td>
+      </tr>
+      <tr>
+        <td>Quality review (G4)</td>
+        <td>~12,000 – 18,000</td>
+        <td>Full checklist across 9 files. 0 CRITICAL, 0 MAJOR. No rework loop generated.</td>
+        <td>Efficient — clean implementation reduced review friction</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Optimization Actions for Next Release</h2>
+    <table>
+      <tr><th>Action</th><th>Owner</th><th>Est. Savings</th><th>Priority</th></tr>
+      <tr>
+        <td>Fixture generation helper script: auto-generate minimal valid SPDX TV and YAML files from a shared data source to reduce copy-adapt fixture overhead</td>
+        <td>Developer / Tester</td>
+        <td>~5,000 – 10,000 tokens per future SPDX serialization added</td>
+        <td>LOW — only relevant if additional SPDX formats (e.g., RDF) added</td>
+      </tr>
+      <tr>
+        <td>Abstract YAML/JSON raw doc loading into a shared utility to reduce the json.loads/yaml.safe_load type annotation ceremony in validator.py</td>
+        <td>Developer</td>
+        <td>~2,000 – 4,000 tokens per future format addition</td>
+        <td>LOW — cosmetic improvement</td>
+      </tr>
+      <tr>
+        <td>Maintain G5 security review cadence: add explicit yaml.safe_load audit to security checklist template to prevent regression</td>
+        <td>Security Reviewer</td>
+        <td>Prevents YAML deserialization regressions; saves investigation cost if bare yaml.load is accidentally introduced</td>
+        <td>MEDIUM — update security-reviewer.md checklist</td>
+      </tr>
+      <tr>
+        <td>ADR maintenance: update ADR-001 context section to reference ADR-009 and updated detection priority order</td>
+        <td>Architect</td>
+        <td>~2,000 tokens saved on next G2 (no staleness note needed)</td>
+        <td>LOW — cosmetic</td>
+      </tr>
+      <tr>
+        <td>Token Analytics: consider using session context file (.claude/session-context.md) to record actual token counts from API responses for measured (not estimated) reporting</td>
+        <td>Token Analyst / Orchestrator</td>
+        <td>Upgrades confidence from MEDIUM to HIGH across all reports</td>
+        <td>MEDIUM — reduces estimation error range</td>
+      </tr>
+      <tr>
+        <td>mypy strict mode: add a CI step that explicitly verifies yaml.safe_load return type is not used as dict without isinstance check, to catch future type annotation regressions early</td>
+        <td>CI Ops</td>
+        <td>~2,000 – 3,000 tokens per avoided mypy correction loop</td>
+        <td>LOW — mypy already catches this; current workflow is adequate</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p class="muted">All values are estimates <span class="tag-est">(EST)</span>. Derived from: TASKS-v0.4.0.md gate evidence (G0–G10), CHANGELOG.md scope description, git commit analysis (22 files changed, 1739 insertions in feat commit + 6 files in docs commit), comparison with v0.3.0 token profile (~130,000–170,000 tokens for a smaller scope), and agent role complexity scaling factors. v0.4.0 scope is approximately 1.5x larger than v0.3.0 by file/line count, supporting a proportionally higher estimate. Confidence: <strong>Medium</strong>. Single-session execution with no multi-session aggregation uncertainty. Rework ratio estimated conservatively at 4–6% given zero CI lint cycles and one small mypy correction loop.</p>
+  </div>
+
+</div>
+</body>
+</html>

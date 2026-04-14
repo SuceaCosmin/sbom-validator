@@ -1,0 +1,17 @@
+SPDXVersion: SPDX-2.3
+DataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+DocumentName: acmecorp-myapp-1.0.0
+DocumentNamespace: https://example.com/sbom/acmecorp-myapp-1.0.0-norel-tv
+
+Creator: Tool: sbom-generator-1.0
+Creator: Organization: AcmeCorp
+Created: 2024-01-15T10:00:00Z
+
+PackageName: requests
+SPDXID: SPDXRef-Package-requests
+PackageVersion: 2.31.0
+PackageSupplier: Organization: AcmeCorp
+PackageDownloadLocation: https://pypi.org/project/requests/2.31.0/
+FilesAnalyzed: false
+ExternalRef: PACKAGE-MANAGER purl pkg:pypi/requests@2.31.0

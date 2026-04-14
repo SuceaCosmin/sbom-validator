@@ -82,12 +82,19 @@ sbom-validator validate --format json sbom.cdx.json
 
 ## Supported Formats
 
-| Format | Version | File Extension | Status |
-|--------|---------|----------------|--------|
-| SPDX | 2.3 | `.spdx.json` | Supported |
-| CycloneDX | 1.6 | `.cdx.json` or `.json` | Supported |
+| Format | Version | Serialization | `format_detected` value | Schema Validation |
+|--------|---------|---------------|------------------------|-------------------|
+| SPDX | 2.3 | JSON (`.spdx.json`) | `"spdx"` | Validated against bundled `spdx-2.3.schema.json` |
+| SPDX | 2.3 | YAML (`.spdx.yaml`) | `"spdx-yaml"` | Validated against bundled `spdx-2.3.schema.json` |
+| SPDX | 2.3 | Tag-Value (`.spdx`) | `"spdx-tv"` | No formal schema — schema stage explicitly skipped |
+| CycloneDX | 1.3–1.6 | JSON (`.cdx.json`) | `"cyclonedx"` | Validated against bundled version-specific JSON schema |
+| CycloneDX | 1.3–1.6 | XML (`.cdx.xml`) | `"cyclonedx"` | Validated against bundled version-specific XSD |
 
-> **Note:** Format is detected from file content, not the file extension. The tool looks for `"spdxVersion": "SPDX-2.3"` to identify SPDX files, and for `"bomFormat": "CycloneDX"` plus `"specVersion": "1.6"` to identify CycloneDX files. If neither signature is found, or if a different version is detected, the tool exits with code `2` and reports an error.
+> **Note:** Format is detected from file content, not the file extension. Detection priority: JSON (SPDX or CycloneDX) → CycloneDX XML → SPDX Tag-Value (file begins with `SPDXVersion: `) → SPDX YAML (YAML dict containing `spdxVersion: SPDX-2.3`). If no format is recognized, or if an unsupported version is detected, the tool exits with code `2` and reports an error.
+
+### SPDX Tag-Value note
+
+SPDX Tag-Value (`.spdx`) files have no official JSON schema or XSD. Schema validation (Stage 1) is explicitly skipped for this format and a log entry is emitted at INFO level. NTIA compliance checking (Stage 2) still runs as normal against all seven elements.
 
 ---
 
@@ -343,7 +350,7 @@ fi
 
 | Error | Cause | Fix |
 |---|---|---|
-| `Status: ERROR` — Unrecognized or unsupported SBOM format | File is SPDX 2.2, CycloneDX 1.5, XML, tag-value, or another format not supported in v0.2.0 | Regenerate the SBOM targeting SPDX 2.3 JSON or CycloneDX 1.6 JSON |
+| `Status: ERROR` — Unrecognized or unsupported SBOM format | File is SPDX 2.2, CycloneDX 1.2, or another format/version not supported | Regenerate the SBOM targeting SPDX 2.3 (JSON, YAML, or Tag-Value) or CycloneDX 1.3–1.6 (JSON or XML) |
 | `Status: ERROR` — file not found | The path passed to `validate` does not exist or is misspelled | Verify the path with `ls` or `dir`; use an absolute path if in doubt |
 | `Status: ERROR` — invalid JSON | The file is not valid JSON (truncated, BOM prefix, encoding issue) | Validate the JSON separately with `python -m json.tool <file>` |
 | `Status: FAIL` — FR-02 or FR-03 schema errors | The SBOM does not conform to the SPDX 2.3 or CycloneDX 1.6 JSON schema | Read the reported field paths and fix the structural errors in the SBOM; NTIA checks are skipped until schema passes |

@@ -7,10 +7,14 @@ import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import yaml
+
 from sbom_validator.constants import (
     CDX_FIELD_SPEC_VERSION,
     CYCLONEDX_XML_NAMESPACE_PREFIX,
     FORMAT_SPDX,
+    FORMAT_SPDX_TV,
+    FORMAT_SPDX_YAML,
     RULE_FORMAT_DETECTION,
 )
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
@@ -24,9 +28,14 @@ from sbom_validator.models import (
 from sbom_validator.ntia_checker import check_ntia
 from sbom_validator.parsers.cyclonedx_parser import parse_cyclonedx
 from sbom_validator.parsers.spdx_parser import parse_spdx
+from sbom_validator.parsers.spdx_tv_parser import parse_spdx_tv
+from sbom_validator.parsers.spdx_yaml_parser import parse_spdx_yaml
 from sbom_validator.schema_validator import validate_schema
 
 logger = logging.getLogger(__name__)
+
+# Set of all SPDX format identifiers (JSON, YAML, Tag-Value)
+_SPDX_FORMATS = frozenset({FORMAT_SPDX, FORMAT_SPDX_TV, FORMAT_SPDX_YAML})
 
 
 def _extract_cdx_version(raw_doc: dict[str, object] | str) -> str | None:
@@ -55,13 +64,47 @@ def _error_issue(message: str, rule: str = "SYS-ERROR") -> ValidationIssue:
     )
 
 
+def _load_raw_doc(file_path: Path, format_name: str) -> dict[str, object] | str:
+    """Read and parse the raw document according to its format.
+
+    Returns:
+        dict for JSON-based formats (spdx, spdx-yaml, cyclonedx JSON),
+        str for XML-based (cyclonedx XML) and TV formats.
+
+    Raises:
+        ParseError, json.JSONDecodeError, yaml.YAMLError, OSError on failure.
+    """
+    raw_text = file_path.read_text(encoding="utf-8")
+
+    if format_name == FORMAT_SPDX:
+        parsed: dict[str, object] = json.loads(raw_text)
+        return parsed
+
+    if format_name == FORMAT_SPDX_TV:
+        return raw_text  # TV has no schema; return text as-is
+
+    if format_name == FORMAT_SPDX_YAML:
+        doc = yaml.safe_load(raw_text)
+        if not isinstance(doc, dict):
+            raise ParseError(f"SPDX YAML file '{file_path}' must be a YAML mapping at the root.")
+        result: dict[str, object] = doc
+        return result
+
+    # CycloneDX: try JSON first, fall back to raw text (XML)
+    try:
+        cdx_parsed: dict[str, object] = json.loads(raw_text)
+        return cdx_parsed
+    except json.JSONDecodeError:
+        return raw_text
+
+
 def validate(file_path: str | Path) -> ValidationResult:
     """Validate an SBOM file through the full pipeline.
 
     Pipeline: format detection -> schema validation -> parsing -> NTIA checking.
 
     Args:
-        file_path: Path to the SBOM JSON file (str or Path).
+        file_path: Path to the SBOM file (str or Path).
 
     Returns:
         ValidationResult with status and any issues found.
@@ -97,16 +140,9 @@ def validate(file_path: str | Path) -> ValidationResult:
     # Stage 1: Read raw document
     logger.debug("Stage %s \u2192 %s", "format_detection", "schema_validation")
     try:
-        raw_text = file_path.read_text(encoding="utf-8")
-        if format_name == FORMAT_SPDX:
-            raw_doc: dict[str, object] | str = json.loads(raw_text)
-        else:
-            try:
-                raw_doc = json.loads(raw_text)
-            except json.JSONDecodeError:
-                raw_doc = raw_text
+        raw_doc: dict[str, object] | str = _load_raw_doc(file_path, format_name)
     except Exception as e:
-        logger.error("Unexpected error during validation of %s: %s", str_path, e)
+        logger.error("Unexpected error reading %s: %s", str_path, e)
         return ValidationResult(
             status=ValidationStatus.ERROR,
             file_path=str_path,
@@ -116,7 +152,7 @@ def validate(file_path: str | Path) -> ValidationResult:
 
     # Stage 2: Schema validation
     cdx_version: str | None = None
-    if format_name != FORMAT_SPDX:
+    if format_name not in _SPDX_FORMATS:
         cdx_version = _extract_cdx_version(raw_doc)
         logger.debug("CycloneDX spec version extracted: %s", cdx_version)
 
@@ -137,6 +173,10 @@ def validate(file_path: str | Path) -> ValidationResult:
     try:
         if format_name == FORMAT_SPDX:
             sbom = parse_spdx(file_path)
+        elif format_name == FORMAT_SPDX_TV:
+            sbom = parse_spdx_tv(file_path)
+        elif format_name == FORMAT_SPDX_YAML:
+            sbom = parse_spdx_yaml(file_path)
         else:
             sbom = parse_cyclonedx(file_path)
     except ParseError as e:

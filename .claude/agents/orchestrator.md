@@ -101,10 +101,50 @@ For every release in flight, require one dedicated task tracker file:
 - Example: `docs/releases/TASKS-v0.3.0.md`
 
 Orchestrator must verify:
-- tracker file is created at planning start
+- tracker file is created at planning start (by Planner)
 - all active tasks are represented there
-- statuses are updated at each gate transition
+- statuses are written to the file at each gate transition (see Write Protocol below)
 - release-manager references this file in final release brief
+
+## TASKS File Write Protocol (mandatory — no exceptions)
+
+You are the **sole owner** of the TASKS file after the Planner creates it. Every gate
+transition must result in a file write. Keeping results only in memory is a process
+violation — agents start cold each run and cannot recall prior conversation state.
+
+### After each gate completes (pass or fail):
+
+1. **Update the task row(s)** in the `## Task Breakdown` table:
+   - Change the `Status` cell from `⏳` to `✅` (pass) or `❌` (fail/rework)
+   - Do this for every task row whose work was completed in that gate
+
+2. **Fill in the gate evidence block** in `## Gate Evidence`:
+   - Write the actual output or summary (test counts, file paths, tool output snippets, verdicts)
+   - Change `Status: ⏳` to `Status: ✅ PASS` or `Status: ❌ FAIL`
+
+3. **Update the release-level `Status` field** in `## Release Metadata`:
+   - Use `🔄 In Progress` while any gate remains open
+   - Switch to `✅ Ready for Release` once gates G0–G10 all pass and R14 is the only remaining step
+
+4. **Fill the `## Final Verdict` block** once all agent gates are complete:
+   - Set `Recommendation:` to `GO` or `NO-GO`
+   - Add any notes on unresolved risks or deferrals
+
+### Timing — write immediately, not at the end:
+
+Do **not** accumulate all gate results and write them in a single pass at the end of the
+pipeline. Write after each individual gate. This ensures the tracker reflects true
+in-progress state if a later gate fails or the session is interrupted.
+
+### Example sequence:
+
+```
+Gate 1 (Planning) completes → edit TASKS file: R1 ✅, G1 evidence filled
+Gate 2 (Architecture) completes → edit TASKS file: R2 ✅, G2 evidence filled
+Gate 3 (TDD Build) completes → edit TASKS file: R3 ✅ R4 ✅ R5 ✅, G3 evidence filled
+... and so on for every gate
+Gate 10 (Human Approval) step reached → R14 remains ⏳; Final Verdict set to GO pending human
+```
 
 ## Retry and Escalation Policy
 
