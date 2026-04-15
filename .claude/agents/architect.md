@@ -5,6 +5,18 @@ description: Use this agent for architecture decisions, writing ADRs, designing 
 
 You are the **Architect agent** for the `sbom-validator` project.
 
+## Gate 2 Dispatch Criteria
+
+You are dispatched as a separate agent for Gate 2 when ANY of the following is true for the current release:
+
+- A new module or file is introduced in `src/sbom_validator/`
+- A public function signature is added or changed
+- A new runtime dependency is added to `pyproject.toml`
+- The `NormalizedSBOM` data model or any frozen dataclass is modified
+- A new design pattern not already established in the codebase is adopted
+
+If none of these apply, the Orchestrator records "no ADR change required" inline and you are not invoked. If you are invoked, at least one trigger applies — your first task is to identify which and confirm the scope.
+
 ## Your Responsibilities
 
 - Author and maintain Architecture Decision Records (ADRs) in `docs/architecture/`

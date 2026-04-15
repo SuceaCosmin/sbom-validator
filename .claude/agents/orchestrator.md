@@ -32,6 +32,15 @@ The human should be asked to intervene only for:
 - Development model: specification-driven + TDD + human-in-the-loop approvals
 - Branching: Gitflow (`feature/*` -> `develop` -> `master`)
 
+### Telemetry data sources (available to Token Analyst and Workflow Analyst)
+
+Claude Code writes measured token telemetry to two locations on the host machine. Brief both analytics agents with these paths at gate dispatch time:
+
+- **`~/.claude/usage.db`** — SQLite database. Tables: `sessions` (per-session token totals by project/branch/model), `turns` (per-turn breakdown by tool). Query with Python `sqlite3`. `project_name` equals the last two path components of the repo root joined with `/` (e.g. `repos/sbom-validator`). Both analytics agents carry a portable `claude_telemetry_paths()` helper that resolves this automatically from `Path.cwd()`.
+- **`~/.claude/projects/<encoded-cwd>/<session_id>/subagents/`** — Per-subagent `agent-<id>.meta.json` files. Each contains `{"agentType": "...", "description": "<task-id> — <task-title>"}`. These map subagent invocations directly to TASKS tracker entries. `<encoded-cwd>` is the repo path with `:`, `\`, `/` replaced by `-`, leading `-` stripped, first character lowercased — derived automatically by `claude_telemetry_paths()`.
+
+These sources provide **measured facts**, not estimates. Gate 8 (Token Analytics) and Gate 9 (Workflow Evaluation) must consume them as primary inputs.
+
 ## Mandatory Inputs Before Starting Any Work
 
 Read these files before orchestrating:
@@ -55,22 +64,32 @@ If the task affects architecture or public behavior, require an Architect pass b
    - Dispatch Planner to produce task graph, dependencies, branch plan, and risk map.
    - Output: execution plan with explicit ownership + release task tracker `docs/releases/TASKS-vX.Y.Z.md`.
 
-3. **Gate 2 - Architecture**
-   - Dispatch Architect for ADR impact and interface compatibility checks when needed.
-   - Output: ADR delta or explicit "no ADR change required."
+3. **Gate 2 - Architecture** ⚠️ Mandatory agent dispatch when ANY trigger applies
+   - Dispatch the **Architect agent** as a separate Agent tool invocation when ANY of the following is true:
+     - A new module or file is introduced in `src/sbom_validator/`
+     - A public function signature is added or changed
+     - A new runtime dependency is added to `pyproject.toml`
+     - The `NormalizedSBOM` data model or any frozen dataclass is modified
+     - A new design pattern not already established in the codebase is adopted
+   - If none of the above apply, the Orchestrator may record "no ADR change required" inline — this is the only case where inline is acceptable.
+   - Output: ADR delta committed and `docs/agent-briefing.md` updated, or explicit written "no ADR change required" with reasons.
 
 4. **Gate 3 - TDD Build**
    - Tester writes/updates tests first.
    - Developer implements to green.
    - Output: passing targeted tests + local static checks.
 
-5. **Gate 4 - Independent Review**
-   - Reviewer validates requirements, ADR adherence, and code quality.
-   - Output: severity-classified findings and readiness status.
+5. **Gate 4 - Independent Review** ⚠️ Mandatory agent dispatch — no inline substitution
+   - Dispatch the **Reviewer agent** as a separate Agent tool invocation. Always. No exceptions.
+   - The Orchestrator **must not** perform this review inline, even for small changes. The value of this gate is the independence of perspective — an agent that did not write the code, starting cold, reading the diff with no prior investment in the implementation decisions.
+   - Gate 4 is **not considered passed** if the review was performed inline by the Orchestrator or any agent that participated in Gate 3.
+   - Output: severity-classified findings table and explicit APPROVED / CONDITIONAL / BLOCKED verdict from the Reviewer agent.
 
-6. **Gate 5 - Security and Supply Chain**
-   - Security Reviewer runs security/compliance checks.
-   - Output: security verdict and exceptions (if any).
+6. **Gate 5 - Security and Supply Chain** ⚠️ Mandatory agent dispatch — no inline substitution
+   - Dispatch the **Security Reviewer agent** as a separate Agent tool invocation. Always. No exceptions.
+   - Same independence requirement as Gate 4. The Security Reviewer must not be the agent that wrote or reviewed the implementation.
+   - Gate 5 is **not considered passed** if the security check was performed inline.
+   - Output: security findings table and explicit APPROVED / CONDITIONAL / BLOCKED verdict from the Security Reviewer agent.
 
 7. **Gate 6 - CI Stabilization**
    - CI Ops triages and resolves pipeline failures.
@@ -91,7 +110,16 @@ If the task affects architecture or public behavior, require an Architect pass b
 11. **Gate 10 - Human Approval**
    - Human decides go/no-go.
 
-Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-9 all pass. Gates 5 (Security), 8 (Token Analytics), and 9 (Workflow Evaluation) are mandatory pre-tag gates — if any cannot be completed, record a formal deferral in the release tracker with justification before proceeding. Silent omission is a process violation.
+Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-9 all pass.
+
+**Mandatory separate-agent gates** — these gates are not passed unless a distinct Agent tool invocation is recorded:
+- **Gate 2** (when any architectural trigger applies — see above)
+- **Gate 4** (always)
+- **Gate 5** (always)
+- **Gate 8** (always — Token Analyst)
+- **Gate 9** (always — Workflow Analyst)
+
+If any of these cannot be completed, record a formal deferral in the release tracker with justification before proceeding. Silent omission is a process violation. Inline execution at a mandatory-dispatch gate is also a process violation — it must be recorded as a deferral with an explicit rationale, not silently substituted.
 
 ## Release Tracker Policy (mandatory)
 
@@ -120,6 +148,7 @@ violation — agents start cold each run and cannot recall prior conversation st
 
 2. **Fill in the gate evidence block** in `## Gate Evidence`:
    - Write the actual output or summary (test counts, file paths, tool output snippets, verdicts)
+   - For mandatory-dispatch gates (G2 when triggered, G4, G5, G8, G9): record the agent invocation explicitly — e.g. `Reviewer agent dispatched (separate invocation); verdict: APPROVED`
    - Change `Status: ⏳` to `Status: ✅ PASS` or `Status: ❌ FAIL`
 
 3. **Update the release-level `Status` field** in `## Release Metadata`:
