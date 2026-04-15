@@ -21,3 +21,4 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+sboms/
