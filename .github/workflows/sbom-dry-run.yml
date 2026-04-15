@@ -1,0 +1,85 @@
+# .github/workflows/sbom-dry-run.yml
+#
+# Manual dry-run for SBOM generation — mirrors the generate-sboms job in
+# release.yml but uploads artifacts to the workflow run instead of a release.
+# Trigger via: Actions → "SBOM Dry Run" → Run workflow.
+
+name: SBOM Dry Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version label for the output files (e.g. v0.4.0). Leave blank to auto-detect from pyproject.toml."
+        required: false
+        default: ""
+
+jobs:
+  generate-sboms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          INPUT="${{ github.event.inputs.version }}"
+          if [ -n "$INPUT" ]; then
+            VERSION="$INPUT"
+          else
+            VERSION="v$(grep '^version' pyproject.toml | head -1 | sed 's/.*= *"\(.*\)"/\1/')"
+          fi
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.3"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install production dependencies only
+        run: poetry install --only main
+
+      - name: Generate CycloneDX 1.6 SBOM
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          poetry run cyclonedx-py poetry \
+            --spec-version 1.6 \
+            --output-format JSON \
+            --no-dev \
+            -o "sbom-validator-${VERSION}.cdx.json"
+
+      - name: Install syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Generate SPDX 2.3 SBOM
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          syft scan .venv \
+            --source-name "sbom-validator" \
+            --source-version "${VERSION#v}" \
+            --output "spdx-json=sbom-validator-${VERSION}.spdx.json"
+
+      - name: Generate checksums
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          sha256sum "sbom-validator-${VERSION}.cdx.json"  > "sbom-validator-${VERSION}.cdx.json.sha256"
+          sha256sum "sbom-validator-${VERSION}.spdx.json" > "sbom-validator-${VERSION}.spdx.json.sha256"
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sboms-${{ steps.version.outputs.value }}
+          path: |
+            sbom-validator-${{ steps.version.outputs.value }}.cdx.json
+            sbom-validator-${{ steps.version.outputs.value }}.cdx.json.sha256
+            sbom-validator-${{ steps.version.outputs.value }}.spdx.json
+            sbom-validator-${{ steps.version.outputs.value }}.spdx.json.sha256
+          retention-days: 30
