@@ -74,18 +74,18 @@ Do not mark a release candidate ready until all are true:
    - binary build steps include schema/resource bundling requirements
    - smoke test step uses `scripts/smoke-test-binary.sh`, not a bare `--version` check
 
-6. **Release Task Tracker Gate**
+7. **Release Task Tracker Gate**
    - release-specific tracker exists: `docs/releases/TASKS-vX.Y.Z.md`
    - all tasks in the tracker are resolved (`✅`, `❌`, or explicitly deferred with rationale)
    - tracker status aligns with actual release scope and changelog entries
 
-7. **Token Reporting Gate**
+8. **Token Reporting Gate**
    - release token report exists: `docs/releases/token-report-vX.Y.Z.html`
    - delta report exists (or explicitly N/A for first reportable release):
      `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`
    - release brief links both reports
 
-8. **Workflow Evaluation Gate**
+9. **Workflow Evaluation Gate**
    - workflow evaluation report exists: `docs/releases/workflow-report-vX.Y.Z.html`
    - report includes per-agent evaluation, gate compliance analysis, and benchmark vs previous release
    - release brief links the workflow report

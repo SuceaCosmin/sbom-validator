@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sbom-validator Repository Review &amp; Recommendations Report</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c2129;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #bc8cff;
+    --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1f36 0%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(90deg, var(--accent), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header .subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+  .header .meta {
+    margin-top: 1rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .header .meta span {
+    background: var(--surface);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+  .toc h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    color: var(--accent);
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc-counter;
+    padding-left: 0;
+    columns: 2;
+    column-gap: 2rem;
+  }
+  .toc li {
+    counter-increment: toc-counter;
+    margin-bottom: 0.4rem;
+  }
+  .toc li::before {
+    content: counter(toc-counter) ". ";
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .toc a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .toc a:hover { text-decoration: underline; }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--accent);
+  }
+  section h3 {
+    font-size: 1.1rem;
+    margin: 1.2rem 0 0.6rem;
+    color: var(--cyan);
+  }
+  section h4 {
+    font-size: 0.95rem;
+    margin: 1rem 0 0.4rem;
+    color: var(--purple);
+  }
+  p, li { margin-bottom: 0.4rem; font-size: 0.95rem; }
+  ul, ol { padding-left: 1.5rem; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+  }
+  th {
+    background: var(--surface-2);
+    font-weight: 600;
+    color: var(--cyan);
+    white-space: nowrap;
+  }
+  tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+  code {
+    background: var(--surface-2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+  pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin: 0.8rem 0;
+  }
+  .verdict {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .verdict-yes { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .verdict-partial { background: rgba(210,153,34,0.15); color: var(--orange); border: 1px solid rgba(210,153,34,0.3); }
+  .verdict-no { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .verdict-info { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); }
+  .score-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .score-item {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .score-item .score {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .score-item .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+  .callout {
+    border-left: 3px solid;
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+    background: rgba(255,255,255,0.02);
+  }
+  .callout-green { border-color: var(--green); }
+  .callout-orange { border-color: var(--orange); }
+  .callout-red { border-color: var(--red); }
+  .callout-blue { border-color: var(--accent); }
+  .callout-purple { border-color: var(--purple); }
+  .pill {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .pill-high { background: rgba(248,81,73,0.15); color: var(--red); }
+  .pill-med { background: rgba(210,153,34,0.15); color: var(--orange); }
+  .pill-low { background: rgba(63,185,80,0.15); color: var(--green); }
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .agent-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .agent-card h4 {
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
+  .agent-card .rating {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+  }
+  .star { color: var(--orange); font-size: 0.9rem; }
+  .star-empty { color: var(--border); font-size: 0.9rem; }
+  .footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+  @media (max-width: 768px) {
+    .toc ol { columns: 1; }
+    .header h1 { font-size: 1.6rem; }
+    .container { padding: 1rem; }
+    section { padding: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>sbom-validator Repository Review</h1>
+  <p class="subtitle">Comprehensive Analysis, Agent Assessment &amp; Recommendations</p>
+  <div class="meta">
+    <span>Version Reviewed: <strong>v0.4.0</strong></span>
+    <span>Date: <strong>2026-04-15</strong></span>
+    <span>Reviewer: <strong>Claude Opus 4.6</strong></span>
+    <span>Branch: <strong>feature/sbom-generation</strong></span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- Table of Contents -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#exec-summary">Executive Summary &amp; Maturity Scorecard</a></li>
+    <li><a href="#claude-md">CLAUDE.md Recommendation</a></li>
+    <li><a href="#skills-md">Skills.md / Custom Skills Recommendation</a></li>
+    <li><a href="#agent-review">Agent-by-Agent Review &amp; Improvements</a></li>
+    <li><a href="#arch-quality">Architecture &amp; Code Quality Assessment</a></li>
+    <li><a href="#ci-cd">CI/CD Pipeline Analysis</a></li>
+    <li><a href="#security">Security Posture Review</a></li>
+    <li><a href="#gaps">Top Gaps &amp; Actionable Recommendations</a></li>
+    <li><a href="#roadmap">Suggested Roadmap</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ol>
+</div>
+
+<!-- 1. Executive Summary -->
+<section id="exec-summary">
+  <h2>1. Executive Summary &amp; Maturity Scorecard</h2>
+  <p><code>sbom-validator</code> is a production-grade Python CLI tool for validating SBOM files against JSON/XSD schemas and NTIA minimum elements. The project demonstrates exceptional engineering discipline through a 12-agent orchestration model, 11-gate delivery pipeline, TDD methodology, and comprehensive release analytics. At v0.4.0, it supports SPDX 2.3 (JSON/YAML/Tag-Value) and CycloneDX 1.3&ndash;1.6 (JSON/XML) with 594+ tests at 96% coverage.</p>
+
+  <div class="score-card">
+    <div class="score-item"><div class="score">9/10</div><div class="label">Architecture</div></div>
+    <div class="score-item"><div class="score">9/10</div><div class="label">Code Quality</div></div>
+    <div class="score-item"><div class="score">9/10</div><div class="label">Testing</div></div>
+    <div class="score-item"><div class="score">8/10</div><div class="label">Documentation</div></div>
+    <div class="score-item"><div class="score">8/10</div><div class="label">CI/CD</div></div>
+    <div class="score-item"><div class="score">9/10</div><div class="label">Release Process</div></div>
+    <div class="score-item"><div class="score">8/10</div><div class="label">Security</div></div>
+    <div class="score-item"><div class="score">9/10</div><div class="label">Agent Model</div></div>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>Overall Maturity: 8.6/10 &mdash; Production-Ready.</strong> The project is well-architected, rigorously tested, and has a sophisticated agent-driven delivery pipeline. The identified gaps are enhancements, not blockers.
+  </div>
+</section>
+
+<!-- 2. CLAUDE.md Recommendation -->
+<section id="claude-md">
+  <h2>2. CLAUDE.md Recommendation</h2>
+
+  <h3>Verdict: <span class="verdict verdict-yes">STRONGLY RECOMMENDED</span></h3>
+
+  <p>Your repo currently has <strong>no CLAUDE.md file</strong>. This is a significant missed opportunity. Here's why you need one and exactly what it should contain:</p>
+
+  <h3>What You're Missing Without CLAUDE.md</h3>
+  <ul>
+    <li><strong>Every new session starts cold.</strong> Claude Code reads CLAUDE.md automatically at conversation start. Without it, every session requires re-reading <code>session-context.md</code>, <code>agent-briefing.md</code>, and <code>agent-operating-model.md</code> manually &mdash; burning 5&ndash;15K tokens per session on context bootstrapping.</li>
+    <li><strong>Session-context.md is NOT CLAUDE.md.</strong> Your <code>.claude/session-context.md</code> is excellent documentation, but Claude Code does not auto-load it. It's only used when an agent manually reads it. CLAUDE.md is injected into the system prompt automatically.</li>
+    <li><strong>Agent definitions don't include project rules.</strong> Your agents get their own <code>.md</code> file but NOT global project rules like branching strategy, import ordering, mandatory lint gates, or backward-compatibility policy. Each agent re-derives these from reading multiple files.</li>
+    <li><strong>Memory is cross-conversation but not per-session.</strong> Your auto-memory system tracks user preferences and project state, but it doesn't replace the need for authoritative project rules that every session should follow.</li>
+  </ul>
+
+  <h3>Recommended CLAUDE.md Content</h3>
+  <p>A CLAUDE.md for your repo should distill the following from your existing docs into a single file that's automatically loaded:</p>
+
+  <table>
+    <tr><th>Section</th><th>Content Source</th><th>Why It Belongs in CLAUDE.md</th></tr>
+    <tr><td>Project Identity</td><td><code>session-context.md</code> &sect;1&ndash;2</td><td>Every session needs to know what this project is</td></tr>
+    <tr><td>CLI Contract</td><td><code>session-context.md</code> &sect;3</td><td>Backward-compatibility is a hard constraint; must be visible always</td></tr>
+    <tr><td>Branching Strategy</td><td><code>agent-operating-model.md</code> &sect;8</td><td>Prevents direct commits to develop/master</td></tr>
+    <tr><td>Mandatory Lint Gate</td><td><code>developer.md</code> header</td><td><code>ruff check && ruff format --check && mypy</code> must run before any task completion</td></tr>
+    <tr><td>Import Ordering Rule</td><td><code>developer.md</code> &sect;Implementation Standards</td><td>Prevents the #1 CI failure cause (ruff I001)</td></tr>
+    <tr><td>Architecture Constraints</td><td><code>agent-briefing.md</code> &sect;2</td><td>NTIA-checker-never-imports-parsers, schema-blocks-NTIA, etc.</td></tr>
+    <tr><td>Gate Model Summary</td><td><code>agent-operating-model.md</code> &sect;5</td><td>All agents need to know gate order and independence requirements</td></tr>
+    <tr><td>Key File References</td><td>Various</td><td>Pointer to agent-briefing.md, operating-model, etc. for deep dives</td></tr>
+  </table>
+
+  <div class="callout callout-blue">
+    <strong>Impact estimate:</strong> A well-crafted CLAUDE.md will save ~8&ndash;15K tokens per session on context bootstrapping, reduce "ruff I001" and branching mistakes, and ensure every agent (not just the ones with detailed .md files) operates under the same project rules. Given your release cadence of ~1 release per week with 5&ndash;15 sessions per release, this saves 40&ndash;225K tokens per release.
+  </div>
+
+  <h3>What NOT to Put in CLAUDE.md</h3>
+  <ul>
+    <li><strong>Agent-specific instructions</strong> &mdash; keep those in <code>.claude/agents/*.md</code> where they are today</li>
+    <li><strong>Full ADR content</strong> &mdash; too long; reference ADR files instead</li>
+    <li><strong>Function signatures</strong> &mdash; keep in <code>agent-briefing.md</code>; CLAUDE.md should point there</li>
+    <li><strong>Release tracker details</strong> &mdash; ephemeral; doesn't belong in a persistent file</li>
+  </ul>
+
+  <h3>Relationship to Existing Files</h3>
+  <table>
+    <tr><th>File</th><th>Keep?</th><th>Relationship to CLAUDE.md</th></tr>
+    <tr><td><code>.claude/session-context.md</code></td><td>Keep as deep reference</td><td>CLAUDE.md replaces the "auto-load" role; session-context becomes optional reading for deep dives</td></tr>
+    <tr><td><code>docs/agent-briefing.md</code></td><td>Keep as-is</td><td>CLAUDE.md points to it; agents read it for signatures</td></tr>
+    <tr><td><code>docs/agent-operating-model.md</code></td><td>Keep as-is</td><td>CLAUDE.md summarizes gates; full model stays here</td></tr>
+    <tr><td><code>.claude/agents/*.md</code></td><td>Keep as-is</td><td>Agent-specific; CLAUDE.md handles global rules</td></tr>
+  </table>
+</section>
+
+<!-- 3. Skills.md -->
+<section id="skills-md">
+  <h2>3. Skills.md / Custom Skills Recommendation</h2>
+
+  <h3>Verdict: <span class="verdict verdict-partial">CONDITIONALLY RECOMMENDED</span></h3>
+
+  <p>Custom skills (via <code>.claude/skills/</code> or hooks) can automate repetitive sequences in your workflow. However, your current agent model already handles most orchestration. Skills are worth adding only for specific, high-frequency operations that don't need a full agent dispatch.</p>
+
+  <h3>Skills That Would Add Value</h3>
+
+  <table>
+    <tr><th>Skill Name</th><th>Trigger</th><th>What It Does</th><th>Value</th></tr>
+    <tr>
+      <td><code>/validate-local</code></td>
+      <td>User types <code>/validate-local</code></td>
+      <td>Runs the full lint+type+test gate locally: <code>ruff check && ruff format --check && mypy src/ && pytest</code></td>
+      <td><span class="pill pill-high">High</span> &mdash; This is your most-repeated command sequence. A skill makes it one-click.</td>
+    </tr>
+    <tr>
+      <td><code>/release-check</code></td>
+      <td>User types <code>/release-check</code></td>
+      <td>Runs the Release Manager's version consistency check: compares pyproject.toml version, __init__.py version, CHANGELOG.md latest entry, and checks for token/workflow report existence.</td>
+      <td><span class="pill pill-med">Medium</span> &mdash; Saves dispatching a full release-manager agent for a quick sanity check.</td>
+    </tr>
+    <tr>
+      <td><code>/gate-status</code></td>
+      <td>User types <code>/gate-status</code></td>
+      <td>Reads the active TASKS file and summarizes which gates are passed/pending/failed in a compact table.</td>
+      <td><span class="pill pill-med">Medium</span> &mdash; Quick status without reading the full TASKS file.</td>
+    </tr>
+  </table>
+
+  <h3>Skills That Would NOT Add Value</h3>
+  <table>
+    <tr><th>Proposed Skill</th><th>Why Not</th></tr>
+    <tr><td>Full orchestrator pipeline</td><td>Too complex for a skill; the orchestrator agent already handles this</td></tr>
+    <tr><td>Agent dispatch helpers</td><td>Claude Code's Agent tool already handles agent dispatch; a skill wrapper adds no value</td></tr>
+    <tr><td>Git workflow automation</td><td>Your developer.md already has clear branch instructions; over-automating git is risky</td></tr>
+    <tr><td>Test writing</td><td>The tester agent does this; a skill can't replicate TDD judgment</td></tr>
+  </table>
+
+  <div class="callout callout-orange">
+    <strong>Bottom line:</strong> Add 1&ndash;3 targeted skills for high-frequency, low-judgment operations. Don't try to replicate agent logic in skills &mdash; skills are for deterministic sequences, agents are for judgment-requiring work.
+  </div>
+</section>
+
+<!-- 4. Agent Review -->
+<section id="agent-review">
+  <h2>4. Agent-by-Agent Review &amp; Improvements</h2>
+
+  <p>Your 12-agent model is one of the most sophisticated I've seen in a Claude Code project. Below is a per-agent assessment with specific improvement recommendations.</p>
+
+  <div class="agent-grid">
+
+    <!-- Orchestrator -->
+    <div class="agent-card">
+      <h4>Orchestrator</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> Exceptional gate enforcement. TASKS file write protocol is thorough. Independence requirements for G4/G5 are clearly articulated. Telemetry path helper is portable and correct.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>TASKS file write protocol is verbose (10+ edits per release). Consider a structured JSON sidecar for machine updates and keep the .md file for human reading.</li>
+        <li>No guidance on partial-session recovery. If a session is interrupted mid-pipeline, the orchestrator has no explicit "resume from gate N" protocol.</li>
+        <li>Missing escalation target clarity. "Immediate escalation" doesn't specify: to human? To which agent?</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Add a "Resume Protocol" section: "Read the TASKS file. Resume from the first gate where Status is not yet set to PASS."</p>
+    </div>
+
+    <!-- Planner -->
+    <div class="agent-card">
+      <h4>Planner</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> Scope-lock step is brilliant &mdash; catches ambiguities at 1K tokens instead of 50&ndash;100K. Token-budget awareness prevents oversized tasks. Release tracker creation is mandatory.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>Duplicate line in "Assign tasks" section (lists agent roles twice at lines 15&ndash;16).</li>
+        <li>No retrospective/lessons-learned capture. After a release, there's no structured way to feed learnings back into future plans.</li>
+        <li>Agent role list is incomplete: missing CI-Ops, Security-Reviewer, Release-Manager, Workflow-Analyst from the assignment list.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Fix the duplicate line. Add all 12 agent roles to the assignment list. Add a "Post-Release Learnings" section that references the workflow report.</p>
+    </div>
+
+    <!-- Architect -->
+    <div class="agent-card">
+      <h4>Architect</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star-empty">&#9734;</span>
+      </div>
+      <p><strong>Strengths:</strong> Clear dispatch criteria. Python stub requirement in ADRs prevents signature ambiguity. DrawIO guidelines ensure consistent diagrams.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No ADR versioning/lifecycle guidance. When should an ADR be retired vs superseded?</li>
+        <li>No guidance on numbering scheme beyond sequential (ADR-009 is latest). What happens at ADR-100?</li>
+        <li>Project context is stale: says "SPDX 2.3 JSON and CycloneDX 1.6 JSON" but project now supports YAML, TV, XML, and multi-version CycloneDX.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Update project context to reflect v0.4.0 scope. Add ADR lifecycle section (Proposed &rarr; Accepted &rarr; Deprecated &rarr; Superseded). Consider three-digit numbering from the start.</p>
+    </div>
+
+    <!-- Developer -->
+    <div class="agent-card">
+      <h4>Developer</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> Mandatory quality gate at the top is excellent. Human-friendly code guidelines are specific and actionable. Import ordering rules prevent the #1 CI failure. Post-rebase gate reminder is smart.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>Project context is stale: says "SPDX 2.3 JSON and CycloneDX 1.6 JSON" only.</li>
+        <li>No guidance on technical debt paydown vs. feature scope limits.</li>
+        <li>No mention of <code>constants.py</code> update protocol when adding new format support.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Update context. Add a "Constants Protocol" subsection: when adding a new format or rule code, update <code>constants.py</code> first, then reference the constant everywhere.</p>
+    </div>
+
+    <!-- Tester -->
+    <div class="agent-card">
+      <h4>Tester</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> TDD discipline is clear. Coverage targets per-module are specific. Test file split rule at ~400 lines prevents monolithic test files. Edge case checklist is thorough.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No mention of property-based testing (hypothesis) or fuzzing strategies.</li>
+        <li>No mention of performance/benchmark testing for large SBOMs.</li>
+        <li>Coverage requirements table doesn't include new parsers (spdx_tv_parser, spdx_yaml_parser).</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Add <code>parsers/spdx_tv_parser.py: 90%</code> and <code>parsers/spdx_yaml_parser.py: 90%</code> to the coverage table. Consider adding a "Future: Property-Based Testing" note for v0.6+.</p>
+    </div>
+
+    <!-- Reviewer -->
+    <div class="agent-card">
+      <h4>Reviewer</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> Independence contract is the strongest in the set. Severity model is clear. Release readiness criteria with deferral justification requirements prevent silent quality erosion.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No guidance on reviewing agent definition files themselves.</li>
+        <li>No guidance on reviewing documentation accuracy (only code and tests).</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Add a "Documentation Accuracy" checklist item. Consider periodic agent definition reviews as part of major releases.</p>
+    </div>
+
+    <!-- Security Reviewer -->
+    <div class="agent-card">
+      <h4>Security Reviewer</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star-empty">&#9734;</span>
+      </div>
+      <p><strong>Strengths:</strong> Independence contract is robust. Deferral policy requiring risk acceptance + mitigation plan is mature. Checklist covers code, CLI, secrets, supply chain, and CI workflow.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No automated tooling integration (bandit, safety, trivy). Review is entirely manual/code-reading based.</li>
+        <li>No compliance framework mapping (SOC2, ISO 27001, NIST SSDF).</li>
+        <li>No XML-specific security checks (billion laughs, XXE) despite the project processing XML.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Add an "XML Parsing Security" checklist item covering entity expansion limits and external entity resolution. Add "Recommended Automated Tooling" section referencing bandit and safety.</p>
+    </div>
+
+    <!-- CI Ops -->
+    <div class="agent-card">
+      <h4>CI Ops</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star-empty">&#9734;</span>
+      </div>
+      <p><strong>Strengths:</strong> Failure classification matrix is clear. Safe auto-fix policy correctly limits scope. Retry budget prevents infinite loops.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No mention of GitHub Actions caching optimization (pip cache, poetry cache).</li>
+        <li>No guidance on CI workflow version bumps (e.g., updating actions/checkout from v3 to v4).</li>
+        <li>Escalation target is ambiguous: "escalate" to whom?</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Add "escalate to Orchestrator, who will escalate to human if needed" clarification. Add CI caching as a standard optimization check.</p>
+    </div>
+
+    <!-- Documentation Writer -->
+    <div class="agent-card">
+      <h4>Documentation Writer</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star-empty">&#9734;</span>
+      </div>
+      <p><strong>Strengths:</strong> Placeholder check is mandatory and prevents incomplete docs. "Read the source before writing" rule prevents inaccurate CLI docs.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>Project context is significantly stale: says "SPDX 2.3 JSON, CycloneDX 1.6 JSON" only. Misses YAML, TV, XML, and multi-version CycloneDX.</li>
+        <li>Required documentation section references "v0.1.0" but we're at v0.4.0.</li>
+        <li>No guidance on documentation versioning or changelog-driven doc updates.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Update project context and supported formats. Remove the "v0.1.0" anchor from required docs section. Add "Format Coverage Table" as a mandatory section that must be updated whenever a new format is added.</p>
+    </div>
+
+    <!-- Release Manager -->
+    <div class="agent-card">
+      <h4>Release Manager</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> 8 mandatory release gates are comprehensive. SemVer enforcement is clear. Backward compatibility checklist is specific. Binary smoke test requirements are thorough (not just <code>--version</code>).</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>Duplicate gate numbering: two gates are numbered "6" (Release Workflow Gate and Release Task Tracker Gate).</li>
+        <li>No deprecation communication timeline guidance.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Fix the gate numbering (should be 6, 7, 8 for Release Workflow, Task Tracker, Token Reporting). Add deprecation policy guidance.</p>
+    </div>
+
+    <!-- Token Analyst -->
+    <div class="agent-card">
+      <h4>Token Analyst</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> Portable telemetry path helper is excellent. Clear distinction between measured (DB) and estimated data. Cache token cost interpretation is correct (10% read, 125% creation). Multi-session aggregation rules are explicit.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No guidance on handling sessions that span multiple releases.</li>
+        <li>No confidence interval guidance for estimates.</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Add session-splitting guidance: "If a session spans two releases, attribute turns to the release based on the git branch at the time of each turn."</p>
+    </div>
+
+    <!-- Workflow Analyst -->
+    <div class="agent-card">
+      <h4>Workflow Analyst</h4>
+      <div class="rating">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p><strong>Strengths:</strong> Telemetry-first methodology is correct. Turn count as effort proxy is well-calibrated. Agent-task mapping via subagent .meta.json is precise. Report content contract is comprehensive.</p>
+      <p><strong>Gaps:</strong></p>
+      <ul>
+        <li>No quantitative thresholds for health verdicts (what makes "Healthy" vs "Needs Attention"?).</li>
+        <li>No trend-line visualization guidance (just "trend assessment" in prose).</li>
+      </ul>
+      <p><strong>Recommendation:</strong> Define thresholds: e.g., gate skip rate &lt;10% = Healthy, 10&ndash;25% = Needs Attention, &gt;25% = Critical. Consider SVG sparklines in future reports.</p>
+    </div>
+
+  </div>
+
+  <h3>Cross-Cutting Agent Issues</h3>
+
+  <table>
+    <tr><th>Issue</th><th>Affected Agents</th><th>Impact</th><th>Fix</th></tr>
+    <tr>
+      <td>Stale project context</td>
+      <td>Architect, Developer, Doc Writer, Tester</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>Update all agent context blocks to reflect v0.4.0 format support (SPDX JSON/YAML/TV, CycloneDX JSON/XML 1.3&ndash;1.6)</td>
+    </tr>
+    <tr>
+      <td>Ambiguous escalation targets</td>
+      <td>CI Ops, Developer, Tester</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>Standardize: "Escalate to Orchestrator" for all agents. Orchestrator decides human escalation.</td>
+    </tr>
+    <tr>
+      <td>No model specification in frontmatter</td>
+      <td>All 12 agents</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>None of the agents specify a <code>model:</code> in their YAML frontmatter. This is fine for now (inherits parent model), but consider pinning analytics agents to a cheaper model like Haiku for cost optimization.</td>
+    </tr>
+    <tr>
+      <td>No tool restrictions in frontmatter</td>
+      <td>All 12 agents</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>Agents don't restrict their tool access. Reviewer/Security Reviewer should arguably not have Write/Edit access (read-only review). Consider adding tool restrictions for independence enforcement.</td>
+    </tr>
+  </table>
+</section>
+
+<!-- 5. Architecture & Code Quality -->
+<section id="arch-quality">
+  <h2>5. Architecture &amp; Code Quality Assessment</h2>
+
+  <h3>Architecture Strengths</h3>
+  <ul>
+    <li><strong>Two-stage pipeline (ADR-003):</strong> Schema validation gates NTIA checking. This prevents NTIA from producing misleading results on structurally invalid documents.</li>
+    <li><strong>Frozen dataclasses (ADR-004):</strong> All data models are immutable. No mutation bugs, safe for concurrent use, deterministic behavior.</li>
+    <li><strong>Format-agnostic NTIA checker:</strong> <code>ntia_checker.py</code> operates only on <code>NormalizedSBOM</code>. Adding a new format requires only a new parser &mdash; zero changes to NTIA logic.</li>
+    <li><strong>Collect-all error reporting:</strong> Both schema and NTIA stages report ALL issues in one pass. Users fix everything at once, not iteratively.</li>
+    <li><strong>Schema bundling (ADR-008):</strong> No network calls at validation time. Schemas are bundled with PyInstaller for binary distribution.</li>
+    <li><strong>Humanization layer:</strong> <code>presentation.py</code> strips XML namespaces and NTIA rule IDs from text output while preserving them in JSON output. Excellent UX design.</li>
+  </ul>
+
+  <h3>Code Quality Observations</h3>
+
+  <table>
+    <tr><th>Metric</th><th>Value</th><th>Assessment</th></tr>
+    <tr><td>Test Count</td><td>594+</td><td><span class="verdict verdict-yes">Excellent</span></td></tr>
+    <tr><td>Code Coverage</td><td>96%</td><td><span class="verdict verdict-yes">Excellent</span></td></tr>
+    <tr><td>mypy Strict</td><td>0 errors</td><td><span class="verdict verdict-yes">Clean</span></td></tr>
+    <tr><td>ruff Lint</td><td>0 errors</td><td><span class="verdict verdict-yes">Clean</span></td></tr>
+    <tr><td><code>eval()</code> / <code>exec()</code></td><td>None</td><td><span class="verdict verdict-yes">Safe</span></td></tr>
+    <tr><td>Bare <code>except:</code></td><td>None</td><td><span class="verdict verdict-yes">Safe</span></td></tr>
+    <tr><td>Shell injection vectors</td><td>None</td><td><span class="verdict verdict-yes">Safe</span></td></tr>
+    <tr><td>Type annotations</td><td>100% public APIs</td><td><span class="verdict verdict-yes">Complete</span></td></tr>
+    <tr><td>Magic strings</td><td>None (constants.py)</td><td><span class="verdict verdict-yes">Clean</span></td></tr>
+    <tr><td>Import ordering</td><td>Enforced by ruff I001</td><td><span class="verdict verdict-yes">Consistent</span></td></tr>
+  </table>
+
+  <h3>Minor Code Smells</h3>
+  <ol>
+    <li><strong>Deferred inner import:</strong> <code>schema_validator.py</code> has a deferred import of <code>CYCLONEDX_XML_NAMESPACE_PREFIX</code> inside a function. Should be module-level.</li>
+    <li><strong>Parser signature inconsistency:</strong> Deferred as R-04/R-05 but worth tracking. A Protocol or base class would formalize the parser contract.</li>
+    <li><strong>Click Path validation:</strong> <code>click.Path(exists=False)</code> in <code>cli.py</code> deferred as R-12. Simple fix with high UX value.</li>
+    <li><strong>session-context.md version drift:</strong> Says "Current version: 0.2.2" but actual version is 0.4.0. Stale documentation.</li>
+  </ol>
+</section>
+
+<!-- 6. CI/CD -->
+<section id="ci-cd">
+  <h2>6. CI/CD Pipeline Analysis</h2>
+
+  <h3>CI Workflow Gates</h3>
+  <table>
+    <tr><th>Gate</th><th>Tool</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Lint</td><td><code>ruff check</code></td><td><span class="verdict verdict-yes">Enforced</span></td><td>Blocks merge</td></tr>
+    <tr><td>Format</td><td><code>ruff format --check</code></td><td><span class="verdict verdict-yes">Enforced</span></td><td>Blocks merge</td></tr>
+    <tr><td>Type Check</td><td><code>mypy --strict</code></td><td><span class="verdict verdict-yes">Enforced</span></td><td>Blocks merge</td></tr>
+    <tr><td>Tests</td><td><code>pytest --cov-fail-under=90</code></td><td><span class="verdict verdict-yes">Enforced</span></td><td>Matrix: 3.11 + 3.12</td></tr>
+    <tr><td>Dependency Scan</td><td>&mdash;</td><td><span class="verdict verdict-no">Missing</span></td><td>No bandit/safety/trivy</td></tr>
+    <tr><td>Changelog Verify</td><td>&mdash;</td><td><span class="verdict verdict-no">Missing</span></td><td>Version consistency not checked</td></tr>
+    <tr><td>SBOM Self-Check</td><td>&mdash;</td><td><span class="verdict verdict-no">Missing</span></td><td>Tool doesn't validate its own deps</td></tr>
+  </table>
+
+  <h3>Release Workflow Gates</h3>
+  <table>
+    <tr><th>Gate</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Tag provenance</td><td><span class="verdict verdict-yes">Enforced</span></td><td>Must be on master/develop</td></tr>
+    <tr><td>Token report exists</td><td><span class="verdict verdict-yes">Enforced</span></td><td>Blocks release if missing</td></tr>
+    <tr><td>Workflow report exists</td><td><span class="verdict verdict-yes">Enforced</span></td><td>Blocks release if missing</td></tr>
+    <tr><td>Linux binary build</td><td><span class="verdict verdict-yes">Automated</span></td><td>PyInstaller on Ubuntu</td></tr>
+    <tr><td>Windows binary build</td><td><span class="verdict verdict-yes">Automated</span></td><td>PyInstaller on Windows</td></tr>
+    <tr><td>Smoke test</td><td><span class="verdict verdict-yes">14 scenarios</span></td><td>Comprehensive script</td></tr>
+    <tr><td>Artifact signing</td><td><span class="verdict verdict-no">Missing</span></td><td>No GPG/sigstore</td></tr>
+    <tr><td>SBOM generation</td><td><span class="verdict verdict-partial">In Progress</span></td><td>Current branch: feature/sbom-generation</td></tr>
+  </table>
+</section>
+
+<!-- 7. Security -->
+<section id="security">
+  <h2>7. Security Posture Review</h2>
+
+  <h3>Positive Controls</h3>
+  <div class="callout callout-green">
+    <ul>
+      <li>No <code>eval()</code>, <code>exec()</code>, or <code>pickle</code> usage anywhere</li>
+      <li>No shell injection vectors (no <code>subprocess</code> with user input)</li>
+      <li>All file I/O uses <code>pathlib.Path</code></li>
+      <li>All data models are frozen/immutable</li>
+      <li>YAML uses <code>safe_load</code> exclusively</li>
+      <li>JSON schemas bundled locally (no network fetches)</li>
+      <li>Logging to stderr only; stdout reserved for data</li>
+      <li>No credentials or secrets in code or fixtures</li>
+    </ul>
+  </div>
+
+  <h3>Areas for Hardening</h3>
+  <div class="callout callout-orange">
+    <ul>
+      <li><strong>XML entity expansion:</strong> <code>xml.etree.ElementTree</code> is used for XML parsing. While <code>xmlschema</code> handles validation, consider adding <code>defusedxml</code> as a defense-in-depth measure against billion laughs / XXE attacks.</li>
+      <li><strong>File size limits:</strong> No validation of input file size. A maliciously large SBOM (100MB+) could cause memory exhaustion. Consider a configurable max file size.</li>
+      <li><strong>Dependency scanning:</strong> No automated CVE scanning of transitive dependencies. Add <code>safety check</code> or <code>pip-audit</code> to CI.</li>
+      <li><strong>Release artifact signing:</strong> Binaries are unsigned. Users cannot verify artifact integrity beyond HTTPS transport.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 8. Gaps & Recommendations -->
+<section id="gaps">
+  <h2>8. Top Gaps &amp; Actionable Recommendations</h2>
+
+  <table>
+    <tr><th>#</th><th>Recommendation</th><th>Impact</th><th>Effort</th><th>Target</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Create CLAUDE.md</strong> &mdash; distill project rules, CLI contract, branching, lint gate, and architecture constraints into a single auto-loaded file</td>
+      <td><span class="pill pill-high">High</span></td>
+      <td>~30 min</td>
+      <td>Next session</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Update stale agent contexts</strong> &mdash; 4 agents (Architect, Developer, Doc Writer, Tester) reference only "SPDX 2.3 JSON and CycloneDX 1.6 JSON"</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>~20 min</td>
+      <td>Next session</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Fix release-manager gate numbering</strong> &mdash; two gates are numbered "6"</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>~5 min</td>
+      <td>Next session</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Fix planner duplicate line</strong> &mdash; agent role assignment list is duplicated at lines 15&ndash;16</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>~2 min</td>
+      <td>Next session</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Add dependency security scanning to CI</strong> &mdash; <code>pip-audit</code> or <code>safety check</code> as a non-blocking CI step</td>
+      <td><span class="pill pill-high">High</span></td>
+      <td>~1 hr</td>
+      <td>v0.5.0</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Add version consistency CI gate</strong> &mdash; verify pyproject.toml, __init__.py, and CHANGELOG.md version alignment</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>~30 min</td>
+      <td>v0.5.0</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Add XML security hardening</strong> &mdash; integrate <code>defusedxml</code> for entity expansion protection</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>~1 hr</td>
+      <td>v0.5.0</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><strong>Add tool restrictions to reviewer agents</strong> &mdash; Reviewer and Security Reviewer should be read-only (no Edit/Write tools) to enforce independence</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>~15 min</td>
+      <td>v0.5.0</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><strong>Update session-context.md version</strong> &mdash; says "0.2.2" but project is at v0.4.0</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>~5 min</td>
+      <td>Next session</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><strong>Add orchestrator resume protocol</strong> &mdash; "Read TASKS file; resume from first gate without PASS status"</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>~15 min</td>
+      <td>v0.5.0</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td><strong>Consider model pinning for analytics agents</strong> &mdash; Token Analyst and Workflow Analyst could use Haiku for cost savings since they primarily query a DB and generate HTML</td>
+      <td><span class="pill pill-low">Low</span></td>
+      <td>~5 min</td>
+      <td>Experimental</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><strong>Add /validate-local skill</strong> &mdash; one-command local quality gate (<code>ruff + mypy + pytest</code>)</td>
+      <td><span class="pill pill-med">Medium</span></td>
+      <td>~20 min</td>
+      <td>v0.5.0</td>
+    </tr>
+  </table>
+</section>
+
+<!-- 9. Roadmap -->
+<section id="roadmap">
+  <h2>9. Suggested Roadmap</h2>
+
+  <h3>Immediate (This Session / Next Session)</h3>
+  <table>
+    <tr><th>Action</th><th>Files</th></tr>
+    <tr><td>Create CLAUDE.md</td><td><code>CLAUDE.md</code> (new)</td></tr>
+    <tr><td>Update stale agent contexts</td><td><code>.claude/agents/{architect,developer,documentation-writer,tester}.md</code></td></tr>
+    <tr><td>Fix release-manager gate numbering</td><td><code>.claude/agents/release-manager.md</code></td></tr>
+    <tr><td>Fix planner duplicate line</td><td><code>.claude/agents/planner.md</code></td></tr>
+    <tr><td>Update session-context.md version</td><td><code>.claude/session-context.md</code></td></tr>
+  </table>
+
+  <h3>v0.5.0</h3>
+  <table>
+    <tr><th>Feature</th><th>Agent Owner</th></tr>
+    <tr><td>Dependency security scanning in CI</td><td>CI Ops + Security Reviewer</td></tr>
+    <tr><td>Version consistency CI gate</td><td>CI Ops + Release Manager</td></tr>
+    <tr><td>XML security hardening (defusedxml)</td><td>Developer + Security Reviewer</td></tr>
+    <tr><td>Tool restrictions for reviewer agents</td><td>Orchestrator</td></tr>
+    <tr><td>Orchestrator resume protocol</td><td>Orchestrator</td></tr>
+    <tr><td>/validate-local skill</td><td>Developer</td></tr>
+  </table>
+
+  <h3>v0.6.0+ (Future)</h3>
+  <ul>
+    <li>Property-based testing with Hypothesis</li>
+    <li>Performance benchmarking for large SBOMs</li>
+    <li>Release artifact signing (sigstore)</li>
+    <li>Parser protocol/base class unification (R-04/R-05)</li>
+    <li>Format-specific NTIA field paths (R-08)</li>
+    <li>Deprecation policy and communication framework</li>
+    <li>Click Path validation fix (R-12)</li>
+  </ul>
+</section>
+
+<!-- 10. Conclusion -->
+<section id="conclusion">
+  <h2>10. Conclusion</h2>
+
+  <div class="callout callout-green">
+    <p><strong>This is one of the most well-engineered Claude Code projects I've reviewed.</strong> The 12-agent orchestration model with 11 quality gates, TDD discipline, frozen dataclasses, and release analytics creates a development pipeline that would be impressive for a team of human engineers, let alone an AI-assisted solo project.</p>
+  </div>
+
+  <h3>Summary of Verdicts</h3>
+  <table>
+    <tr><th>Question</th><th>Verdict</th><th>Rationale</th></tr>
+    <tr>
+      <td>Create CLAUDE.md?</td>
+      <td><span class="verdict verdict-yes">STRONGLY RECOMMENDED</span></td>
+      <td>Saves 8&ndash;15K tokens/session on context bootstrapping. No CLAUDE.md means every session starts cold without project rules. Your session-context.md is not auto-loaded.</td>
+    </tr>
+    <tr>
+      <td>Integrate Skills?</td>
+      <td><span class="verdict verdict-partial">CONDITIONALLY RECOMMENDED</span></td>
+      <td>Add 1&ndash;3 targeted skills for high-frequency operations (/validate-local, /release-check, /gate-status). Don't replicate agent logic in skills.</td>
+    </tr>
+    <tr>
+      <td>Agent improvements needed?</td>
+      <td><span class="verdict verdict-partial">YES &mdash; MINOR</span></td>
+      <td>Agents are excellent. Main issues: 4 stale context blocks, 1 duplicate line, 1 gate numbering error, and missing tool restrictions for reviewers. All fixable in one session.</td>
+    </tr>
+    <tr>
+      <td>Production-ready?</td>
+      <td><span class="verdict verdict-yes">YES</span></td>
+      <td>Architecture, code quality, testing, and release process are all production-grade. Identified gaps are enhancements, not blockers.</td>
+    </tr>
+  </table>
+
+  <p style="margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">The highest-impact next step is creating CLAUDE.md. Everything else is optimization on an already strong foundation.</p>
+</section>
+
+</div>
+
+<div class="footer">
+  <p>Generated by Claude Opus 4.6 &mdash; 2026-04-15 &mdash; sbom-validator Repository Review</p>
+  <p>Report location: <code>docs/repo-review-report.html</code></p>
+</div>
+
+</body>
+</html>

@@ -29,9 +29,9 @@ If none of these apply, the Orchestrator records "no ADR change required" inline
 
 ## Project Context
 
-- Tool: `sbom-validator` — a CLI that validates SPDX 2.3 JSON and CycloneDX 1.6 JSON SBOM files
-- Validation layers: (1) JSON schema conformance, (2) NTIA minimum elements compliance
-- Tech stack: Python 3.11+, Poetry, Click, jsonschema, spdx-tools, cyclonedx-bom
+- Tool: `sbom-validator` — a CLI that validates SPDX 2.3 (JSON, YAML, Tag-Value) and CycloneDX 1.3–1.6 (JSON, XML) SBOM files
+- Validation layers: (1) format schema conformance (JSON Schema + XSD), (2) NTIA minimum elements compliance
+- Tech stack: Python 3.11+, Poetry, Click, jsonschema, xmlschema, pyyaml, spdx-tools, cyclonedx-bom
 - Key design principles: format-agnostic NTIA checker via `NormalizedSBOM`, two-stage pipeline, collect-all errors
 - Branching: ADR and design work lives on the same `feature/<name>` branch as the implementation it supports — confirm with `git branch --show-current` before starting
 

@@ -83,11 +83,11 @@ Never leave merged feature branches open locally or remotely. A branch that has 
 
 ## Project Context
 
-- Tool: `sbom-validator` — validates SPDX 2.3 JSON and CycloneDX 1.6 JSON SBOM files
-- Tech stack: Python 3.11+, Poetry, Click, jsonschema, spdx-tools, cyclonedx-bom, pytest
+- Tool: `sbom-validator` — validates SPDX 2.3 (JSON, YAML, Tag-Value) and CycloneDX 1.3–1.6 (JSON, XML) SBOM files
+- Tech stack: Python 3.11+, Poetry, Click, jsonschema, xmlschema, pyyaml, spdx-tools, cyclonedx-bom, pytest
 - Source: `src/sbom_validator/` — Poetry src layout
 - Tests: `tests/unit/`, `tests/integration/`
-- Key files: `pyproject.toml`, `src/sbom_validator/models.py`
+- Key files: `pyproject.toml`, `src/sbom_validator/models.py`, `src/sbom_validator/constants.py`
 
 ## Implementation Standards
 

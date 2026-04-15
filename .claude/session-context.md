@@ -1,7 +1,7 @@
 # sbom-validator — Session Context (for AI assistant onboarding)
 
 > Read this file at the start of every new session to get up to speed instantly.
-> Last updated: 2026-04-13
+> Last updated: 2026-04-15
 
 ---
 
@@ -10,7 +10,7 @@
 `sbom-validator` is a Python CLI tool that validates Software Bill of Materials (SBOM) files against format schemas and NTIA minimum element requirements. It is published as a pip/pipx package AND as standalone binaries (Linux + Windows amd64) via GitHub Releases.
 
 - **GitHub:** https://github.com/SuceaCosmin/sbom-validator
-- **Current version:** `0.2.2` (released 2026-04-09)
+- **Current version:** `0.4.0` (released 2026-04-14)
 - **Python:** 3.11+ (3.11 and 3.12 tested in CI)
 
 ---
@@ -20,8 +20,10 @@
 | Format | Version | Detection key |
 |--------|---------|---------------|
 | SPDX JSON | 2.3 only | `spdxVersion == "SPDX-2.3"` |
-| CycloneDX JSON | 1.6 only | `bomFormat == "CycloneDX"` + `specVersion == "1.6"` |
-| CycloneDX XML | 1.6 only | root `<bom>` namespace `http://cyclonedx.org/schema/bom/1.6` |
+| SPDX YAML | 2.3 only | YAML `safe_load` + `spdxVersion == "SPDX-2.3"` |
+| SPDX Tag-Value | 2.3 only | Line starts with `SPDXVersion: SPDX-2.3` |
+| CycloneDX JSON | 1.3–1.6 | `bomFormat == "CycloneDX"` + `specVersion in {"1.3","1.4","1.5","1.6"}` |
+| CycloneDX XML | 1.3–1.6 | root `<bom>` namespace `http://cyclonedx.org/schema/bom/<version>` |
 
 Wrong version or unrecognized format → `UnsupportedFormatError` → exit code 2.
 
@@ -169,7 +171,7 @@ class ValidationResult:
 | Binary | PyInstaller | >=6.0 |
 | Testing | pytest + pytest-cov | >=8.0 |
 | Linting | ruff | >=0.4 |
-| Formatting | black | >=24.0 (pre-commit hook) |
+| Formatting | ruff format | >=0.4 (pre-commit hook) |
 | Type checking | mypy (strict) | >=1.9 |
 | Package manager | Poetry | — |
 
@@ -193,11 +195,13 @@ src/sbom_validator/
   exceptions.py
   parsers/
     spdx_parser.py
+    spdx_yaml_parser.py
+    spdx_tv_parser.py
     cyclonedx_parser.py
   schemas/
     spdx-2.3.schema.json
-    cyclonedx-1.6.schema.json
-    cyclonedx-1.6.xsd  (and dependencies)
+    cyclonedx-{1.3,1.4,1.5,1.6}.schema.json
+    cyclonedx-{1.3,1.4,1.5,1.6}.schema.xsd  (and dependencies)
 
 tests/
   unit/                # 27+30+31+12+27+37+64+77+... tests
@@ -211,7 +215,7 @@ docs/
   requirements.md
   agent-briefing.md        ← technical contracts reference
   agent-operating-model.md ← lifecycle flow and gates
-  architecture/            ← ADR-001 through ADR-008, drawio diagrams
+  architecture/            ← ADR-001 through ADR-009, drawio diagrams
   releases/                ← TASKS-vX.Y.Z.md per-release trackers
   user-guide.md
   architecture-overview.md
@@ -240,15 +244,16 @@ sbom_validator.spec        # PyInstaller spec
 | ADR-006 | stdlib logging. `--log-level` option. All log output → stderr only. |
 | ADR-007 | `--report-dir` writes HTML+JSON pair. string.Template (no Jinja2). No new runtime deps. |
 | ADR-008 | PyInstaller `--onefile`. Linux+Windows amd64. Release triggered by `v*.*.*` tags. |
+| ADR-009 | SPDX TV and YAML sub-formats. Detection priority: JSON → CycloneDX XML → TV → YAML. TV skips schema validation. YAML validates against existing JSON schema. Shared `_parse_spdx_document` helper. `pyyaml>=6.0` runtime dep. |
 
 ---
 
 ## Test Count & Quality Bar
 
-- **501 unit + integration tests** passing on Python 3.11 and 3.12
-- **≥97% code coverage**
+- **594+ unit + integration tests** passing on Python 3.11 and 3.12
+- **≥96% code coverage**
 - Zero mypy errors (strict mode), zero ruff errors
-- Pre-commit hooks: black + ruff (prevent lint/format failures at commit)
+- Pre-commit hooks: ruff check + ruff format (prevent lint/format failures at commit)
 
 ---
 

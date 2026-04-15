@@ -25,7 +25,7 @@ If you are invoked inline by an Orchestrator that also ran Gate 3, the gate has 
 
 ## Project Context
 
-- Tool: `sbom-validator` — validates SPDX 2.3 JSON and CycloneDX 1.6 JSON SBOM files
+- Tool: `sbom-validator` — validates SPDX 2.3 (JSON, YAML, Tag-Value) and CycloneDX 1.3–1.6 (JSON, XML) SBOM files
 - Operating model: `docs/agent-operating-model.md`
 - Architecture decisions: `docs/architecture/ADR-*.md`
 - Requirements: `docs/requirements.md`
