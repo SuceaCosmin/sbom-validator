@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Report filenames are now fixed and predictable: `sbom-report-<basename>.html` / `sbom-report-<basename>.json`. The `<YYYYMMDD-HHMMSS>` timestamp suffix has been removed to enable deterministic CI artefact references. The `generated_at` field inside the report content is unchanged.
+- `--format json` stdout output now includes `"tool_version"` as the first key in the JSON object, making every machine-readable result self-identifying without requiring `--report-dir`.
+- Running with `--log-level INFO` or `--log-level DEBUG` now emits `sbom-validator <version>` as the first log line to stderr, before any pipeline output.
+- Report write failures (`OSError`, e.g. file locked by a JSON viewer) are now non-fatal: the tool warns to stderr and exits with the correct validation exit code (`0`, `1`, or `2`) rather than crashing.
+
 ## [0.4.0] - 2026-04-14
 
 ### Added
@@ -94,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Structured logging via `--log-level` option (choices: DEBUG, INFO, WARNING, ERROR; default: WARNING). Log output is written exclusively to stderr, keeping stdout clean for `--format json` consumers.
-- Post-execution HTML and JSON report generation via `--report-dir PATH` option. Both report files are always written together when the option is provided. Filename convention: `sbom-report-<basename>-<YYYYMMDD-HHMMSS>.html/.json`.
+- Post-execution HTML and JSON report generation via `--report-dir PATH` option. Both report files are always written together when the option is provided. Filename convention: `sbom-report-<basename>.html/.json`.
 - Standalone binary distribution for Linux (amd64) and Windows (amd64), built with PyInstaller and published to GitHub Releases automatically when a version tag is pushed.
 
 ## [0.1.0] - 2026-04-06

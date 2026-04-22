@@ -43,7 +43,7 @@ sbom-validator --version
 | 2 | ERROR (tool could not process the file) |
 
 - `--format json` output goes to **stdout**; all log output goes to **stderr only** (never mix)
-- `--report-dir` writes a paired `sbom-report-<basename>-<YYYYMMDD-HHMMSS>.html/.json`
+- `--report-dir` writes a paired `sbom-report-<basename>.html/.json` (fixed names, no timestamp)
 
 ---
 

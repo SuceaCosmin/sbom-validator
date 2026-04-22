@@ -95,6 +95,7 @@ All loggers in the project follow the `sbom_validator.<module_name>` hierarchy:
 
 | Module | Logger name |
 |---|---|
+| `cli.py` | `sbom_validator.cli` |
 | `format_detector.py` | `sbom_validator.format_detector` |
 | `schema_validator.py` | `sbom_validator.schema_validator` |
 | `parsers/spdx_parser.py` | `sbom_validator.spdx_parser` |
@@ -115,6 +116,14 @@ Because `__name__` follows the package hierarchy, this automatically satisfies t
 ### Log Points Per Module
 
 The following table defines the **required** log points. These are the minimum contract; modules may add additional DEBUG-level messages for internal state.
+
+**`cli.py`**
+
+| Event | Level | Message template |
+|---|---|---|
+| Tool startup | INFO | `"sbom-validator %s"` (version string, emitted immediately after `configure_logging`) |
+
+This is always the first log line when INFO or DEBUG level is active. It appears before any pipeline module logs, giving operators an immediate version fingerprint in the log stream.
 
 **`format_detector.py`**
 
@@ -162,9 +171,10 @@ The following table defines the **required** log points. These are the minimum c
 %(asctime)s %(levelname)-8s %(name)s — %(message)s
 ```
 
-Example output line:
+Example output lines (INFO level, first two lines of a typical run):
 
 ```
+2026-04-08T14:22:01Z INFO     sbom_validator.cli — sbom-validator 0.4.0
 2026-04-08T14:22:01Z INFO     sbom_validator.validator — Validation started for: bom.json
 ```
 

@@ -239,6 +239,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS|FAIL|ERROR",
   "file": "<path>",
   "format_detected": "spdx|cyclonedx|null",
@@ -257,6 +258,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 | Field | Type | Description |
 |---|---|---|
+| `tool_version` | `string` | Version of sbom-validator that produced this output (e.g., `"0.4.0"`) |
 | `status` | `string` | Overall result: `"PASS"`, `"FAIL"`, or `"ERROR"` |
 | `file` | `string` | The file path as provided to the CLI |
 | `format_detected` | `string \| null` | `"spdx"`, `"cyclonedx"`, or `null` if detection failed |
@@ -270,6 +272,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "FAIL",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",
@@ -294,6 +297,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",

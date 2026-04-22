@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any
@@ -16,10 +17,13 @@ from sbom_validator.presentation import humanize_field_path, humanize_message
 from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
 
+logger = logging.getLogger(__name__)
+
 
 def _result_to_dict(result: ValidationResult) -> dict[str, Any]:
     """Serialise a ValidationResult to a JSON-compatible dict."""
     return {
+        "tool_version": __version__,
         "status": result.status.value,
         "file": result.file_path,
         "format_detected": result.format_detected,
@@ -104,6 +108,7 @@ def validate_cmd(file: str, output_format: str, log_level: str, report_dir: Path
     Exits with code 0 (PASS), 1 (validation FAIL), or 2 (tool ERROR).
     """
     configure_logging(log_level)
+    logger.info("sbom-validator %s", __version__)
     file_path = Path(file)
     result = validate(file_path)
 
@@ -113,7 +118,10 @@ def validate_cmd(file: str, output_format: str, log_level: str, report_dir: Path
         click.echo(_render_text(result))
 
     if report_dir is not None:
-        write_reports(result, report_dir)
+        try:
+            write_reports(result, report_dir)
+        except OSError as exc:
+            click.echo(f"Warning: could not write reports to {report_dir}: {exc}", err=True)
 
     sys.exit(_exit_code(result))
 

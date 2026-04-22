@@ -129,6 +129,7 @@ Issues (3):
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "FAIL",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",

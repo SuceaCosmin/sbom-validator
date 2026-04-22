@@ -64,7 +64,9 @@ def write_reports(
 
     Raises:
         OSError: If the directory cannot be created or the files cannot
-                 be written (e.g., permission denied).
+                 be written (e.g., permission denied). The caller
+                 (cli.py) catches this and warns to stderr rather than
+                 propagating it as a crash.
     """
     ...
 ```
@@ -92,23 +94,22 @@ def write_reports(
 
 ### Filename Convention
 
-Both files share a common stem derived from the validated file and the UTC timestamp of report generation:
+Both files share a fixed stem derived from the validated file's base name:
 
 ```
-sbom-report-<basename>-<timestamp>.html
-sbom-report-<basename>-<timestamp>.json
+sbom-report-<basename>.html
+sbom-report-<basename>.json
 ```
 
-Where:
+Where `<basename>` is `Path(result.file_path).stem` (filename without extension, e.g., `bom` for `bom.json`, `my-sbom.cdx` for `my-sbom.cdx.json`).
 
-- `<basename>` is `Path(result.file_path).stem` (filename without extension, e.g., `bom` for `bom.json`, `my-sbom` for `my-sbom.cdx.json`).
-- `<timestamp>` is the UTC time at the moment `write_reports` is called, formatted as `YYYYMMDD-HHMMSS` (e.g., `20260408-142201`). The timestamp is computed once inside `write_reports` and used for both filenames to guarantee the pair shares an identical stem.
+Filenames are intentionally stable across runs: CI pipelines can reference them by a known path rather than globbing for a timestamped variant. Workflows that need per-run isolation should use a run-scoped `--report-dir` (e.g., `--report-dir reports/$GITHUB_RUN_ID/`). The `generated_at` field inside the report content still records the UTC timestamp of the run.
 
-Example: validating `bom.json` at 2026-04-08 14:22:01 UTC produces:
+Example: validating `bom.json` produces:
 
 ```
-sbom-report-bom-20260408-142201.html
-sbom-report-bom-20260408-142201.json
+sbom-report-bom.html
+sbom-report-bom.json
 ```
 
 ### JSON Report Schema
