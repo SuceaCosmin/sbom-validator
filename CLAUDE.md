@@ -3,6 +3,17 @@
 > Auto-loaded at every session start. Keep this concise and decision-critical.
 > For full details, read the linked reference files.
 
+## If You Are an AI Agent
+Stop. Read this section before doing anything.
+
+During activities in the project be sure to consider the following:
+- Keep explanations concise.
+- Challenge ambiguous/wrong prompts.
+- Challenge me when i come with improvement ideas for the repo. Do not accept all my requests by default but challenge a brainstorming sessions to ensure that whatever we build really generates added value.
+- Say it if anything is unclear so that we can further clarify it.
+- When evaluating an issue, perform a detailed root cause analysis. Do not stop at your first conclusion as it might be wrong. Higlighting as least 3 pottential reaspons and ask me if you are not sure which of the causes to fix. If you are sure, proceed without asking confirmation.
+
+
 ## Project Identity
 
 `sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
@@ -159,3 +170,6 @@ tests/
 - TDD discipline: tests written before implementation
 - Test file naming: `test_<module>_<concern>.py`
 - Shared fixtures in `tests/unit/conftest.py`
+
+
+
