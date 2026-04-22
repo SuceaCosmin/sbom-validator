@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
+from unittest.mock import patch
 
+import pytest
 from click.testing import CliRunner
 
+from sbom_validator import __version__
 from sbom_validator.cli import main
 
 SPDX_FIXTURES = Path("tests/fixtures/spdx")
@@ -350,3 +354,140 @@ class TestCliReportDirOption:
         """--help output must document the --report-dir option."""
         result = runner.invoke(main, ["validate", "--help"])
         assert "--report-dir" in result.output
+
+
+# ===========================================================================
+# TestCliVersionLogging
+# ===========================================================================
+
+
+class TestCliVersionLogging:
+    """Tests for the version log line emitted at INFO level on startup (issue #14).
+
+    pytest captures log records via its own mechanism (not through result.stderr),
+    so we assert against caplog.text rather than the Click result streams.
+    """
+
+    def test_info_log_level_emits_version_record(
+        self, runner: CliRunner, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Running with --log-level INFO must produce a version log record at INFO."""
+        with caplog.at_level(logging.INFO, logger="sbom_validator"):
+            result = runner.invoke(
+                main,
+                ["validate", str(SPDX_FIXTURES / "valid-minimal.spdx.json"), "--log-level", "INFO"],
+            )
+        assert result.exit_code == 0
+        assert f"sbom-validator {__version__}" in caplog.text
+
+    def test_debug_log_level_emits_version_record(
+        self, runner: CliRunner, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Running with --log-level DEBUG must also emit the version log record."""
+        with caplog.at_level(logging.DEBUG, logger="sbom_validator"):
+            result = runner.invoke(
+                main,
+                [
+                    "validate",
+                    str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                    "--log-level",
+                    "DEBUG",
+                ],
+            )
+        assert result.exit_code == 0
+        assert f"sbom-validator {__version__}" in caplog.text
+
+    def test_warning_log_level_does_not_emit_version_record(
+        self, runner: CliRunner, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """The default WARNING level must NOT emit the version line (INFO is suppressed)."""
+        with caplog.at_level(logging.WARNING, logger="sbom_validator"):
+            result = runner.invoke(
+                main,
+                [
+                    "validate",
+                    str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                    "--log-level",
+                    "WARNING",
+                ],
+            )
+        assert result.exit_code == 0
+        assert f"sbom-validator {__version__}" not in caplog.text
+
+    def test_version_log_does_not_contaminate_json_stdout(self, runner: CliRunner) -> None:
+        """With --format json, stdout must be clean JSON even when INFO logging is active."""
+        import json
+
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                "--format",
+                "json",
+                "--log-level",
+                "INFO",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["status"] == "PASS"
+
+
+# ===========================================================================
+# TestCliReportDirNonFatalWrite
+# ===========================================================================
+
+
+class TestCliReportDirNonFatalWrite:
+    """Tests for non-fatal report write failures (issue #15)."""
+
+    def test_oserror_on_write_does_not_change_pass_exit_code(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """An OSError from write_reports must not change a PASS exit code."""
+        with patch("sbom_validator.cli.write_reports", side_effect=OSError("disk full")):
+            result = runner.invoke(
+                main,
+                [
+                    "validate",
+                    str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                    "--report-dir",
+                    str(tmp_path),
+                ],
+            )
+        assert result.exit_code == 0
+
+    def test_oserror_on_write_does_not_change_fail_exit_code(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """An OSError from write_reports must not change a FAIL exit code."""
+        with patch("sbom_validator.cli.write_reports", side_effect=OSError("disk full")):
+            result = runner.invoke(
+                main,
+                [
+                    "validate",
+                    str(SPDX_FIXTURES / "missing-supplier.spdx.json"),
+                    "--report-dir",
+                    str(tmp_path),
+                ],
+            )
+        assert result.exit_code == 1
+
+    def test_oserror_on_write_emits_warning_to_stderr(
+        self, runner: CliRunner, tmp_path: Path
+    ) -> None:
+        """An OSError from write_reports must produce a warning on stderr."""
+        with patch("sbom_validator.cli.write_reports", side_effect=OSError("disk full")):
+            result = runner.invoke(
+                main,
+                [
+                    "validate",
+                    str(SPDX_FIXTURES / "valid-minimal.spdx.json"),
+                    "--report-dir",
+                    str(tmp_path),
+                ],
+            )
+        assert result.exit_code == 0
+        assert "Warning" in result.stderr
+        assert str(tmp_path) in result.stderr

@@ -202,6 +202,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS|FAIL|ERROR",
   "file": "path/to/file.json",
   "format_detected": "spdx|cyclonedx|null",
@@ -218,6 +219,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 | Field | Type | Description |
 |---|---|---|
+| `tool_version` | string | Version of sbom-validator that produced this output (e.g., `"0.4.0"`) |
 | `status` | string | Overall result: `"PASS"`, `"FAIL"`, or `"ERROR"` |
 | `file` | string | The file path as provided to the CLI |
 | `format_detected` | string or null | `"spdx"`, `"cyclonedx"`, or `null` if detection failed |
@@ -231,6 +233,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS",
   "file": "sbom.spdx.json",
   "format_detected": "spdx",
@@ -242,6 +245,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "FAIL",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",
@@ -414,6 +418,7 @@ cat validator.log
 ```
 
 ```
+2026-04-08T14:22:01Z INFO     sbom_validator.cli — sbom-validator 0.4.0
 2026-04-08T14:22:01Z INFO     sbom_validator.validator — Validation started for: sbom.spdx.json
 2026-04-08T14:22:01Z INFO     sbom_validator.format_detector — Format detected: spdx (file: sbom.spdx.json)
 2026-04-08T14:22:01Z INFO     sbom_validator.schema_validator — Schema validation passed (0 issues)
@@ -474,23 +479,25 @@ When `--report-dir` is supplied, **both** an HTML report and a JSON report are a
 
 ### Filename convention
 
-Both files share a common stem derived from the validated file's base name and the UTC timestamp at the moment of report generation:
+Both files use a fixed stem derived from the validated file's base name:
 
 ```
-sbom-report-<basename>-<YYYYMMDD-HHMMSS>.html
-sbom-report-<basename>-<YYYYMMDD-HHMMSS>.json
+sbom-report-<basename>.html
+sbom-report-<basename>.json
 ```
 
-- `<basename>` is the filename without extension (e.g., `bom` for `bom.json`, `my-sbom` for `my-sbom.cdx.json`).
-- `<YYYYMMDD-HHMMSS>` is the UTC time at the moment `write_reports` is called (e.g., `20260408-142201`).
-- Both files always share the identical stem, so the pair is easy to identify.
+- `<basename>` is the filename without extension (e.g., `bom` for `bom.json`, `my-sbom.cdx` for `my-sbom.cdx.json`).
+- The names are stable across runs, so CI pipelines can reference them at a known path without globbing.
+- The `generated_at` field inside the report content still records the UTC timestamp of the run.
 
-Example: validating `bom.json` at 2026-04-08 14:22:01 UTC writes:
+Example: validating `bom.json` writes:
 
 ```
-reports/sbom-report-bom-20260408-142201.html
-reports/sbom-report-bom-20260408-142201.json
+reports/sbom-report-bom.html
+reports/sbom-report-bom.json
 ```
+
+If your workflow retains reports from multiple runs, point `--report-dir` at a run-scoped subdirectory (e.g., `--report-dir reports/$GITHUB_RUN_ID/`) rather than relying on filename uniqueness.
 
 ### Example invocation
 

@@ -65,6 +65,7 @@ class TestFullPassPipeline:
         assert data["issues"] == []
         assert data["format_detected"] == "spdx"
         assert "file" in data
+        assert "tool_version" in data
 
     def test_pass_cdx_json_output_structure(self, runner):
         result = runner.invoke(

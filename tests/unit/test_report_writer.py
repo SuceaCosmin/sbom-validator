@@ -102,38 +102,40 @@ class TestFileCreation:
         assert json_path.exists()
 
     def test_html_filename_matches_pattern(self, tmp_path: Path) -> None:
-        """HTML filename must follow ``sbom-report-<stem>-<YYYYMMDD-HHMMSS>.html``."""
+        """HTML filename must follow the fixed pattern ``sbom-report-<stem>.html``."""
         result = _pass_result(file_path="/data/bom.json")
         html_path, _ = write_reports(result, tmp_path)
-        pattern = re.compile(r"^sbom-report-bom-\d{8}-\d{6}\.html$")
-        assert pattern.match(html_path.name), f"Unexpected HTML filename: {html_path.name}"
+        assert html_path.name == "sbom-report-bom.html", (
+            f"Unexpected HTML filename: {html_path.name}"
+        )
 
     def test_json_filename_matches_pattern(self, tmp_path: Path) -> None:
-        """JSON filename must follow ``sbom-report-<stem>-<YYYYMMDD-HHMMSS>.json``."""
+        """JSON filename must follow the fixed pattern ``sbom-report-<stem>.json``."""
         result = _pass_result(file_path="/data/bom.json")
         _, json_path = write_reports(result, tmp_path)
-        pattern = re.compile(r"^sbom-report-bom-\d{8}-\d{6}\.json$")
-        assert pattern.match(json_path.name), f"Unexpected JSON filename: {json_path.name}"
+        assert json_path.name == "sbom-report-bom.json", (
+            f"Unexpected JSON filename: {json_path.name}"
+        )
 
-    def test_html_and_json_share_timestamp_in_name(self, tmp_path: Path) -> None:
-        """Both files must carry the identical <YYYYMMDD-HHMMSS> timestamp stem."""
+    def test_html_and_json_filenames_contain_no_timestamp(self, tmp_path: Path) -> None:
+        """Fixed filenames must not contain a timestamp segment."""
         result = _pass_result(file_path="/data/bom.json")
         html_path, json_path = write_reports(result, tmp_path)
-        # Extract the timestamp portion from each name
-        ts_pattern = re.compile(r"sbom-report-bom-(\d{8}-\d{6})\.")
-        html_ts = ts_pattern.search(html_path.name)
-        json_ts = ts_pattern.search(json_path.name)
-        assert html_ts is not None, f"Could not extract timestamp from HTML name: {html_path.name}"
-        assert json_ts is not None, f"Could not extract timestamp from JSON name: {json_path.name}"
-        assert html_ts.group(1) == json_ts.group(1), "HTML and JSON timestamps must be identical"
+        ts_pattern = re.compile(r"\d{8}-\d{6}")
+        assert not ts_pattern.search(html_path.name), (
+            f"HTML filename must not contain a timestamp: {html_path.name}"
+        )
+        assert not ts_pattern.search(json_path.name), (
+            f"JSON filename must not contain a timestamp: {json_path.name}"
+        )
 
     def test_stem_derived_from_file_path(self, tmp_path: Path) -> None:
         """The filename stem must be Path(result.file_path).stem."""
         result = _pass_result(file_path="/data/my-sbom.cdx.json")
         html_path, _ = write_reports(result, tmp_path)
         # Path("my-sbom.cdx.json").stem == "my-sbom.cdx"
-        assert html_path.name.startswith("sbom-report-my-sbom.cdx-"), (
-            f"Expected stem 'my-sbom.cdx' in filename, got: {html_path.name}"
+        assert html_path.name == "sbom-report-my-sbom.cdx.html", (
+            f"Expected fixed name 'sbom-report-my-sbom.cdx.html', got: {html_path.name}"
         )
 
     def test_report_dir_created_if_not_exists(self, tmp_path: Path) -> None:

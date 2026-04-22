@@ -206,7 +206,6 @@ def write_reports(
     """
     # Compute shared timestamp and stems once.
     now_utc = datetime.now(UTC)
-    timestamp = now_utc.strftime("%Y%m%d-%H%M%S")
     generated_at = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     stem = Path(result.file_path).stem
     version = _tool_version()
@@ -214,9 +213,9 @@ def write_reports(
     # Ensure destination directory exists.
     report_dir.mkdir(parents=True, exist_ok=True)
 
-    # Derive filenames.
-    html_path = report_dir / f"sbom-report-{stem}-{timestamp}.html"
-    json_path = report_dir / f"sbom-report-{stem}-{timestamp}.json"
+    # Derive filenames — fixed, predictable names for stable CI artefact references.
+    html_path = report_dir / f"sbom-report-{stem}.html"
+    json_path = report_dir / f"sbom-report-{stem}.json"
 
     # Expand format token.
     format_detected_expanded = _FORMAT_MAP.get(result.format_detected, None)

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from sbom_validator import __version__
 from sbom_validator.cli import main
 
 SPDX_FIXTURES = Path("tests/fixtures/spdx")
@@ -128,6 +129,21 @@ class TestCliJsonOutputPass:
         )
         data = json.loads(result.output)
         assert data["issues"] == []
+
+    def test_valid_spdx_json_has_tool_version_key(self, runner: CliRunner) -> None:
+        result = self._invoke_valid_spdx(runner)
+        data = json.loads(result.output)
+        assert "tool_version" in data
+
+    def test_valid_spdx_json_tool_version_matches_version(self, runner: CliRunner) -> None:
+        result = self._invoke_valid_spdx(runner)
+        data = json.loads(result.output)
+        assert data["tool_version"] == __version__
+
+    def test_valid_spdx_json_tool_version_is_first_key(self, runner: CliRunner) -> None:
+        result = self._invoke_valid_spdx(runner)
+        data = json.loads(result.output)
+        assert list(data.keys())[0] == "tool_version"
 
     def test_valid_cyclonedx_xml_json_format_detected_is_cyclonedx(self, runner: CliRunner) -> None:
         result = runner.invoke(
