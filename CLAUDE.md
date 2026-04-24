@@ -4,22 +4,27 @@
 > For full details, read the linked reference files.
 
 ## If You Are an AI Agent
-Stop. Read this section before doing anything.
 
 During activities in the project be sure to consider the following:
-- Keep explanations concise.
-- Challenge ambiguous/wrong prompts.
-- Challenge me when i come with improvement ideas for the repo. Do not accept all my requests by default but challenge a brainstorming sessions to ensure that whatever we build really generates added value.
+- Challenge ambiguous or wrong prompts.
+- Before implementing any non-trivial feature or refactor suggested by the user, raise at least one concrete question about the value or scope it adds.
 - Say it if anything is unclear so that we can further clarify it.
-- When evaluating an issue, perform a detailed root cause analysis. Do not stop at your first conclusion as it might be wrong. Higlighting as least 3 pottential reaspons and ask me if you are not sure which of the causes to fix. If you are sure, proceed without asking confirmation.
+- When evaluating an issue, perform a root cause analysis. Identify multiple hypotheses before settling on one; surface alternatives when the root cause is ambiguous. Ask which to pursue only when you cannot determine the most likely cause yourself — otherwise proceed.
 
+### OUTPUT RULES:
+- Feedback, confirmations, status: max 5 lines, no elaboration
+- Code: full verbosity always — comments, docstrings, descriptive names
+- Explanations when user asks to understand something: full verbosity
+- Never explain what you are about to do before doing it
+- Never summarize what you just did after doing it
+- No filler phrases: "Certainly!", "Great question", "Of course", "I'll now..."
 
 ## Project Identity
 
 `sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
 
 - **GitHub:** https://github.com/SuceaCosmin/sbom-validator
-- **Current version:** `0.4.0`
+- **Current version:** `0.4.0` (source of truth: `pyproject.toml`)
 - **Python:** 3.11+ (3.11 and 3.12 tested in CI)
 - **Package manager:** Poetry (src layout)
 
@@ -54,7 +59,7 @@ sbom-validator --version
 | `develop` | Integration branch — receives completed feature branches |
 | `feature/<kebab-case>` | All new work — branched from `develop`, merged back via PR |
 
-**Never commit directly to `develop` or `master`.** All work goes through feature branches and PRs.
+All work goes through feature branches and PRs.
 
 ## Mandatory Quality Gate
 
@@ -87,7 +92,7 @@ Never mix third-party and first-party imports in the same block.
 
 ## Architecture Constraints
 
-- **Two-stage pipeline:** format detection -> schema validation -> parsing -> NTIA checking
+- **Four-stage pipeline:** format detection → schema validation → parsing → NTIA checking
 - **Schema failure blocks NTIA stage entirely** (ADR-003)
 - **NTIA checker only operates on `NormalizedSBOM`** — never imports from parsers
 - **All data models are frozen dataclasses** — do not mutate (ADR-004)
@@ -125,9 +130,11 @@ This project uses a 12-agent, 11-gate delivery pipeline. Key rules:
 
 ## Key Reference Files
 
+**Read `docs/agent-briefing.md` before implementing anything** — it contains canonical function signatures and an ADR summary.
+
 | File | Purpose |
 |------|---------|
-| `docs/agent-briefing.md` | Canonical function signatures and ADR summary — **read before implementing** |
+| `docs/agent-briefing.md` | Canonical function signatures and ADR summary |
 | `docs/agent-operating-model.md` | Full gate model, retry policy, approval checkpoints |
 | `docs/requirements.md` | FR-01 to FR-14, NFR-01 to NFR-05, NTIA mapping |
 | `docs/architecture/ADR-*.md` | Full architectural decisions (9 ADRs) |
@@ -166,7 +173,7 @@ tests/
   fixtures/      # SPDX + CycloneDX valid/invalid SBOM files
 ```
 
-- **594+ tests, 96% coverage** (target: >= 90%)
+- Coverage target: >= 90% (run `poetry run pytest --cov=sbom_validator --cov-report=term` to see current numbers)
 - TDD discipline: tests written before implementation
 - Test file naming: `test_<module>_<concern>.py`
 - Shared fixtures in `tests/unit/conftest.py`
