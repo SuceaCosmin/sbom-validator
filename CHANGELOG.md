@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-29
+
 ### Added
 - Validation issues are now classified by category. Each `ValidationIssue` carries a `category` field with one of three values: `"FORMAT"` (format detection errors), `"SCHEMA"` (schema validation failures), or `"NTIA"` (NTIA minimum element failures). The `category` field appears in `--format json` stdout output, in the JSON report written by `--report-dir`, and groups issues in text and HTML output. (Issue #13)
 
@@ -137,7 +139,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.0...v0.2.2
