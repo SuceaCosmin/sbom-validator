@@ -216,55 +216,6 @@ class TestNtiaCheckerVersion:
 
 
 # ===========================================================================
-# TestNtiaCheckerIdentifiers (FR-07)
-# ===========================================================================
-
-
-class TestNtiaCheckerIdentifiers:
-    """FR-07: every component must have at least one entry in identifiers."""
-
-    def test_spdx_missing_identifiers_detected(self) -> None:
-        sbom = parse_spdx(SPDX_FIXTURES / "missing-identifiers.spdx.json")
-        issues = check_ntia(sbom)
-        assert any(i.rule == "FR-07" for i in issues)
-
-    def test_cdx_missing_identifiers_detected(self) -> None:
-        sbom = parse_cyclonedx(CDX_FIXTURES / "missing-identifiers.cdx.json")
-        issues = check_ntia(sbom)
-        assert any(i.rule == "FR-07" for i in issues)
-
-    def test_inline_empty_identifiers_detected(self) -> None:
-        component = NormalizedComponent(
-            component_id="pkg-1",
-            name="some-pkg",
-            version="1.0.0",
-            supplier="AcmeCorp",
-            identifiers=(),
-        )
-        sbom = _make_valid_sbom(components=(component,))
-        issues = check_ntia(sbom)
-        assert any(i.rule == "FR-07" for i in issues)
-
-    def test_valid_identifiers_produce_no_fr07_issue(self) -> None:
-        sbom = _make_valid_sbom()
-        issues = check_ntia(sbom)
-        assert not any(i.rule == "FR-07" for i in issues)
-
-    def test_identifier_issue_references_component(self) -> None:
-        component = NormalizedComponent(
-            component_id="pkg-noref",
-            name="noid-pkg",
-            version="0.1.0",
-            supplier="AcmeCorp",
-            identifiers=(),
-        )
-        sbom = _make_valid_sbom(components=(component,))
-        fr07_issues = [i for i in check_ntia(sbom) if i.rule == "FR-07"]
-        assert len(fr07_issues) >= 1
-        assert fr07_issues[0].field_path != ""
-
-
-# ===========================================================================
 # TestNtiaCheckerRelationships (FR-08)
 # ===========================================================================
 
@@ -389,11 +340,11 @@ class TestNtiaCheckerCollectAll:
     """Structural and completeness tests for the checker as a whole."""
 
     def _make_maximally_broken_sbom(self) -> NormalizedSBOM:
-        """Build an SBOM that fails FR-04, FR-06, FR-07, FR-08, FR-09, FR-10.
+        """Build an SBOM that fails FR-04, FR-06, FR-08, FR-09, FR-10.
 
-        The component has no supplier (FR-04), no version (FR-06), and no
-        identifiers (FR-07).  The document has no relationships (FR-08), no
-        author (FR-09), and no timestamp (FR-10).
+        The component has no supplier (FR-04) and no version (FR-06).
+        The document has no relationships (FR-08), no author (FR-09),
+        and no timestamp (FR-10).
         Note: FR-05 is satisfied because the component does have a name.
         """
         broken_component = NormalizedComponent(
@@ -416,7 +367,7 @@ class TestNtiaCheckerCollectAll:
         sbom = self._make_maximally_broken_sbom()
         issues = check_ntia(sbom)
         rules_found = {i.rule for i in issues}
-        for expected_rule in ("FR-04", "FR-06", "FR-07", "FR-08", "FR-09", "FR-10"):
+        for expected_rule in ("FR-04", "FR-06", "FR-08", "FR-09", "FR-10"):
             assert expected_rule in rules_found, (
                 f"{expected_rule} not reported; rules found: {rules_found}"
             )
@@ -494,7 +445,7 @@ class TestNtiaCheckerCollectAll:
             relationships=(NormalizedRelationship(from_id="doc", to_id="c1"),),
         )
         issues = check_ntia(sbom)
-        for per_component_rule in ("FR-04", "FR-06", "FR-07"):
+        for per_component_rule in ("FR-04", "FR-06"):
             count = sum(1 for i in issues if i.rule == per_component_rule)
             assert count == 2, (
                 f"{per_component_rule} reported {count} time(s); expected 2 "

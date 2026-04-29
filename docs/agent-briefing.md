@@ -107,7 +107,7 @@ All three types are `@dataclass(frozen=True)`.
 | `name` | `str \| None` | FR-05 |
 | `version` | `str \| None` | FR-06 |
 | `supplier` | `str \| None` | FR-04 |
-| `identifiers` | `tuple[str, ...]` | FR-07 |
+| `identifiers` | `tuple[str, ...]` | *(not enforced — FR-07 removed)* |
 
 **`NormalizedRelationship`**: `from_id: str`, `to_id: str`, `relationship_type: str`
 
@@ -120,7 +120,7 @@ All three types are `@dataclass(frozen=True)`.
 | FR-04 | Supplier Name | `packages[*].supplier` (strip `"Organization: "`/`"Tool: "` prefix; `NOASSERTION`→`None`) | `components[*].supplier.name` |
 | FR-05 | Component Name | `packages[*].name` | `components[*].name` |
 | FR-06 | Component Version | `packages[*].versionInfo` (`NOASSERTION`→`None`) | `components[*].version` |
-| FR-07 | Other Unique IDs | `packages[*].externalRefs` where category is `PACKAGE-MANAGER` (PURL) or `SECURITY` (CPE) | `components[*].purl` and/or `components[*].cpe` |
+| FR-07 | Other Unique IDs *(removed)* | — | — | Parsed but not validated; see issue #12 |
 | FR-08 | Dependency Relationships | `relationships[*]` with `relationshipType` in: `DEPENDS_ON`, `DYNAMIC_LINK`, `STATIC_LINK`, `RUNTIME_DEPENDENCY_OF`, `DEV_DEPENDENCY_OF` | `dependencies[*].dependsOn` — at least one non-empty entry |
 | FR-09 | Author of SBOM Data | `creationInfo.creators` entries starting with `"Tool:"` or `"Organization:"` | `metadata.authors[*].name` OR `metadata.manufacture.name` |
 | FR-10 | Timestamp | `creationInfo.created` (ISO 8601) | `metadata.timestamp` (ISO 8601) |

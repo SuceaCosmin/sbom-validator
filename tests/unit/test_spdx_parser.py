@@ -172,6 +172,45 @@ class TestParseSpdxBasic:
         rel_types = {r.relationship_type for r in result.relationships}
         assert "DESCRIBES" not in rel_types
 
+    def test_dependency_of_relationship_is_included(self, tmp_path: Path) -> None:
+        """DEPENDENCY_OF is the inverse of DEPENDS_ON and must be treated as qualifying.
+
+        Syft and other generators emit DEPENDENCY_OF; omitting it causes a false
+        'no dependency relationships' FR-08 error on otherwise-valid SBOMs.
+        """
+        fixture = {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "test-doc",
+            "documentNamespace": "https://example.com/test",
+            "creationInfo": {
+                "created": "2024-01-01T00:00:00Z",
+                "creators": ["Tool: test-tool"],
+            },
+            "packages": [
+                {
+                    "SPDXID": "SPDXRef-pkg-a",
+                    "name": "pkg-a",
+                    "versionInfo": "1.0.0",
+                    "downloadLocation": "https://example.com/pkg-a",
+                    "filesAnalyzed": False,
+                }
+            ],
+            "relationships": [
+                {
+                    "spdxElementId": "SPDXRef-pkg-a",
+                    "relationshipType": "DEPENDENCY_OF",
+                    "relatedSpdxElement": "SPDXRef-DOCUMENT",
+                }
+            ],
+        }
+        spdx_file = tmp_path / "dependency-of.spdx.json"
+        spdx_file.write_text(json.dumps(fixture))
+        result = parse_spdx(spdx_file)
+        rel_types = {r.relationship_type for r in result.relationships}
+        assert "DEPENDENCY_OF" in rel_types
+
     def test_relationship_is_normalized_relationship_instance(self, fixtures_path: Path) -> None:
         """Each entry in result.relationships must be a NormalizedRelationship instance."""
         result = parse_spdx(fixtures_path / "valid-minimal.spdx.json")
