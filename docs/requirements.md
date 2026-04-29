@@ -120,6 +120,29 @@ The tool **must** collect and report **all** validation issues in a single run r
 - If **schema validation fails** (FR-02 or FR-03), the tool **must not** proceed to NTIA element checking (FR-04 through FR-10). A schema-invalid document cannot be reliably parsed for NTIA fields, making NTIA results unreliable. The tool reports schema issues and exits.
 - If schema validation passes, **all** NTIA issues **must** be collected before the tool exits.
 
+### FR-15 — Format Support: SPDX 3.x JSON-LD
+
+The tool **must** detect, schema-validate, parse, and NTIA-check SBOM files serialized in
+SPDX 3.x JSON-LD format. Detection is based on the presence of a `"@context"` key at the
+document root with the value `"https://spdx.org/rdf/3.0.1/spdx-context.jsonld"`. The
+detected format string is `"spdx3-jsonld"`.
+
+- Schema validation **must** use `jsonschema.Draft202012Validator` against the bundled
+  `spdx-3.0.1.schema.json` schema file. The existing `Draft7Validator` path **must not** be
+  used for SPDX 3.x documents.
+- The parser **must** implement a two-pass `@graph` traversal: index all elements by
+  `spdxId` in Pass 1; resolve cross-references (e.g., `suppliedBy`, `createdBy`) in Pass 2.
+- A broken `spdxId` cross-reference (reference target absent from `@graph`) **must** be
+  treated as `None` for the affected `NormalizedSBOM` field, not as an error at the parser
+  layer. The NTIA checker will surface a compliance failure if a mandatory NTIA field is
+  `None`.
+- When multiple `SpdxDocument`-typed elements are present in `@graph`, the tool **must**
+  use the first and emit a WARNING-severity log entry.
+- The tool **must not** make any network request to the SPDX context URL or any external
+  schema source (see NFR-04).
+
+See ADR-010 for the full design rationale, interface contracts, and NTIA field mapping.
+
 ---
 
 ## 4. Non-Functional Requirements

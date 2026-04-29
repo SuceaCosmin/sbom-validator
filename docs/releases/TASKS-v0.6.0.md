@@ -57,7 +57,7 @@
 |----|------|-------|--------|--------------|--------|--------------|---------------------|
 | 0.A1 | Create feature branch `feature/spdx3-jsonld` from `develop` | Developer | `feature/spdx3-jsonld` | None | ✅ | Branch exists locally | `git branch` shows `feature/spdx3-jsonld` |
 | 0.A2 | Create `docs/releases/TASKS-v0.6.0.md` | Developer | `feature/spdx3-jsonld` | 0.A1 | ✅ | This file | File exists and all task IDs are listed |
-| 1.B1 | Write ADR-010, amend ADR-001, add FR-11 to requirements.md | Architect | `feature/spdx3-jsonld` | 0.A2 | 🔄 | `docs/architecture/ADR-010-spdx3-jsonld-support.md`, ADR-001 amendment, `docs/requirements.md` FR-11 | ADR committed; all interface stubs, resolution contracts, and detection fingerprint documented |
+| 1.B1 | Write ADR-010, amend ADR-001, add FR-15 to requirements.md | Architect | `feature/spdx3-jsonld` | 0.A2 | ✅ | `docs/architecture/ADR-010-spdx3-jsonld-support.md`, ADR-001 amendment, `docs/requirements.md` FR-15 | ADR committed; all interface stubs, resolution contracts, and detection fingerprint documented |
 | 2.C1 | Write failing tests for new SPDX 3.x constants | Tester | `feature/spdx3-jsonld` | 1.B1 | ⏳ | `tests/unit/test_constants_spdx3.py` | Tests fail (constants not yet defined); ruff+mypy pass on test file |
 | 2.C2 | Implement new constants in `constants.py` | Developer | `feature/spdx3-jsonld` | 2.C1 | ⏳ | `src/sbom_validator/constants.py` updated | `test_constants_spdx3.py` passes; ruff+mypy pass |
 | 2.C3 | Bundle SPDX 3.0.1 JSON Schema | Developer | `feature/spdx3-jsonld` | 1.B1 | ✅ | `src/sbom_validator/schemas/spdx-3.0.1.schema.json` | File is valid JSON; present in repo |
@@ -93,8 +93,8 @@
 - Status: ✅ PASS
 
 ### G2 Architecture
-- Evidence:
-- Status: 🔄 IN PROGRESS (ADR-010 being written — task 1.B1)
+- Evidence: ADR-010 written (`docs/architecture/ADR-010-spdx3-jsonld-support.md`). ADR-001 amended with new detection priority order. FR-15 added to `docs/requirements.md`. All interface stubs, resolution contracts, detection fingerprint, and NTIA field mapping documented. FR-11 collision resolved (FR-11 is Structured JSON Output Mode; SPDX 3.x requirement is FR-15).
+- Status: ✅ PASS
 
 ### G3 TDD Build
 - Evidence:
