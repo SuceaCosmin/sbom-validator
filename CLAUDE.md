@@ -24,7 +24,7 @@ During activities in the project be sure to consider the following:
 `sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
 
 - **GitHub:** https://github.com/SuceaCosmin/sbom-validator
-- **Current version:** `0.4.0` (source of truth: `pyproject.toml`)
+- **Current version:** `0.5.0` (source of truth: `pyproject.toml`)
 - **Python:** 3.11+ (3.11 and 3.12 tested in CI)
 - **Package manager:** Poetry (src layout)
 

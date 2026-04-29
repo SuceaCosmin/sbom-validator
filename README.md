@@ -129,13 +129,14 @@ Issues (3):
 
 ```json
 {
-  "tool_version": "0.4.0",
+  "tool_version": "0.5.0",
   "status": "FAIL",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",
   "issues": [
     {
       "severity": "ERROR",
+      "category": "NTIA",
       "field_path": "components[2].supplier",
       "message": "Component 'libfoo' is missing a supplier name (NTIA FR-04)",
       "rule": "FR-04"
