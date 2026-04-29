@@ -18,6 +18,7 @@ from sbom_validator.models import NormalizedComponent, NormalizedRelationship, N
 _QUALIFYING_RELATIONSHIP_TYPES: frozenset[str] = frozenset(
     {
         "DEPENDS_ON",
+        "DEPENDENCY_OF",
         "DYNAMIC_LINK",
         "STATIC_LINK",
         "RUNTIME_DEPENDENCY_OF",

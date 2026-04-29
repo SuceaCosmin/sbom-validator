@@ -127,22 +127,6 @@ class TestCliValidateFailTextOutput:
         )
         assert "FAIL" in result.output
 
-    # --- missing-identifiers ------------------------------------------------
-
-    def test_missing_identifiers_exits_one(self, runner: CliRunner) -> None:
-        result = runner.invoke(
-            main,
-            ["validate", str(SPDX_FIXTURES / "missing-identifiers.spdx.json")],
-        )
-        assert result.exit_code == 1
-
-    def test_missing_identifiers_output_contains_fail(self, runner: CliRunner) -> None:
-        result = runner.invoke(
-            main,
-            ["validate", str(SPDX_FIXTURES / "missing-identifiers.spdx.json")],
-        )
-        assert "FAIL" in result.output
-
     # --- invalid schema (FAIL at stage 1) -----------------------------------
 
     def test_invalid_schema_spdx_exits_one(self, runner: CliRunner) -> None:

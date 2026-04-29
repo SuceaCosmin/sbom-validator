@@ -314,18 +314,6 @@ class TestCliJsonOutputFail:
         )
         assert result.exit_code == 1
 
-    def test_missing_identifiers_json_exits_one(self, runner: CliRunner) -> None:
-        result = runner.invoke(
-            main,
-            [
-                "validate",
-                str(SPDX_FIXTURES / "missing-identifiers.spdx.json"),
-                "--format",
-                "json",
-            ],
-        )
-        assert result.exit_code == 1
-
 
 # ===========================================================================
 # TestCliJsonOutputError

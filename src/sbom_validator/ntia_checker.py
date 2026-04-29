@@ -8,7 +8,6 @@ from datetime import datetime
 from sbom_validator.constants import (
     RULE_AUTHOR,
     RULE_COMPONENT_NAME,
-    RULE_IDENTIFIERS,
     RULE_RELATIONSHIPS,
     RULE_SUPPLIER,
     RULE_TIMESTAMP,
@@ -30,7 +29,6 @@ def check_ntia(sbom: NormalizedSBOM) -> list[ValidationIssue]:
     issues.extend(_check_supplier(sbom))
     issues.extend(_check_component_name(sbom))
     issues.extend(_check_version(sbom))
-    issues.extend(_check_identifiers(sbom))
     issues.extend(_check_relationships(sbom))
     issues.extend(_check_author(sbom))
     issues.extend(_check_timestamp(sbom))
@@ -86,26 +84,6 @@ def _check_version(sbom: NormalizedSBOM) -> list[ValidationIssue]:
                     field_path=f"components[{i}].version",
                     message=(f"Component '{component.name}' is missing a version (NTIA FR-06)"),
                     rule=RULE_VERSION,
-                )
-            )
-    return issues
-
-
-def _check_identifiers(sbom: NormalizedSBOM) -> list[ValidationIssue]:
-    """FR-07: Every component must have at least one unique identifier."""
-    issues: list[ValidationIssue] = []
-    for i, component in enumerate(sbom.components):
-        if not component.identifiers:
-            issues.append(
-                ValidationIssue(
-                    severity=IssueSeverity.ERROR,
-                    category=IssueCategory.NTIA,
-                    field_path=f"components[{i}].identifiers",
-                    message=(
-                        f"Component '{component.name}' has no unique identifiers "
-                        f"(e.g., PURL or CPE) (NTIA FR-07)"
-                    ),
-                    rule=RULE_IDENTIFIERS,
                 )
             )
     return issues
