@@ -1,0 +1,15 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "https://example.org/spdxdoc/minimal",
+      "creationInfo": {
+        "specVersion": "3.0.1",
+        "created": "2024-01-01T00:00:00Z",
+        "createdBy": []
+      },
+      "name": "minimal-spdx3-document"
+    }
+  ]
+}

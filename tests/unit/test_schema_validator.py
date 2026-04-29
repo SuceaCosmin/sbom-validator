@@ -29,7 +29,7 @@ from unittest.mock import patch
 
 import pytest
 
-from sbom_validator.models import IssueSeverity, ValidationIssue
+from sbom_validator.models import IssueCategory, IssueSeverity, ValidationIssue
 from sbom_validator.schema_validator import validate_schema
 
 # ---------------------------------------------------------------------------
@@ -54,9 +54,10 @@ def cdx_fixtures() -> Path:
 # ---------------------------------------------------------------------------
 
 
-def _load(path: Path) -> dict:
+def _load(path: Path) -> dict[str, object]:
     """Load a JSON fixture file and return the parsed dict."""
-    return json.loads(path.read_text(encoding="utf-8"))
+    result: dict[str, object] = json.loads(path.read_text(encoding="utf-8"))
+    return result
 
 
 def _load_text(path: Path) -> str:
@@ -304,7 +305,7 @@ class TestValidateSchemaCollectsAll:
         explicit about the collect-all requirement.
         """
         # Missing: spdxVersion, SPDXID, dataLicense — three required root fields
-        doc: dict = {
+        doc: dict[str, object] = {
             "name": "broken-spdx",
             "documentNamespace": "https://example.com/broken",
             "creationInfo": {
@@ -324,7 +325,7 @@ class TestValidateSchemaCollectsAll:
         """A document missing multiple required CycloneDX root properties must
         produce at least one issue per missing property (i.e. >= 2 issues)."""
         # Missing: bomFormat, specVersion — two required root fields
-        doc: dict = {
+        doc: dict[str, object] = {
             "version": 1,
             "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
             "metadata": {
@@ -390,3 +391,158 @@ class TestSchemaValidatorFrozenPath:
             result = _schemas_dir()
 
         assert result == Path(fake_meipass) / "schemas"
+
+
+# ---------------------------------------------------------------------------
+# TestValidateSchemaSPDX3JsonLD
+# ---------------------------------------------------------------------------
+
+
+class TestValidateSchemaSPDX3JsonLD:
+    """Schema-validation tests for SPDX 3.x JSON-LD documents (FR-15).
+
+    These tests are written TDD-style and will FAIL until the developer adds
+    FORMAT_SPDX3_JSONLD ("spdx3-jsonld") to the _known tuple inside
+    validate_schema() and wires up the SPDX 3.x schema loader.
+
+    Relevant requirements: FR-15 (SPDX 3.x schema validation).
+    """
+
+    # ------------------------------------------------------------------
+    # FR-15-T01: recognised format — must NOT raise ValueError
+    # ------------------------------------------------------------------
+
+    def test_spdx3_jsonld_is_recognised_format(self) -> None:
+        """Passing format_name="spdx3-jsonld" must not raise ValueError.
+
+        Currently validate_schema() only knows 'spdx', 'spdx-yaml', 'spdx-tv',
+        and 'cyclonedx', so this test will FAIL until "spdx3-jsonld" is added
+        to the _known tuple in validate_schema().
+        """
+        minimal_valid: dict[str, object] = {
+            "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+        }
+        # Must not raise — any return value is acceptable here
+        try:
+            validate_schema(minimal_valid, "spdx3-jsonld")
+        except ValueError as exc:
+            raise AssertionError(
+                f'"spdx3-jsonld" is not recognised by validate_schema(): {exc}'
+            ) from exc
+
+    # ------------------------------------------------------------------
+    # FR-15-T02: valid minimal document returns empty list
+    # ------------------------------------------------------------------
+
+    def test_valid_spdx3_minimal_returns_empty_list(self) -> None:
+        """A minimal SPDX 3.x JSON-LD document (only @context) must produce no issues.
+
+        The SPDX 3.x schema requires only "@context" at root level, so a document
+        containing just that field is schema-valid.
+        """
+        minimal_valid: dict[str, object] = {
+            "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+        }
+        result = validate_schema(minimal_valid, "spdx3-jsonld")
+        assert result == [], f"Expected empty list for a valid SPDX 3.x document, got: {result}"
+
+    # ------------------------------------------------------------------
+    # FR-15-T03: invalid document (missing @context) returns issues
+    # ------------------------------------------------------------------
+
+    def test_invalid_spdx3_missing_context_returns_issues(self) -> None:
+        """A dict without "@context" must produce at least one ValidationIssue.
+
+        The SPDX 3.x schema marks "@context" as a required field, so an empty
+        dict is schema-invalid and must produce at least one issue.
+        """
+        result = validate_schema({}, "spdx3-jsonld")
+        assert isinstance(result, list)
+        assert len(result) > 0, "Expected at least one schema issue for a document missing @context"
+
+    # ------------------------------------------------------------------
+    # FR-15-T04: issues carry RULE_SPDX3_SCHEMA ("FR-15")
+    # ------------------------------------------------------------------
+
+    def test_invalid_spdx3_issues_have_rule_fr15(self) -> None:
+        """Every ValidationIssue for an invalid SPDX 3.x document must have rule="FR-15"."""
+        result = validate_schema({}, "spdx3-jsonld")
+        assert len(result) > 0, "Expected at least one issue for a document missing @context"
+        for issue in result:
+            assert issue.rule == "FR-15", (
+                f"Expected rule 'FR-15', got {issue.rule!r} for issue: {issue}"
+            )
+
+    # ------------------------------------------------------------------
+    # FR-15-T05: issues have SCHEMA category
+    # ------------------------------------------------------------------
+
+    def test_invalid_spdx3_issues_have_schema_category(self) -> None:
+        """Every ValidationIssue for an invalid SPDX 3.x document must have
+        category == IssueCategory.SCHEMA."""
+        result = validate_schema({}, "spdx3-jsonld")
+        assert len(result) > 0, "Expected at least one issue for a document missing @context"
+        for issue in result:
+            assert issue.category == IssueCategory.SCHEMA, (
+                f"Expected category SCHEMA, got {issue.category!r} for issue: {issue}"
+            )
+
+    # ------------------------------------------------------------------
+    # FR-15-T06: issues have ERROR severity
+    # ------------------------------------------------------------------
+
+    def test_invalid_spdx3_issues_have_error_severity(self) -> None:
+        """Every ValidationIssue for an invalid SPDX 3.x document must have
+        severity == IssueSeverity.ERROR."""
+        result = validate_schema({}, "spdx3-jsonld")
+        assert len(result) > 0, "Expected at least one issue for a document missing @context"
+        for issue in result:
+            assert issue.severity == IssueSeverity.ERROR, (
+                f"Expected severity ERROR, got {issue.severity!r} for issue: {issue}"
+            )
+
+    # ------------------------------------------------------------------
+    # FR-15-T07: issues are ValidationIssue instances
+    # ------------------------------------------------------------------
+
+    def test_invalid_spdx3_returns_validation_issue_instances(self) -> None:
+        """Each item in the returned list must be a ValidationIssue instance."""
+        result = validate_schema({}, "spdx3-jsonld")
+        assert len(result) > 0, "Expected at least one issue for a document missing @context"
+        for item in result:
+            assert isinstance(item, ValidationIssue), (
+                f"Expected ValidationIssue instance, got {type(item).__name__}: {item!r}"
+            )
+
+    # ------------------------------------------------------------------
+    # FR-15-T08: wrong @context value is also invalid
+    # ------------------------------------------------------------------
+
+    def test_invalid_spdx3_wrong_context_value_returns_issues(self) -> None:
+        """A document with an incorrect @context URL must produce schema issues.
+
+        The schema constrains "@context" to the exact value
+        "https://spdx.org/rdf/3.0.1/spdx-context.jsonld" via a 'const' keyword.
+        Any other value is schema-invalid.
+        """
+        wrong_context: dict[str, object] = {"@context": "https://example.com/wrong-context"}
+        result = validate_schema(wrong_context, "spdx3-jsonld")
+        assert len(result) > 0, "Expected schema issues when @context has the wrong value"
+        for issue in result:
+            assert issue.rule == "FR-15"
+
+    # ------------------------------------------------------------------
+    # FR-15-T09: valid @graph document returns empty list
+    # ------------------------------------------------------------------
+
+    def test_valid_spdx3_with_empty_graph_returns_empty_list(self) -> None:
+        """A document with the correct @context and an empty @graph array must
+        produce no schema issues (empty array satisfies the items constraint)."""
+        doc_with_empty_graph: dict[str, object] = {
+            "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+            "@graph": [],
+        }
+        result = validate_schema(doc_with_empty_graph, "spdx3-jsonld")
+        assert result == [], (
+            f"Expected no issues for a valid SPDX 3.x document with empty @graph, got: {result}"
+        )
