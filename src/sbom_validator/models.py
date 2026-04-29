@@ -22,11 +22,20 @@ class IssueSeverity(StrEnum):
     INFO = "INFO"
 
 
+class IssueCategory(StrEnum):
+    """Category of a validation issue — which pipeline stage produced it."""
+
+    SCHEMA = "SCHEMA"
+    NTIA = "NTIA"
+    FORMAT = "FORMAT"
+
+
 @dataclass(frozen=True)
 class ValidationIssue:
     """A single validation finding."""
 
     severity: IssueSeverity
+    category: IssueCategory
     field_path: str
     message: str
     rule: str = ""

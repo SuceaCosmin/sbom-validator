@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from click.testing import CliRunner
@@ -214,3 +215,28 @@ class TestCliValidateErrorCases:
         f.write_text("{}")
         result = runner.invoke(main, ["validate", str(f)])
         assert result.exit_code == 2
+
+
+# ===========================================================================
+# TestCliTextCategoryGrouping
+# ===========================================================================
+
+
+class TestCliTextCategoryGrouping:
+    """Text output groups issues under labelled category headers."""
+
+    def test_ntia_failure_shows_ntia_compliance_issues_header(self, runner: CliRunner) -> None:
+        result = runner.invoke(
+            main, ["validate", str(SPDX_FIXTURES / "missing-supplier.spdx.json")]
+        )
+        assert "NTIA Compliance Issues" in result.output
+
+    def test_schema_failure_shows_schema_issues_header(self, runner: CliRunner) -> None:
+        result = runner.invoke(main, ["validate", str(SPDX_FIXTURES / "invalid-schema.spdx.json")])
+        assert "Schema Issues" in result.output
+
+    def test_category_header_includes_count(self, runner: CliRunner) -> None:
+        result = runner.invoke(
+            main, ["validate", str(SPDX_FIXTURES / "missing-supplier.spdx.json")]
+        )
+        assert re.search(r"NTIA Compliance Issues \(\d+\)", result.output)

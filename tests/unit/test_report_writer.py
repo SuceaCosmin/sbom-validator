@@ -20,7 +20,13 @@ import re
 from pathlib import Path
 from unittest.mock import patch
 
-from sbom_validator.models import IssueSeverity, ValidationIssue, ValidationResult, ValidationStatus
+from sbom_validator.models import (
+    IssueCategory,
+    IssueSeverity,
+    ValidationIssue,
+    ValidationResult,
+    ValidationStatus,
+)
 from sbom_validator.report_writer import write_reports  # will cause ImportError until implemented
 
 # ---------------------------------------------------------------------------
@@ -29,18 +35,21 @@ from sbom_validator.report_writer import write_reports  # will cause ImportError
 
 _ISSUE_ERROR = ValidationIssue(
     severity=IssueSeverity.ERROR,
+    category=IssueCategory.SCHEMA,
     field_path="packages.0.name",
     message="Field 'name' is required",
     rule="FR-02",
 )
 _ISSUE_WARNING = ValidationIssue(
     severity=IssueSeverity.WARNING,
+    category=IssueCategory.NTIA,
     field_path="packages.0.supplier",
     message="Supplier is missing",
     rule="FR-06",
 )
 _ISSUE_INFO = ValidationIssue(
     severity=IssueSeverity.INFO,
+    category=IssueCategory.NTIA,
     field_path="creationInfo",
     message="Optional field absent",
     rule="FR-09",
@@ -416,6 +425,7 @@ class TestHtmlReportContent:
     def test_html_humanizes_xml_field_paths_and_messages(self, tmp_path: Path) -> None:
         xml_issue = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
             field_path=(
                 "/{http://cyclonedx.org/schema/bom/1.6}bom/"
                 "{http://cyclonedx.org/schema/bom/1.6}components/"
@@ -441,6 +451,7 @@ class TestHtmlReportContent:
     def test_html_hides_ntia_rule_ids_and_adds_supplier_hint(self, tmp_path: Path) -> None:
         ntia_issue = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.NTIA,
             field_path="components[0].supplier",
             message="Component 'requests' is missing a supplier name (NTIA FR-04)",
             rule="FR-04",
@@ -463,6 +474,7 @@ class TestHtmlReportContent:
     def test_html_places_message_and_hint_in_separate_columns(self, tmp_path: Path) -> None:
         xml_issue = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
             field_path="packages.0",
             message="'SPDXID' is a required property",
             rule="FR-02",
@@ -519,6 +531,108 @@ class TestReturnValue:
         result = _pass_result()
         _, json_path = write_reports(result, tmp_path)
         assert json_path.exists()
+
+
+# ===========================================================================
+# TestCategoryInReports
+# ===========================================================================
+
+
+class TestCategoryInReports:
+    """category field appears in JSON report; HTML groups issues by category."""
+
+    def _load_json(self, result: ValidationResult, tmp_path: Path) -> dict:
+        _, json_path = write_reports(result, tmp_path)
+        return json.loads(json_path.read_text(encoding="utf-8"))
+
+    def _load_html(self, result: ValidationResult, tmp_path: Path) -> str:
+        html_path, _ = write_reports(result, tmp_path)
+        return html_path.read_text(encoding="utf-8")
+
+    def test_json_issue_has_category_key(self, tmp_path: Path) -> None:
+        data = self._load_json(_fail_result(), tmp_path)
+        assert "category" in data["issues"][0]
+
+    def test_json_issue_category_schema_value(self, tmp_path: Path) -> None:
+        data = self._load_json(_fail_result(), tmp_path)
+        schema_issues = [i for i in data["issues"] if i["category"] == "SCHEMA"]
+        assert len(schema_issues) > 0
+
+    def test_json_issue_category_ntia_value(self, tmp_path: Path) -> None:
+        result = ValidationResult(
+            status=ValidationStatus.FAIL,
+            file_path="/tmp/bom.json",
+            format_detected="spdx",
+            issues=(_ISSUE_WARNING,),
+        )
+        data = self._load_json(result, tmp_path)
+        assert data["issues"][0]["category"] == "NTIA"
+
+    def test_json_issue_category_format_value(self, tmp_path: Path) -> None:
+        format_issue = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            category=IssueCategory.FORMAT,
+            field_path="",
+            message="Unsupported format",
+            rule="FR-01",
+        )
+        result = ValidationResult(
+            status=ValidationStatus.ERROR,
+            file_path="/tmp/bom.json",
+            format_detected=None,
+            issues=(format_issue,),
+        )
+        data = self._load_json(result, tmp_path)
+        assert data["issues"][0]["category"] == "FORMAT"
+
+    def test_html_contains_schema_issues_section_header(self, tmp_path: Path) -> None:
+        html = self._load_html(_fail_result(), tmp_path)
+        assert "Schema Issues" in html
+
+    def test_html_contains_ntia_issues_section_header(self, tmp_path: Path) -> None:
+        result = ValidationResult(
+            status=ValidationStatus.FAIL,
+            file_path="/tmp/bom.json",
+            format_detected="spdx",
+            issues=(_ISSUE_WARNING,),
+        )
+        html = self._load_html(result, tmp_path)
+        assert "NTIA Compliance Issues" in html
+
+    def test_html_contains_format_errors_section_header(self, tmp_path: Path) -> None:
+        format_issue = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            category=IssueCategory.FORMAT,
+            field_path="",
+            message="Unsupported format",
+            rule="FR-01",
+        )
+        result = ValidationResult(
+            status=ValidationStatus.ERROR,
+            file_path="/tmp/bom.json",
+            format_detected=None,
+            issues=(format_issue,),
+        )
+        html = self._load_html(result, tmp_path)
+        assert "Format / Detection Errors" in html
+
+    def test_html_schema_section_appears_before_ntia_section(self, tmp_path: Path) -> None:
+        result = ValidationResult(
+            status=ValidationStatus.FAIL,
+            file_path="/tmp/bom.json",
+            format_detected="spdx",
+            issues=(_ISSUE_WARNING, _ISSUE_ERROR),
+        )
+        html = self._load_html(result, tmp_path)
+        schema_pos = html.find("Schema Issues")
+        ntia_pos = html.find("NTIA Compliance Issues")
+        assert schema_pos != -1
+        assert ntia_pos != -1
+        assert schema_pos < ntia_pos
+
+    def test_html_category_section_shows_count(self, tmp_path: Path) -> None:
+        html = self._load_html(_fail_result(), tmp_path)
+        assert "(1)" in html
 
 
 # ===========================================================================
