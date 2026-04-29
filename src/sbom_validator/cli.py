@@ -11,8 +11,9 @@ from typing import Any
 import click
 
 from sbom_validator import __version__
+from sbom_validator.constants import CATEGORY_LABELS, CATEGORY_ORDER
 from sbom_validator.logging_config import configure_logging
-from sbom_validator.models import IssueCategory, ValidationIssue, ValidationResult, ValidationStatus
+from sbom_validator.models import ValidationIssue, ValidationResult, ValidationStatus
 from sbom_validator.presentation import humanize_field_path, humanize_message
 from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
@@ -49,15 +50,6 @@ def _exit_code(result: ValidationResult) -> int:
     return 2  # ERROR
 
 
-_CATEGORY_LABELS: dict[str, str] = {
-    IssueCategory.SCHEMA: "Schema Issues",
-    IssueCategory.NTIA: "NTIA Compliance Issues",
-    IssueCategory.FORMAT: "Format / Detection Errors",
-}
-
-_CATEGORY_ORDER: list[str] = [IssueCategory.FORMAT, IssueCategory.SCHEMA, IssueCategory.NTIA]
-
-
 def _render_text(result: ValidationResult) -> str:
     """Render a human-readable text report.
 
@@ -75,11 +67,11 @@ def _render_text(result: ValidationResult) -> str:
         grouped: dict[str, list[ValidationIssue]] = {}
         for issue in result.issues:
             grouped.setdefault(issue.category.value, []).append(issue)
-        for cat in _CATEGORY_ORDER:
+        for cat in CATEGORY_ORDER:
             cat_issues = grouped.get(cat, [])
             if not cat_issues:
                 continue
-            label = _CATEGORY_LABELS.get(cat, cat)
+            label = CATEGORY_LABELS.get(cat, cat)
             lines.append(f"\n{label} ({len(cat_issues)})")
             for issue in cat_issues:
                 lines.append(

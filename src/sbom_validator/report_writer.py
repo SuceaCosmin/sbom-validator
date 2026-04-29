@@ -13,8 +13,8 @@ import string
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sbom_validator.constants import FORMAT_CYCLONEDX, FORMAT_SPDX
-from sbom_validator.models import IssueCategory, IssueSeverity, ValidationIssue, ValidationResult
+from sbom_validator.constants import CATEGORY_LABELS, CATEGORY_ORDER, FORMAT_CYCLONEDX, FORMAT_SPDX
+from sbom_validator.models import IssueSeverity, ValidationIssue, ValidationResult
 from sbom_validator.presentation import (
     humanize_field_path,
     humanize_message,
@@ -42,18 +42,6 @@ _SEVERITY_ORDER: dict[str, int] = {
     IssueSeverity.WARNING: 1,
     IssueSeverity.INFO: 2,
 }
-
-# ---------------------------------------------------------------------------
-# Issue category display labels and ordering
-# ---------------------------------------------------------------------------
-
-_CATEGORY_LABELS: dict[str, str] = {
-    IssueCategory.FORMAT: "Format / Detection Errors",
-    IssueCategory.SCHEMA: "Schema Issues",
-    IssueCategory.NTIA: "NTIA Compliance Issues",
-}
-
-_CATEGORY_ORDER: list[str] = [IssueCategory.FORMAT, IssueCategory.SCHEMA, IssueCategory.NTIA]
 
 # ---------------------------------------------------------------------------
 # Status badge colours (ADR-007 §HTML Report Structure)
@@ -257,11 +245,11 @@ def write_reports(
             grouped.setdefault(str(issue.category), []).append(issue)
 
         section_parts: list[str] = []
-        for cat in _CATEGORY_ORDER:
+        for cat in CATEGORY_ORDER:
             cat_issues = grouped.get(cat, [])
             if not cat_issues:
                 continue
-            label = _CATEGORY_LABELS.get(cat, cat)
+            label = CATEGORY_LABELS.get(cat, cat)
             rows_parts: list[str] = []
             for issue in cat_issues:
                 friendly_message = humanize_message(issue.message)
