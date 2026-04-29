@@ -101,7 +101,7 @@ Without a shared intermediate representation, every NTIA rule would need two par
 | `name` | `str \| None` | Component Name (FR-05) | `None` when absent in source |
 | `version` | `str \| None` | Component Version (FR-06) | SPDX `NOASSERTION` normalized to `None` |
 | `supplier` | `str \| None` | Supplier Name (FR-04) | SPDX `"Organization: "` / `"Tool: "` prefixes stripped |
-| `identifiers` | `tuple[str, ...]` | Other Unique Identifiers (FR-07) | PURLs and CPEs; empty tuple if none |
+| `identifiers` | `tuple[str, ...]` | *(not enforced — FR-07 removed)* | PURLs and CPEs parsed by the format parsers; empty tuple if none. Not validated against NTIA. |
 
 **`NormalizedRelationship`** — a declared dependency edge
 

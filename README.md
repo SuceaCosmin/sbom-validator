@@ -42,7 +42,7 @@ The file is checked against the seven elements mandated by the NTIA "Framing Sof
 | Supplier Name | FR-04 | Every component must have a non-empty supplier |
 | Component Name | FR-05 | Every component must have a non-empty name |
 | Component Version | FR-06 | Every component must have a non-empty version |
-| Unique Identifiers | FR-07 | Every component must have at least one PURL or CPE |
+| Unique Identifiers | ~~FR-07~~ | *Not enforced — NTIA treats this as a best-practice recommendation* |
 | Dependency Relationships | FR-08 | The SBOM must declare at least one relationship |
 | Author | FR-09 | The SBOM must identify at least one author |
 | Timestamp | FR-10 | The SBOM must include a creation timestamp |
