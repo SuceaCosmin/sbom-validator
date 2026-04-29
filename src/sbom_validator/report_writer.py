@@ -13,8 +13,8 @@ import string
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sbom_validator.constants import FORMAT_CYCLONEDX, FORMAT_SPDX
-from sbom_validator.models import IssueSeverity, ValidationResult
+from sbom_validator.constants import CATEGORY_LABELS, CATEGORY_ORDER, FORMAT_CYCLONEDX, FORMAT_SPDX
+from sbom_validator.models import IssueSeverity, ValidationIssue, ValidationResult
 from sbom_validator.presentation import (
     humanize_field_path,
     humanize_message,
@@ -108,6 +108,8 @@ _HTML_TEMPLATE = string.Template("""\
     .sev-WARNING { color: #e65100; font-weight: bold; }
     .sev-INFO    { color: #1565c0; }
     .no-issues { color: #2e7d32; font-weight: bold; margin: 1rem 0; }
+    .category-section { margin-bottom: 1.5rem; }
+    .category-section h3 { font-size: 1rem; margin: 0 0 0.5rem 0; color: #424242; border-left: 4px solid #424242; padding-left: 0.5rem; }
     footer { margin-top: 2rem; font-size: 0.8rem; color: #999; border-top: 1px solid #e0e0e0; padding-top: 0.5rem; }
   </style>
 </head>
@@ -206,7 +208,6 @@ def write_reports(
     """
     # Compute shared timestamp and stems once.
     now_utc = datetime.now(UTC)
-    timestamp = now_utc.strftime("%Y%m%d-%H%M%S")
     generated_at = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     stem = Path(result.file_path).stem
     version = _tool_version()
@@ -214,9 +215,9 @@ def write_reports(
     # Ensure destination directory exists.
     report_dir.mkdir(parents=True, exist_ok=True)
 
-    # Derive filenames.
-    html_path = report_dir / f"sbom-report-{stem}-{timestamp}.html"
-    json_path = report_dir / f"sbom-report-{stem}-{timestamp}.json"
+    # Derive filenames — fixed, predictable names for stable CI artefact references.
+    html_path = report_dir / f"sbom-report-{stem}.html"
+    json_path = report_dir / f"sbom-report-{stem}.json"
 
     # Expand format token.
     format_detected_expanded = _FORMAT_MAP.get(result.format_detected, None)
@@ -239,29 +240,43 @@ def write_reports(
     format_display = format_detected_expanded if format_detected_expanded is not None else "Unknown"
 
     if sorted_issues:
-        rows_parts: list[str] = []
+        grouped: dict[str, list[ValidationIssue]] = {}
         for issue in sorted_issues:
-            friendly_message = humanize_message(issue.message)
-            base_message, hint = split_message_and_hint(friendly_message)
-            rows_parts.append(
-                f"    <tr>"
-                f'<td class="sev-{_escape(str(issue.severity))}">{_escape(str(issue.severity))}</td>'
-                f"<td>{_escape(humanize_field_path(issue.field_path))}</td>"
-                f"<td>{_escape(base_message)}</td>"
-                f"<td>{_escape(hint or '-')}</td>"
-                f"</tr>"
+            grouped.setdefault(str(issue.category), []).append(issue)
+
+        section_parts: list[str] = []
+        for cat in CATEGORY_ORDER:
+            cat_issues = grouped.get(cat, [])
+            if not cat_issues:
+                continue
+            label = CATEGORY_LABELS.get(cat, cat)
+            rows_parts: list[str] = []
+            for issue in cat_issues:
+                friendly_message = humanize_message(issue.message)
+                base_message, hint = split_message_and_hint(friendly_message)
+                rows_parts.append(
+                    f"    <tr>"
+                    f'<td class="sev-{_escape(str(issue.severity))}">{_escape(str(issue.severity))}</td>'
+                    f"<td>{_escape(humanize_field_path(issue.field_path))}</td>"
+                    f"<td>{_escape(base_message)}</td>"
+                    f"<td>{_escape(hint or '-')}</td>"
+                    f"</tr>"
+                )
+            rows = "\n".join(rows_parts)
+            section_parts.append(
+                f'<div class="category-section">\n'
+                f"  <h3>{_escape(label)} ({len(cat_issues)})</h3>\n"
+                f"  <table>\n"
+                f"    <thead>\n"
+                f"      <tr><th>Severity</th><th>Field Path</th><th>Message</th><th>Hint</th></tr>\n"
+                f"    </thead>\n"
+                f"    <tbody>\n"
+                f"{rows}\n"
+                f"    </tbody>\n"
+                f"  </table>\n"
+                f"</div>"
             )
-        rows = "\n".join(rows_parts)
-        issues_section = (
-            "<table>\n"
-            "  <thead>\n"
-            "    <tr><th>Severity</th><th>Field Path</th><th>Message</th><th>Hint</th></tr>\n"
-            "  </thead>\n"
-            "  <tbody>\n"
-            f"{rows}\n"
-            "  </tbody>\n"
-            "</table>"
-        )
+        issues_section = "\n".join(section_parts)
     else:
         issues_section = '<p class="no-issues">No issues found.</p>'
 
@@ -296,6 +311,7 @@ def write_reports(
         "issues": [
             {
                 "severity": str(issue.severity),
+                "category": issue.category.value,
                 "rule": issue.rule,
                 "field_path": issue.field_path,
                 "message": issue.message,

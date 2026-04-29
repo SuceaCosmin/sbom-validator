@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Usage Report — v0.4.0 (Telemetry)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-measured { color: #166534; font-size: 0.8rem; font-weight: bold; background: #dcfce7; padding: 1px 5px; border-radius: 3px; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .bar-outer { background: #e5e7eb; border-radius: 4px; height: 12px; width: 100%; margin-top: 2px; }
+    .bar-inner { background: #3b82f6; border-radius: 4px; height: 12px; }
+    .banner { background: #1e3a8a; color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; margin-bottom: 1rem; font-weight: bold; font-size: 1.05rem; }
+    .banner span { background: #dcfce7; color: #166534; border-radius: 3px; padding: 2px 8px; margin-left: 0.5rem; font-size: 0.9rem; }
+    .number { font-variant-numeric: tabular-nums; }
+    .highlight { background: #eff6ff; font-weight: bold; }
+    .contrast-note { background: #fef9c3; border: 1px solid #fde047; border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.75rem; font-size: 0.9rem; color: #78350f; }
+    tr:hover { background: #f9fafb; }
+    ol li, ul li { margin-bottom: 0.35rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="banner">
+    Token Usage Report — v0.4.0
+    <span>MEASURED TELEMETRY DATA</span>
+  </div>
+  <p class="muted">SBOM Validator &middot; Release: v0.4.0 &middot; Data source: SQLite telemetry DB (~/.claude/usage.db) &middot; Generated: 2026-04-15 &middot; All values are <span class="tag-measured">MEASURED</span> unless explicitly marked otherwise.</p>
+
+  <!-- SESSION METADATA -->
+  <div class="card">
+    <h2>Session Metadata</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th><th>Source</th></tr>
+      <tr><td>Session ID</td><td><code>b1fcffcb-050d-4a27-a56f-630b7969ba4c</code></td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Project</td><td>repos/sbom-validator</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>First timestamp</td><td>2026-04-14T17:47:36.903Z</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Last timestamp</td><td>2026-04-14T18:39:39.210Z</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Duration</td><td>~52 minutes (single session)</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Git branch</td><td>develop (feature/spdx-tv-yaml via PR)</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Model</td><td>claude-sonnet-4-6</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Turn count</td><td>169</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Release</td><td><strong>v0.4.0</strong> — SPDX Tag-Value and YAML format support</td><td>CHANGELOG.md</td></tr>
+      <tr><td>Compared baseline</td><td>v0.3.0 (sessions 21edb18e + 7f9e859f) — see delta report</td><td>TASKS-v0.3.0.md</td></tr>
+      <tr><td>Tests delivered</td><td>594 passing (+78 new: TV parser 41, YAML parser 22, format detector 15)</td><td>TASKS-v0.4.0.md G3</td></tr>
+      <tr><td>Subagent orchestration</td><td>"Full delivery orchestration for SPDX Tag-Value and YAML support" (single orchestrator subagent)</td><td>session metadata</td></tr>
+    </table>
+  </div>
+
+  <!-- SUMMARY METRICS -->
+  <div class="card">
+    <h2>Summary Metrics</h2>
+    <table>
+      <tr><th>Metric</th><th class="number">Value</th><th>Source</th></tr>
+      <tr class="highlight"><td>Output tokens</td><td class="number">103,782</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Cache read tokens</td><td class="number">14,917,223</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Cache creation tokens</td><td class="number">291,099</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Direct input tokens (non-cached)</td><td class="number">685</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Total turns</td><td class="number">169</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Output tokens per turn</td><td class="number">614.1</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Cache creation tokens per turn</td><td class="number">1,722.5</td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Cache efficiency ratio (cache_read / total_cache_tokens)</td><td class="number"><strong>98.1%</strong></td><td><span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Sessions count</td><td class="number">1 (single session)</td><td><span class="tag-measured">MEASURED</span></td></tr>
+    </table>
+    <p class="muted" style="margin-top:0.6rem">
+      Cache efficiency of 98.1% is excellent: for every 100 tokens loaded from context, only 1.9 tokens needed to be created fresh (written to cache). This reflects the high context reuse enabled by single-session execution with a warm context window throughout the 52-minute session.
+    </p>
+  </div>
+
+  <!-- PER-TOOL BREAKDOWN -->
+  <div class="card">
+    <h2>Per-Tool Breakdown</h2>
+    <p class="muted">All counts and token values queried directly from the turns table in usage.db for session b1fcffcb. <span class="tag-measured">MEASURED</span></p>
+    <table>
+      <tr><th>Tool</th><th>Calls</th><th>Output Tokens</th><th>Output Share</th><th>Cache Creation</th><th>Cache Read</th></tr>
+      <tr>
+        <td>Write</td><td>21</td><td class="number">47,064</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:45%"></div></div><small>45.4%</small></td>
+        <td class="number">35,866</td><td class="number">1,757,748</td>
+      </tr>
+      <tr>
+        <td>Edit</td><td>32</td><td class="number">18,251</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:18%"></div></div><small>17.6%</small></td>
+        <td class="number">27,993</td><td class="number">3,082,763</td>
+      </tr>
+      <tr>
+        <td>Bash</td><td>54</td><td class="number">13,870</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:13%"></div></div><small>13.4%</small></td>
+        <td class="number">69,516</td><td class="number">5,605,918</td>
+      </tr>
+      <tr>
+        <td>Read</td><td>39</td><td class="number">13,008</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:13%"></div></div><small>12.5%</small></td>
+        <td class="number">107,129</td><td class="number">3,017,213</td>
+      </tr>
+      <tr>
+        <td>None (reasoning/planning)</td><td>10</td><td class="number">4,784</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:5%"></div></div><small>4.6%</small></td>
+        <td class="number">11,114</td><td class="number">672,385</td>
+      </tr>
+      <tr>
+        <td>Skill</td><td>1</td><td class="number">1,767</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:2%"></div></div><small>1.7%</small></td>
+        <td class="number">1,438</td><td class="number">43,409</td>
+      </tr>
+      <tr>
+        <td>Glob</td><td>6</td><td class="number">1,659</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:2%"></div></div><small>1.6%</small></td>
+        <td class="number">30,698</td><td class="number">292,656</td>
+      </tr>
+      <tr>
+        <td>Agent</td><td>1</td><td class="number">1,614</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:2%"></div></div><small>1.6%</small></td>
+        <td class="number">350</td><td class="number">58,626</td>
+      </tr>
+      <tr>
+        <td>TodoWrite</td><td>3</td><td class="number">1,292</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:1%"></div></div><small>1.2%</small></td>
+        <td class="number">3,813</td><td class="number">169,807</td>
+      </tr>
+      <tr>
+        <td>ToolSearch</td><td>2</td><td class="number">473</td>
+        <td><div class="bar-outer"><div class="bar-inner" style="width:1%"></div></div><small>0.5%</small></td>
+        <td class="number">3,182</td><td class="number">216,698</td>
+      </tr>
+      <tr class="highlight">
+        <td><strong>TOTAL</strong></td><td><strong>169</strong></td><td class="number"><strong>103,782</strong></td>
+        <td></td><td class="number"><strong>291,099</strong></td><td class="number"><strong>14,917,223</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SUBAGENT ATTRIBUTION -->
+  <div class="card">
+    <h2>Subagent Attribution</h2>
+    <table>
+      <tr><th>Subagent Description</th><th>Orchestration Mode</th><th>Notes</th></tr>
+      <tr>
+        <td>"Full delivery orchestration for SPDX Tag-Value and YAML support"</td>
+        <td>Single orchestrator subagent (1 Agent call logged)</td>
+        <td>All R1–R14 tasks executed within a single orchestrated session. The 1 Agent call + 1 Skill call represent the orchestrator dispatch and skill invocation overhead respectively. The bulk of work was done by the orchestrator directly (169 turns, 10 distinct tool types).</td>
+      </tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">
+      v0.4.0 used a tightly integrated single-session orchestration pattern with the Agent tool used only once (vs 3–4 times in v0.3.0 sessions). This reflects a more direct orchestration approach, reducing per-subagent context reload overhead.
+    </p>
+  </div>
+
+  <!-- CACHE EFFICIENCY -->
+  <div class="card">
+    <h2>Cache Efficiency Analysis</h2>
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
+      <tr>
+        <td>Cache read tokens</td>
+        <td class="number">14,917,223</td>
+        <td>Context loaded from prompt cache across all 169 turns</td>
+      </tr>
+      <tr>
+        <td>Cache creation tokens</td>
+        <td class="number">291,099</td>
+        <td>Context written to prompt cache (new cache entries created)</td>
+      </tr>
+      <tr class="highlight">
+        <td>Cache efficiency ratio</td>
+        <td class="number"><strong>98.1%</strong></td>
+        <td>cache_read / (cache_read + cache_creation) — higher is better. Excellent: context was reused ~51x more than it was created.</td>
+      </tr>
+      <tr>
+        <td>Direct input tokens</td>
+        <td class="number">685</td>
+        <td>Non-cached input. Minimal — only 0.005% of total context load was uncached direct input.</td>
+      </tr>
+      <tr>
+        <td>Read tool as cache driver</td>
+        <td>107,129 cache creation / 3,017,213 cache read</td>
+        <td>Read (39 calls) generated the highest per-call cache creation (2,747 avg per call), driving context into cache for downstream reuse. Edit had highest total cache read volume (3,082,763) reflecting its heavy context consumption during implementation turns.</td>
+      </tr>
+      <tr>
+        <td>Bash tool cache volume</td>
+        <td>5,605,918 cache reads (37.6% of total)</td>
+        <td>Bash was the largest consumer of cached context. 54 Bash calls averaging ~103,813 cache_read tokens per call — consistent with large CI/test output piped back through long context windows.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- TOP TOKEN SINKS -->
+  <div class="card">
+    <h2>Top Token Sinks (Ranked by Output Tokens)</h2>
+    <ol>
+      <li>
+        <strong>Write tool — 47,064 output tokens (45.4% of total output) across 21 calls</strong><br>
+        Dominant sink as expected for a two-parser feature release. Write calls produced the bulk of new file content: spdx_tv_parser.py, spdx_yaml_parser.py, refactored spdx_parser.py, 8 fixture files, 3 new/extended test files, ADR-009, updated README/user-guide/CHANGELOG, and this token report. Average 2,241 output tokens per Write call.
+      </li>
+      <li>
+        <strong>Edit tool — 18,251 output tokens (17.6%) across 32 calls</strong><br>
+        Second largest sink. Edit calls handled iterative corrections: mypy type annotation fixes (json.loads Any type, types-PyYAML stubs), ruff lint fixes (unused imports), and incremental improvements to existing files (constants.py, format_detector.py, schema_validator.py, validator.py). Average 570 output tokens per Edit call — characteristic of targeted diff-style edits rather than full rewrites.
+      </li>
+      <li>
+        <strong>Bash tool — 13,870 output tokens (13.4%) across 54 calls</strong><br>
+        Command execution output: pytest runs (594 tests), ruff check, ruff format, mypy --strict, poetry install (pyyaml), git operations (commit, PR creation), and CLI smoke tests. Bash generated the highest cache read volume (5,605,918 — 37.6% of total), reflecting large test output fed back through context. Average 257 output tokens per Bash call.
+      </li>
+      <li>
+        <strong>Read tool — 13,008 output tokens (12.5%) across 39 calls</strong><br>
+        File reads for architectural context (agent-briefing.md, ADRs, existing parser files) and verification reads (confirming written files match intent). Read had the highest average cache creation per call (2,747 tokens), indicating it was the primary mechanism for seeding the prompt cache with new file content.
+      </li>
+      <li>
+        <strong>None (reasoning/planning) — 4,784 output tokens (4.6%) across 10 calls</strong><br>
+        Unattributed reasoning turns: orchestration planning, task sequencing decisions, and intermediate analysis between tool calls. Lower than v0.3.0 session1 (11,723 output from 17 None turns), suggesting v0.4.0 orchestration was more direct with less free-form reasoning overhead.
+      </li>
+    </ol>
+  </div>
+
+  <!-- KEY OBSERVATIONS -->
+  <div class="card">
+    <h2>Key Observations — v0.4.0 Specifics</h2>
+    <ul>
+      <li><strong>Single session, fully orchestrated (169 turns, 52 minutes):</strong> v0.4.0 completed entirely within one session with no boundary reload cost. This is the most cache-efficient pattern possible: context stays warm throughout, resulting in 98.1% cache efficiency.</li>
+      <li><strong>Write-heavy release:</strong> Write (21 calls, 45.4% of output) dominated over Edit (32 calls, 17.6%), which is characteristic of new-parser releases where substantial new file content must be created rather than modifying existing files.</li>
+      <li><strong>Edit call count exceeded Write call count (32 vs 21), but with lower output:</strong> The 32 Edit calls averaging only 570 tokens each indicate targeted, iterative corrections (mypy fixes, lint, small functional changes) rather than large rewrites. This is a healthy pattern — corrections were small and precise.</li>
+      <li><strong>Bash volume dominated cache reads:</strong> 54 Bash calls consumed 5.6M cache read tokens (37.6% of total cache reads). This reflects the cost of piping test suite outputs (594 tests) and tool outputs back through long context. The high call count (54) is justified by the TDD workflow: write tests, run tests, fix, run again.</li>
+      <li><strong>Low rework indicators:</strong> Only 1 Agent call (vs 3–4 in v0.3.0) and minimal None-turn reasoning overhead (10 turns vs 17 in v0.3.0 session1, 12 in session2) suggest clean orchestration with little wasted deliberation. The single mypy correction loop and one ruff lint fix are minor.</li>
+      <li><strong>TodoWrite usage dropped:</strong> 3 calls (1,292 tokens) vs 10 calls (4,165 tokens) in v0.3.0 session2. Suggests the orchestrator maintained task state more efficiently, likely due to the comprehensive upfront TASKS file rather than ad-hoc todo tracking.</li>
+      <li><strong>Direct input minimal (685 tokens):</strong> Only 0.005% of context was non-cached direct input. Nearly all context was served from prompt cache. This is possible because the single-session pattern keeps the system prompt and accumulated context continuously cached.</li>
+    </ul>
+  </div>
+
+  <!-- COMPARISON NOTE VS ESTIMATED REPORT -->
+  <div class="card">
+    <h2>Comparison vs Estimated Report (token-report-v0.4.0.html)</h2>
+    <p class="muted">The existing report at <code>docs/releases/token-report-v0.4.0.html</code> was generated with estimated values derived from scope analysis. This telemetry report uses actual SQLite DB data. Below is a comparison of key claims.</p>
+    <table>
+      <tr><th>Metric</th><th>Estimated Report</th><th>This Report (Measured)</th><th>Assessment</th></tr>
+      <tr>
+        <td>Total tokens</td>
+        <td>~200,000 – 260,000 (all token types)</td>
+        <td>Output: 103,782 + Cache creation: 291,099 + Cache read: 14,917,223 + Input: 685</td>
+        <td>The estimated report gave a range for "input + output combined" which is not directly comparable. Output alone (103,782) falls within the lower range if only output+input is counted, well below if cache tokens are included in the estimate.</td>
+      </tr>
+      <tr>
+        <td>Rework ratio</td>
+        <td>~4–6%</td>
+        <td>Low (est.) — 1 mypy loop + 1 lint fix; exact rework token count not directly measurable from DB alone</td>
+        <td>Estimate appears directionally correct. The Edit tool's 32 calls at 570 avg output suggest moderate correction activity. <span class="tag-est">(est.)</span></td>
+      </tr>
+      <tr>
+        <td>Top sink</td>
+        <td>TDD build (~50% of total)</td>
+        <td>Write tool at 45.4% of output tokens</td>
+        <td>Directionally consistent. The estimated report correctly identified file creation as the dominant cost.</td>
+      </tr>
+      <tr>
+        <td>Session count</td>
+        <td>1</td>
+        <td>1 (confirmed by DB)</td>
+        <td>Correct.</td>
+      </tr>
+      <tr>
+        <td>Turn count</td>
+        <td>Not specified</td>
+        <td>169 (measured)</td>
+        <td>New data point not present in estimated report.</td>
+      </tr>
+      <tr>
+        <td>Cache efficiency</td>
+        <td>Not reported</td>
+        <td>98.1% (measured)</td>
+        <td>New metric enabled by telemetry. Not calculable without DB access.</td>
+      </tr>
+    </table>
+    <div class="contrast-note">
+      The estimated report was useful for qualitative analysis (sink identification, gate attribution, recommendations) but could not provide measured token counts, per-tool breakdown, cache efficiency ratios, or per-turn statistics. This telemetry report adds those dimensions. The qualitative findings in the estimated report remain valid and are complementary to this data-driven analysis.
+    </div>
+  </div>
+
+  <!-- OPTIMIZATION RECOMMENDATIONS -->
+  <div class="card">
+    <h2>Optimization Recommendations (Based on Measured Data)</h2>
+    <table>
+      <tr><th>#</th><th>Action</th><th>Target Agent</th><th>Metric Basis</th><th>Est. Savings</th><th>Priority</th></tr>
+      <tr>
+        <td>1</td>
+        <td><strong>Reduce Bash call count for test runs.</strong> 54 Bash calls consumed 5.6M cache read tokens (37.6% of total cache reads). Many of these are repetitive pytest/ruff/mypy runs during TDD cycles. Batching ruff + mypy into a single Bash call (already done via pre-commit, but not always used during development) and running combined quality checks after each implementation milestone (rather than after each file) could reduce Bash calls by 20–30%.</td>
+        <td>Developer / Orchestrator</td>
+        <td>Bash: 54 calls, 5.6M cache_read</td>
+        <td>~10–15 fewer Bash calls, ~1M cache_read reduction</td>
+        <td>MEDIUM</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Reduce Edit call count by improving first-pass Write quality.</strong> 32 Edit calls at 570 avg output tokens each generated 18,251 output tokens — 17.6% of total. If mypy type annotations and ruff compliance are built into the initial Write output (e.g., by including explicit type stubs for json.loads return types in the architectural spec before writing), the correction Edit loop could be reduced by 30–40%.</td>
+        <td>Architect / Developer</td>
+        <td>Edit: 32 calls, 18,251 output tokens</td>
+        <td>~6,000–7,000 fewer output tokens</td>
+        <td>MEDIUM</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Embed mypy type annotation requirements in ADR and agent-briefing.md for new parsers.</strong> The mypy correction loop (3 errors for json.loads/yaml.safe_load return types) cost approximately 3–5 Edit calls. Adding explicit type annotation contracts for IO functions in ADR-009 (or the implementation task brief) would prevent these corrections entirely.</td>
+        <td>Architect</td>
+        <td>Edit calls for mypy fixes (inferred from 3 errors)</td>
+        <td>~1,500–3,000 tokens per future parser addition</td>
+        <td>LOW</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Consolidate Read calls for related files.</strong> 39 Read calls generated 107,129 cache creation tokens. Many reads are for context gathering (reading existing parsers before writing new ones). Where the agent-briefing.md already contains function signatures, the Read call for the source file may be redundant. Ensuring agent-briefing.md stays current could reduce exploratory Read calls by 5–10.</td>
+        <td>Documentation Writer / Orchestrator</td>
+        <td>Read: 39 calls, 107,129 cache_creation</td>
+        <td>~15,000–25,000 cache_creation tokens</td>
+        <td>LOW</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Instrument telemetry collection at gate boundaries.</strong> The current DB records per-turn tool usage but does not tag turns to specific gates (G1–G10). Adding gate markers (e.g., via structured TodoWrite entries at gate boundaries) would enable per-gate token attribution in future reports, eliminating the need for estimation-based gate breakdowns.</td>
+        <td>Token Analyst / Orchestrator</td>
+        <td>None-turn reasoning: 10 calls, 4,784 tokens (unattributed)</td>
+        <td>Converts estimate-based gate reports to measured; no direct token saving but improves report quality significantly</td>
+        <td>MEDIUM</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>Reduce Write call count by generating related fixture files in a single Write call.</strong> 21 Write calls at 2,241 avg output tokens. The 8 fixture files (4 TV + 4 YAML) likely required separate Write calls each. A fixture generator pattern (write all 4 TV files in sequence within one reasoning step, then commit) could reduce fixture-related Write calls from 8 to 2–3.</td>
+        <td>Developer / Tester</td>
+        <td>Write: 21 calls, 47,064 tokens (fixtures subset)</td>
+        <td>~5 fewer Write calls, ~5,000–8,000 tokens</td>
+        <td>LOW</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>Maintain single-session orchestration for releases of similar scope.</strong> v0.4.0's 98.1% cache efficiency (vs 97.3% in v0.3.0) confirms that single-session execution consistently outperforms multi-session for cache cost. For releases completing in under 90 minutes, avoid splitting across sessions unless strictly necessary.</td>
+        <td>Orchestrator / Planner</td>
+        <td>Cache efficiency: 98.1% (single session) vs 97.3% (two sessions)</td>
+        <td>Preserves high cache efficiency; prevents ~500K–1M cache_creation overhead from context reload</td>
+        <td>HIGH</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="card">
+    <h2>Methodology and Confidence</h2>
+    <p>All token counts in this report are <span class="tag-measured">MEASURED</span> values queried directly from the SQLite telemetry database at <code>C:/Users/Sucea/.claude/usage.db</code>. Session identification used the <code>sessions</code> table filtered by <code>project_name = 'repos/sbom-validator'</code> and cross-referenced against the session timestamps documented in the task brief. Per-tool data was aggregated from the <code>turns</code> table grouped by <code>tool_name</code>.</p>
+    <p>The following values are inferred or estimated rather than directly measured:</p>
+    <ul>
+      <li><span class="tag-est">(est.)</span> Rework token cost — the DB records which tool was called but does not tag whether a given Edit was corrective vs additive. The rework estimate (low) is inferred from gate evidence: 1 mypy correction loop (3 errors) and 1 lint fix documented in TASKS-v0.4.0.md G3/G4.</li>
+      <li><span class="tag-est">(est.)</span> Per-gate token attribution — the DB does not record gate boundaries. Gate-level attribution would require structured gate markers in the session.</li>
+      <li><span class="tag-est">(est.)</span> Subagent-level breakdown — the single Agent call (1,614 output, 350 cache_creation) represents the dispatch overhead. The bulk of work was done in the parent session, so per-agent attribution is not separately measurable from the DB alone.</li>
+    </ul>
+    <p>Confidence: <strong>High</strong> for all session-level and tool-level metrics. <strong>Medium</strong> for rework attribution and gate-level estimates.</p>
+  </div>
+
+</div>
+</body>
+</html>

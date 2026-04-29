@@ -73,7 +73,7 @@ NormalizedSBOM(
 | `name` | `str \| None` | No | The component's name (e.g., `"libfoo"`, `"numpy"`). Maps to NTIA element "Component Name" (FR-05). `None` if absent in the source. Parsers set this to `None` rather than empty string when the field is missing. |
 | `version` | `str \| None` | No | The component's version string (e.g., `"1.2.3"`, `"2.0.0-beta.1"`). Maps to NTIA element "Component Version" (FR-06). `None` if absent or if the source value is `NOASSERTION` or an empty string. |
 | `supplier` | `str \| None` | No | The name of the organization or tool that supplied the component. Maps to NTIA element "Supplier Name" (FR-04). `None` if absent. SPDX-specific prefixes (`"Organization: "`, `"Tool: "`) are stripped by the SPDX parser so this field always contains a plain name string. `NOASSERTION` values in SPDX are converted to `None`. |
-| `identifiers` | `tuple[str, ...]` | No | A tuple of unique identifiers beyond name and version (PURLs and CPEs). Maps to NTIA element "Other Unique Identifiers" (FR-07). An empty tuple means no qualifying identifiers were found. Identifiers are stored as raw strings (e.g., `"pkg:pypi/libfoo@1.2.3"`, `"cpe:2.3:a:acme:libfoo:1.2.3:*:*:*:*:*:*:*"`). |
+| `identifiers` | `tuple[str, ...]` | No | A tuple of unique identifiers (PURLs and CPEs) parsed from the SBOM. Populated by all format parsers; empty tuple if none are found. Not validated — FR-07 was removed because NTIA treats these as a best-practice recommendation rather than a mandatory element. |
 
 **Notes on `supplier` normalization:**
 

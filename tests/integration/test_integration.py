@@ -65,6 +65,7 @@ class TestFullPassPipeline:
         assert data["issues"] == []
         assert data["format_detected"] == "spdx"
         assert "file" in data
+        assert "tool_version" in data
 
     def test_pass_cdx_json_output_structure(self, runner):
         result = runner.invoke(
@@ -100,7 +101,7 @@ class TestSchemaFailurePipeline:
             main, ["validate", str(SPDX_FIXTURES / "invalid-schema.spdx.json"), "--format", "json"]
         )
         data = json.loads(result.output)
-        ntia_rules = {"FR-04", "FR-05", "FR-06", "FR-07", "FR-08", "FR-09", "FR-10"}
+        ntia_rules = {"FR-04", "FR-05", "FR-06", "FR-08", "FR-09", "FR-10"}
         issue_rules = {i["rule"] for i in data["issues"]}
         assert issue_rules.isdisjoint(ntia_rules)
 
@@ -169,15 +170,6 @@ class TestNtiaFailurePipeline:
         data = json.loads(result.output)
         rules = {i["rule"] for i in data["issues"]}
         assert "FR-08" in rules
-
-    def test_missing_identifiers_spdx_reported(self, runner):
-        result = runner.invoke(
-            main,
-            ["validate", str(SPDX_FIXTURES / "missing-identifiers.spdx.json"), "--format", "json"],
-        )
-        data = json.loads(result.output)
-        rules = {i["rule"] for i in data["issues"]}
-        assert "FR-07" in rules
 
     def test_missing_supplier_cdx_reported(self, runner):
         result = runner.invoke(

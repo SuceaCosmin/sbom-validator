@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Evaluation Report — v0.5.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem 0.6rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-infer { color: #7c3aed; font-size: 0.8rem; font-weight: bold; }
+    .tag-measured { color: #166534; font-size: 0.8rem; font-weight: bold; }
+    .badge-yes { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-partial { background: #fef9c3; color: #854d0e; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-no { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-high { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .badge-med { background: #fef9c3; color: #854d0e; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .badge-low { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .verdict-healthy { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    .verdict-attention { color: #b45309; font-weight: bold; font-size: 1.1rem; }
+    .verdict-critical { color: #991b1b; font-weight: bold; font-size: 1.1rem; }
+    .delta-neg { color: #166534; }
+    .delta-pos { color: #b91c1c; }
+    .delta-flat { color: #6b7280; }
+    ul li { margin-bottom: 0.35rem; }
+    ol li { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Workflow Evaluation Report &mdash; v0.5.0</h1>
+  <p class="muted">SBOM Validator &middot; Generated: 2026-04-29 &middot; Benchmarked against: v0.4.0</p>
+
+  <!-- ── Section 1: Release Overview ─────────────────────────────────── -->
+  <div class="card">
+    <h2>1. Release Overview</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Version</td><td><strong>v0.5.0</strong></td></tr>
+      <tr><td>Release date</td><td>2026-04-29</td></tr>
+      <tr><td>Scope type</td><td>Bug fix + feature polish: FR-07 PURL/CPE false-positive removal, DEPENDENCY_OF relationship recognition (#11/#12), issue category classification (#13), stable report filenames + tool_version in JSON output + version logging (#14/#15)</td></tr>
+      <tr><td>Pipeline entry point</td><td>G3 — all code already merged to <code>develop</code> via PRs before release workflow started. G0/G1/G2 collapsed into tracker creation.</td></tr>
+      <tr><td>Sessions (telemetry)</td><td>1 parent session (release orchestration, 2026-04-29). Feature work delivered across multiple earlier sessions (Apr 14–22). <span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Agents dispatched (release session)</td><td>8 subagents: orchestrator, reviewer (G4), security-reviewer (G5), developer (F-01 fix), documentation-writer x2 (G7 + F-02/F-03/F-04 fixes), release-manager (G8), token-analyst (G9), workflow-analyst (G10)</td></tr>
+      <tr><td>Total tokens (release session)</td><td>297,770 measured (all subagent dispatches combined). <span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Tests</td><td>613 at G3 (baseline); 616 at G8 (after F-01 regression test added)</td></tr>
+      <tr><td>Coverage</td><td>95.93% (threshold 90%)</td></tr>
+      <tr><td>Commits in cycle</td><td>19 commits from v0.4.0 to HEAD (including merge commits and process/doc work)</td></tr>
+      <tr><td>New dependency</td><td>None</td></tr>
+      <tr><td>New ADR</td><td>None (additive non-breaking model change; architect note recorded in TASKS tracker)</td></tr>
+    </table>
+    <p style="margin-top:1rem"><strong>End-to-end cycle:</strong> Feature work merged to develop (PRs #16, #17, #18, Apr 14–22) &rarr; G3 static analysis verification &rarr; G4 Quality Review (CONDITIONAL: F-01 MAJOR + F-02/F-03/F-04 MINOR) &rarr; Developer fix (F-01: spdx_tv_parser.py) &rarr; Documentation fixes (F-02/F-03/F-04) &rarr; G5 Security (APPROVED, 4 MINOR pre-existing) &rarr; G7 Docs/Version bump &rarr; G8 Release Readiness (NO-GO pending G9/G10, then GO) &rarr; G9 Token Analytics &rarr; G10 Workflow Evaluation &rarr; Human Approval.</p>
+    <p><span class="verdict-attention">Overall Workflow Health: NEEDS ATTENTION</span></p>
+    <p class="muted">All 11 gates completed. No permanently skipped gates. One functional gap (F-01: DEPENDENCY_OF missing from spdx_tv_parser.py) and three documentation gaps (F-02/F-03/F-04) found at G4 — all resolved before release. The F-01 gap represents a systemic multi-parser consistency weakness: a fix applied to two parser files was not propagated to the third. G8 correctly issued a NO-GO pending completion of G9/G10 artifacts. Rework ratio slightly elevated vs v0.4.0 due to F-01 fix loop. Verdict is NEEDS ATTENTION rather than CRITICAL because all issues were found and corrected within the release gate; no defect escaped to the release tag.</p>
+  </div>
+
+  <!-- ── Section 2: Per-Agent Evaluation ───────────���──────────────────── -->
+  <div class="card">
+    <h2>2. Per-Agent Evaluation</h2>
+    <table>
+      <tr>
+        <th>Agent</th>
+        <th>Role Fulfilled</th>
+        <th>Efficiency</th>
+        <th>Key Contribution</th>
+        <th>Drawbacks</th>
+        <th>Improvement Actions</th>
+      </tr>
+      <tr>
+        <td><strong>Orchestrator</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Created TASKS-v0.5.0.md with correct scope, pipeline entry at G3, and gate evidence fields. Dispatched all subagents in correct sequence. Enforced gate ordering (G4 before G5, G7 before G8). Correctly modeled the verification-only release cycle (G0/G1/G2 collapsed). Identified when G8 NO-GO was correct and continued pipeline to G9/G10 before returning to G8 re-check.</td>
+        <td>G4 and the reviewer were dispatched in a single parent session rather than fully independent sessions. The review was correct, but the dispatch model allowed inline orchestration that blurs the independence boundary slightly. <span class="tag-infer">(inferred from session structure)</span></td>
+        <td>Confirm that G4 reviewer and G5 security-reviewer are always dispatched as fully independent subagent sessions with no shared mutable context. Current meta.json evidence shows correct agentType labels, which is consistent with correct dispatch.</td>
+      </tr>
+      <tr>
+        <td><strong>Planner</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Correctly adapted the standard planning model to a verification-only release cycle. TASKS-v0.5.0.md includes scope, in-scope/out-of-scope, risk constraints (FR-07 removal backward compat verification, category field JSON key stability), and full R1–R12 task table with dependencies and acceptance criteria. G0/G1/G2 correctly collapsed with justification.</td>
+        <td>No drawbacks observed. The TASKS tracker accurately reflected the actual execution sequence used by all downstream agents.</td>
+        <td>None for this release.</td>
+      </tr>
+      <tr>
+        <td><strong>Architect</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Assessed architecture impact of the category field addition to the frozen ValidationIssue dataclass. Correctly determined: additive non-breaking change, no new ADR required, no public function signature changes. Architecture note recorded in TASKS tracker G2 evidence section. Fast and low-overhead.</td>
+        <td>No drawbacks. The judgment (additive non-breaking) proved correct — G4 reviewer and G5 security reviewer both confirmed no backward compatibility concerns.</td>
+        <td>None for this release.</td>
+      </tr>
+      <tr>
+        <td><strong>Tester</strong></td>
+        <td><span class="badge-partial">Partial</span></td>
+        <td><span class="badge-med">Medium</span></td>
+        <td>G3 evidence confirms 613/613 tests passing, coverage 95.93%, zero ruff/mypy errors at the point the release gate started. The TDD discipline for the feature PRs (#13, #14/#15) was maintained prior to the release session. A regression test for F-01 (DEPENDENCY_OF in TV parser) was added by the developer during the fix — appropriately scoped.</td>
+        <td>The tester role was not explicitly dispatched as a separate subagent for the F-01 regression test. The developer authored the regression test as part of the fix (which is acceptable for a narrow bug fix), but this breaks TDD ordering: the fix was committed before the test could fail in isolation to confirm the bug. <span class="tag-infer">(inferred from developer subagent description + git log)</span></td>
+        <td>For bug fixes found at G4, consider requiring the developer to first write a failing regression test (confirming the bug exists) before writing the fix. This preserves TDD ordering even in rework loops and provides a more precise regression anchor.</td>
+      </tr>
+      <tr>
+        <td><strong>Developer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Addressed F-01 cleanly: added DEPENDENCY_OF (and confirmed OPTIONAL_DEPENDENCY_OF) to the qualifying relationship set in spdx_tv_parser.py, matching the already-corrected logic in spdx_parser.py and spdx_yaml_parser.py. Added one regression test. Efficient execution at 34,389 tokens — well-scoped fix with no unnecessary scope creep. Git commit message clear and traceable to issue.</td>
+        <td>The original DEPENDENCY_OF fix (PR #18, commit 2a6dd24) was applied only to spdx_parser.py, missing spdx_tv_parser.py. This required a follow-up fix commit (3f4c6a3) in the release session. The multi-parser inconsistency was the root cause; see gap analysis.</td>
+        <td>When applying a fix across a family of related parsers (spdx_parser.py, spdx_yaml_parser.py, spdx_tv_parser.py), require a cross-parser consistency check as part of the PR acceptance criteria. A comment in constants.py or a note in the DEPENDENCY_RELATIONSHIPS constant definition pointing to all sites that use it would reduce the risk of partial application.</td>
+      </tr>
+      <tr>
+        <td><strong>Reviewer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Full diff review executed against 14 commits on develop vs master. Found F-01 MAJOR (DEPENDENCY_OF missing from spdx_tv_parser.py) and F-02/F-03/F-04 MINOR (CHANGELOG inconsistency, stale FR-07 reference in requirements.md, user-guide.md coverage gap). All findings were genuine and actionable. G4 verdict: CONDITIONAL on remediation of findings. 79,592 tokens — high but justified by the size of the diff examined. <span class="tag-measured">MEASURED</span></td>
+        <td>High token cost (26.7% of total release spend) reflects the structural cost of reviewing 14 merged commits end-to-end rather than reviewing each PR as it merged. This is a workflow design trade-off, not a reviewer performance issue. F-01 would have been caught at PR review time if SPDX parser consistency was part of the PR checklist.</td>
+        <td>Add a "multi-parser consistency" check to the reviewer checklist: when a fix modifies a parser method that has equivalent implementations in related parsers, verify the fix was applied to all of them. This directly targets the F-01 failure mode.</td>
+      </tr>
+      <tr>
+        <td><strong>Security Reviewer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Full security audit covering: FR-07 behavioral change analysis (PURL/CPE check removal), category field injection safety (HTML template escaping verification), JSON output key stability (backward compatibility), NTIA check removal scope analysis. APPROVED with 4 MINOR findings, none blocking. Correctly analyzed that FR-07 removal is a false-positive fix, not a security regression. 75,886 tokens — elevated vs v0.4.0 due to behavioral change analysis. <span class="tag-measured">MEASURED</span></td>
+        <td>None significant. The higher token cost vs v0.4.0 is appropriate given the behavioral change (FR-07 removal) required careful analysis of whether removing a check created a security gap.</td>
+        <td>None for this release.</td>
+      </tr>
+      <tr>
+        <td><strong>CI Ops</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Pre-commit hooks (ruff + ruff-format) active and clean. Zero CI failure cycles for the fourth consecutive release. No CI failures to triage. The structural improvement from v0.2.2 continues to eliminate remote lint/format failures.</td>
+        <td>None. No CI failures occurred in this release cycle.</td>
+        <td>None.</td>
+      </tr>
+      <tr>
+        <td><strong>Documentation Writer</strong></td>
+        <td><span class="badge-partial">Partial</span></td>
+        <td><span class="badge-med">Medium</span></td>
+        <td>Two separate dispatch instances: (1) G7 version bump &mdash; pyproject.toml and __init__.py bumped to 0.5.0, CHANGELOG promoted to [0.5.0] with date; (2) F-02/F-03/F-04 fixes &mdash; CHANGELOG entry refinement, stale FR-07 reference removed from requirements.md, user-guide.md expanded to cover category field and stable filenames. Both dispatches completed successfully. 44,208 + 21,425 = 65,633 tokens total. <span class="tag-measured">MEASURED</span></td>
+        <td>Three of the four G4 review findings were documentation gaps that should have been addressed at PR merge time: CHANGELOG entry consistency, requirements.md accuracy, and user-guide.md coverage. These were missed during feature development and found only at the release gate. The README.md version reference staleness (tool_version "0.4.0" after version bump) was a separate documentation hygiene issue caught post-G7. Documentation completeness is not being enforced at the feature-branch level.</td>
+        <td>Add a "docs consistency check" requirement to the PR merge checklist for all feature/fix PRs: (1) CHANGELOG entry present and accurate, (2) requirements.md cross-references updated for any FR changes, (3) user-guide.md covers any new output fields or behavior changes. This would eliminate F-02/F-03/F-04 class findings from appearing at the release gate.</td>
+      </tr>
+      <tr>
+        <td><strong>Release Manager</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Thorough G8 release readiness verification: version consistency (pyproject.toml, __init__.py, CHANGELOG all at 0.5.0), 616/616 tests passing, coverage 95.93%, CLI smoke tests (PASS/FAIL paths, JSON output key stability including new tool_version and category fields), packaging artifacts. Correctly issued NO-GO when G9/G10 reports were pending. Second-pass check correctly issued GO once all artifacts were ready. 42,270 tokens — higher than v0.4.0 G8 estimate due to JSON output key stability verification. <span class="tag-measured">MEASURED</span></td>
+        <td>None. The NO-GO was correct procedure, not a failure. The release manager correctly identified all pending blocking items without false positives.</td>
+        <td>None for this release.</td>
+      </tr>
+      <tr>
+        <td><strong>Token Analyst</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>token-report-v0.5.0.html and token-delta-v0.4.0_to_v0.5.0.html both generated pre-tag. Agent token values measured from session telemetry (MEASURED confidence). Correctly identified G4 review-and-fix loop as the dominant cost (53.1% of total). Delta report includes comprehensive v0.4.0 vs v0.5.0 comparison across 10 dimensions. <span class="tag-measured">MEASURED</span></td>
+        <td>Token analyst itself is estimated (not measured) for its own cost, consistent with prior releases. This is an inherent limitation of self-reporting.</td>
+        <td>None new. Continue using subagent meta.json + session telemetry for measured per-agent token attribution.</td>
+      </tr>
+      <tr>
+        <td><strong>Workflow Analyst</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>This report. Full workflow evaluation with per-agent assessment (12 agents), gate analysis (G0–G10), 5-metric benchmark vs v0.4.0, top wins and gaps, ranked improvement recommendations, and trend assessment. Generated pre-tag as required.</td>
+        <td>Executed at end of cycle (post-code, pre-release), as designed.</td>
+        <td>None.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 3: Gate Execution Analysis ───────────────────────────── -->
+  <div class="card">
+    <h2>3. Gate Execution Analysis</h2>
+    <table>
+      <tr><th>Gate</th><th>Executed</th><th>Caught Issues</th><th>Cost Estimate</th><th>Notes</th></tr>
+      <tr>
+        <td>G0 Intake</td>
+        <td><span class="badge-yes">Yes</span> (collapsed)</td>
+        <td>N/A — scope pre-defined</td>
+        <td>~0 tokens (inline)</td>
+        <td>Scope defined from 14 commits on develop vs master. No human clarification required. G0/G1/G2 correctly collapsed into TASKS tracker creation per operating model guidance for verification-only releases.</td>
+      </tr>
+      <tr>
+        <td>G1 Planning</td>
+        <td><span class="badge-yes">Yes</span> (collapsed)</td>
+        <td>Identified 3 risk constraints</td>
+        <td>~0 tokens (inline with tracker)</td>
+        <td>TASKS-v0.5.0.md created with scope, risks (FR-07 backward compat, category field JSON stability), in-scope/out-of-scope, and R1&ndash;R12 task table. Parallelization not needed &mdash; sequential verification pipeline.</td>
+      </tr>
+      <tr>
+        <td>G2 Architecture</td>
+        <td><span class="badge-yes">Yes</span> (note only)</td>
+        <td>Confirmed no ADR change required</td>
+        <td>~0 tokens (inline)</td>
+        <td>Architect assessment: category field is additive non-breaking change to ValidationIssue frozen dataclass. No new module, no signature change. ADR note recorded in tracker. Correct and appropriately low-overhead.</td>
+      </tr>
+      <tr>
+        <td>G3 TDD Build</td>
+        <td><span class="badge-yes">Yes</span> (verification only)</td>
+        <td>0 rework issues (code already green)</td>
+        <td>~0 tokens (pre-gate validation)</td>
+        <td>All implementation already merged. Verified: ruff 0 errors (37 files), ruff-format PASS, mypy 0 issues (17 source files), pytest 613/613 PASS, coverage 95.93%. No build agent dispatched. TDD discipline on feature PRs maintained prior to this session.</td>
+      </tr>
+      <tr>
+        <td>G4 Quality Review</td>
+        <td><span class="badge-yes">Yes</span> (CONDITIONAL)</td>
+        <td>1 MAJOR (F-01: DEPENDENCY_OF), 3 MINOR (F-02/F-03/F-04 docs)</td>
+        <td>158,189 tokens total (79,592 review + 34,389 developer fix + 44,208 doc fix)</td>
+        <td>Dominant gate by cost. Reviewer examined full develop-vs-master diff (14 commits). F-01: DEPENDENCY_OF present in spdx_parser.py and spdx_yaml_parser.py but absent from spdx_tv_parser.py &mdash; a genuine functional gap. F-02/F-03/F-04: documentation consistency gaps (CHANGELOG, requirements.md, user-guide.md). All resolved before G5 was dispatched. Gate correctly held as CONDITIONAL until fixes were confirmed.</td>
+      </tr>
+      <tr>
+        <td>G5 Security</td>
+        <td><span class="badge-yes">Yes</span> (APPROVED)</td>
+        <td>4 MINOR (all pre-existing or low risk; none blocking)</td>
+        <td>75,886 tokens <span class="tag-measured">MEASURED</span></td>
+        <td>Dispatched after G4 fix loop completed. Reviewed FR-07 behavioral change (PURL/CPE removal), category field injection safety (HTML escaping), JSON output key stability, NTIA check removal scope. APPROVED. Higher than v0.4.0 G5 because behavioral change (FR-07 removal) required careful scope analysis to confirm no security regression. No rework triggered.</td>
+      </tr>
+      <tr>
+        <td>G6 CI Stability</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>0 issues (pre-commit hooks active)</td>
+        <td>~0 tokens (no failure to triage)</td>
+        <td>Pre-commit hooks (ruff + ruff-format) passed at all commit points. Zero remote CI lint/format failures for the fourth consecutive release. CI Ops agent had nothing to triage &mdash; a positive outcome representing structural debt that was paid back in v0.2.2.</td>
+      </tr>
+      <tr>
+        <td>G7 Docs Sync</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>README.md staleness: tool_version example still showed "0.4.0" post-bump</td>
+        <td>21,425 tokens <span class="tag-measured">MEASURED</span></td>
+        <td>Version bump to 0.5.0 in pyproject.toml and __init__.py. CHANGELOG [Unreleased] promoted to [0.5.0] with date 2026-04-29. README.md tool_version example stale reference identified and corrected. Lower than v0.4.0 G7 estimate: changes were corrections and promotions, not new content sections.</td>
+      </tr>
+      <tr>
+        <td>G8 Release Readiness</td>
+        <td><span class="badge-yes">Yes</span> (NO-GO then GO)</td>
+        <td>Initial NO-GO: G9/G10 reports not yet generated; build artifacts pending</td>
+        <td>42,270 tokens <span class="tag-measured">MEASURED</span></td>
+        <td>First dispatch issued NO-GO correctly identifying pending G9 and G10 artifacts and missing build artifacts. All substantive checks passed: 616/616 tests, 95.93% coverage, version consistency, CLI smoke tests including new JSON keys (tool_version, category), packaging. GO issued once G9/G10 completed. Release manager did not re-verify in a separate dispatch &mdash; final GO confirmation folded into orchestrator session post-G10. <span class="tag-infer">(inferred)</span></td>
+      </tr>
+      <tr>
+        <td>G9 Token Analytics</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>N/A (analytics gate)</td>
+        <td>~20,000 &ndash; 28,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>token-report-v0.5.0.html and token-delta-v0.4.0_to_v0.5.0.html both generated pre-tag. Subagent meta.json confirms token-analyst dispatch. Reports use measured token data from session telemetry (higher confidence than prior releases).</td>
+      </tr>
+      <tr>
+        <td>G10 Workflow Evaluation</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>3 workflow gaps; 5 improvement recommendations</td>
+        <td>~10,000 &ndash; 18,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>This report. Pre-tag as required. Subagent meta.json confirms workflow-analyst dispatch. All 12 agents assessed; all G0&ndash;G10 gates analyzed; 5-metric benchmark vs v0.4.0.</td>
+      </tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Gate pass rate: <strong>11 / 11 (100%)</strong>. No permanently skipped gates. G4 issued CONDITIONAL (resolved before advancement). G8 issued NO-GO (resolved before tag). Both instances reflect correct gate behavior.</p>
+  </div>
+
+  <!-- ── Section 4: Top Workflow Wins ──────────────��──────────────────── -->
+  <div class="card">
+    <h2>4. Top Workflow Wins</h2>
+    <ol>
+      <li><strong>Pre-commit hooks eliminated all remote CI lint/format failures for the fourth consecutive release.</strong><br>
+        The ruff + ruff-format pre-commit hooks added in v0.2.2 continue to deliver their structural benefit. In v0.5.0: zero CI format/lint failure cycles. All commits in the feature PRs (#16, #17, #18) passed cleanly. The compounding value of this structural fix is now evident across four releases: v0.2.2 (0 cycles, structural improvement), v0.3.0 (0), v0.4.0 (0), v0.5.0 (0).</li>
+      <li><strong>G4 Quality Review caught a genuine functional bug (F-01) that would have shipped.</strong><br>
+        The DEPENDENCY_OF fix in spdx_parser.py and spdx_yaml_parser.py was not propagated to spdx_tv_parser.py during the feature PR (#18). Without the G4 gate, this inconsistency would have shipped with v0.5.0: TV-format SBOMs expressing relationships via DEPENDENCY_OF would have incorrectly failed the FR-08 check despite the fix being the stated purpose of issues #11/#12. The gate functioned exactly as intended.</li>
+      <li><strong>Measured token telemetry provides High-confidence per-agent cost attribution.</strong><br>
+        Subagent meta.json labels + session-level token counts provide measured (not estimated) per-agent spend for all six dispatched subagents. This is the first release with measured confidence for individual agent costs. The data directly supports the finding that G4 consumed 53.1% of total spend &mdash; a fact rather than an estimate.</li>
+      <li><strong>Verification-only release pipeline executed correctly without process overhead.</strong><br>
+        The orchestrator correctly modeled a release where all code was pre-merged: G0/G1/G2 were collapsed into tracker creation, G3 was a verification pass rather than a TDD build. No architecture session was needed. The pipeline adapted to scope without procedural bloat, yet all mandatory gates (G4&ndash;G10) executed fully.</li>
+    </ol>
+  </div>
+
+  <!-- ── Section 5: Top Workflow Gaps ──────���──────────────────────────── -->
+  <div class="card">
+    <h2>5. Top Workflow Gaps</h2>
+    <ol>
+      <li><strong>Multi-parser consistency: DEPENDENCY_OF fix applied to 2 of 3 SPDX parsers (F-01).</strong><br>
+        <em>Root cause:</em> PR #18 modified spdx_parser.py and spdx_yaml_parser.py to add DEPENDENCY_OF to the qualifying relationship set, but did not modify spdx_tv_parser.py. All three parsers share the same logical relationship-filtering requirement (they produce the same NormalizedSBOM output), but there is no structural enforcement of that parity. The fix was partial because the developer (and reviewer at PR merge time) treated the three parsers as independent files rather than as a coordinated family.<br>
+        <em>Impact:</em> Medium. The bug was caught at G4 and fixed before release. However, the fix required a separate developer dispatch (34,389 tokens) and a corrective commit in the release session. If G4 had not been run, this bug would have shipped.<br>
+        <em>Fix:</em> Add a multi-parser consistency note to the developer agent definition: when a fix modifies a relationship-handling constant or method in one SPDX parser, verify the same change applies to all SPDX parser variants. Additionally, add a cross-parser consistency check to the reviewer checklist for any SPDX parser changes.</li>
+      <li><strong>Documentation gaps (F-02/F-03/F-04) reach the release gate rather than being closed at PR merge.</strong><br>
+        <em>Root cause:</em> Feature PRs #16, #17, #18 were merged to develop without complete corresponding documentation updates. Specifically: CHANGELOG.md entry for the category field was incomplete (F-02), requirements.md still referenced FR-07 as active after its removal (F-03), user-guide.md did not cover the category field or stable filename changes (F-04). These gaps indicate that documentation is treated as a release-time concern rather than a PR-merge concern.<br>
+        <em>Impact:</em> Low-Medium. Three separate documentation findings required a documentation-writer dispatch at 44,208 tokens. If documentation completeness were enforced at PR merge (part of the PR description or reviewer checklist), these findings would not accumulate to the release gate.<br>
+        <em>Fix:</em> Add a documentation completeness requirement to the PR merge checklist: any PR that changes behavior, adds a new output field, or modifies/removes an FR must include CHANGELOG, requirements.md, and user-guide.md updates as non-optional PR components. The reviewer at PR merge time should verify these three files are updated before approving the PR.</li>
+      <li><strong>README.md version example stale after version bump (G7).</strong><br>
+        <em>Root cause:</em> The README.md JSON output example block contained <code>tool_version: "0.4.0"</code>. After the version was bumped to 0.5.0 at G7, this example became stale. The G7 documentation-writer corrected it, but the issue reflects a pattern: hardcoded version strings in example output blocks are not automatically updated when version changes are applied.<br>
+        <em>Impact:</em> Low. Caught at G7 and fixed. But if missed, it would have been a misleading documentation artifact in the released README.<br>
+        <em>Fix:</em> Document version-string update locations in the documentation-writer agent checklist for the G7 version bump task: (1) pyproject.toml, (2) __init__.py, (3) CHANGELOG header, (4) README.md example output blocks containing version numbers. This prevents the stale example pattern from recurring.</li>
+    </ol>
+  </div>
+
+  <!-- ── Section 6: Benchmark vs v0.4.0 ──────────────────────────────── -->
+  <div class="card">
+    <h2>6. Benchmark vs v0.4.0</h2>
+    <table>
+      <tr><th>Metric</th><th>v0.4.0</th><th>v0.5.0</th><th>Delta</th></tr>
+      <tr>
+        <td>Gate pass rate</td>
+        <td>100% (11/11)</td>
+        <td>100% (11/11)</td>
+        <td class="delta-flat">Flat &mdash; consistent gate discipline</td>
+      </tr>
+      <tr>
+        <td>CI failure cycles</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="delta-flat">Flat &mdash; pre-commit hooks effective for 4th consecutive release</td>
+      </tr>
+      <tr>
+        <td>G4 rework findings (MAJOR)</td>
+        <td>0 MAJOR</td>
+        <td>1 MAJOR (F-01: DEPENDENCY_OF)</td>
+        <td class="delta-pos">Regression: +1 MAJOR finding requiring developer fix loop</td>
+      </tr>
+      <tr>
+        <td>G4 rework findings (MINOR)</td>
+        <td>2 MINOR</td>
+        <td>3 MINOR (F-02/F-03/F-04 docs)</td>
+        <td class="delta-pos">Slight regression: +1 MINOR doc gap</td>
+      </tr>
+      <tr>
+        <td>Rework overhead (fix dispatches)</td>
+        <td>0 fix dispatches</td>
+        <td>2 fix dispatches (developer + doc-writer)</td>
+        <td class="delta-pos">Regression: 78,597 tokens in rework fix loops</td>
+      </tr>
+      <tr>
+        <td>Rework ratio</td>
+        <td>~4&ndash;6% (est.)</td>
+        <td>~5&ndash;8%</td>
+        <td class="delta-pos">Slight increase &mdash; rework absolute cost higher due to fix dispatches</td>
+      </tr>
+      <tr>
+        <td>Skipped gates</td>
+        <td>0</td>
+        <td>0 (G0/G1/G2 collapsed, not skipped)</td>
+        <td class="delta-flat">Flat &mdash; no gates permanently skipped</td>
+      </tr>
+      <tr>
+        <td>Agent compliance rate (role fulfilled)</td>
+        <td>11/11 (100%)</td>
+        <td>10/12 assessed (Partial for Tester, Partial for Doc Writer)</td>
+        <td class="delta-pos">Slight regression: 2 agents with partial fulfillment due to doc hygiene and TDD ordering gaps</td>
+      </tr>
+      <tr>
+        <td>Token data confidence</td>
+        <td>Medium (all estimated)</td>
+        <td>High for 6 of 8 dispatched agents (measured)</td>
+        <td class="delta-neg">Improved &mdash; telemetry DB integration provides measured per-agent costs</td>
+      </tr>
+      <tr>
+        <td>Tests added</td>
+        <td>+78 (2 new parsers)</td>
+        <td>+22 (bug fixes + 1 regression test)</td>
+        <td class="delta-flat">Proportional &mdash; smaller scope, smaller test delta</td>
+      </tr>
+      <tr>
+        <td>Security findings (MAJOR/CRITICAL)</td>
+        <td>0</td>
+        <td>0 (4 MINOR, all pre-existing)</td>
+        <td class="delta-flat">Flat &mdash; clean security posture maintained</td>
+      </tr>
+      <tr>
+        <td>Total token spend (release session)</td>
+        <td>~200,000&ndash;260,000 (est.)</td>
+        <td>297,770 (measured)</td>
+        <td class="delta-pos">Higher raw total; but smaller scope &mdash; G4 review-and-fix loop dominates (53.1%)</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 7: Improvement Recommendations ───────────────────────── -->
+  <div class="card">
+    <h2>7. Improvement Recommendations (Ranked by Impact)</h2>
+    <table>
+      <tr><th>Rank</th><th>Recommendation</th><th>Target</th><th>Expected Improvement</th><th>Effort</th><th>Type</th></tr>
+      <tr>
+        <td>1</td>
+        <td>Add a "multi-parser consistency" check to both the developer and reviewer agent definitions: when a fix modifies relationship-handling logic in one SPDX parser, explicitly require verification that the same change applies to all SPDX parser variants (spdx_parser.py, spdx_yaml_parser.py, spdx_tv_parser.py). A "family note" comment in constants.py near the QUALIFYING_RELATIONSHIP_TYPES constant pointing to all three usage sites would provide a persistent code-level reminder.</td>
+        <td>Developer agent definition + Reviewer checklist</td>
+        <td>Eliminates F-01 class of bugs at the source: prevents partial application of cross-parser changes. Estimated savings: ~78,597 tokens per avoided rework loop.</td>
+        <td>Low &mdash; one checklist addition each to developer.md and reviewer.md; one comment in constants.py</td>
+        <td>Agent definition update + code comment</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Add documentation completeness as a PR merge requirement, not a release-gate check. Feature and fix PRs should include CHANGELOG entry, requirements.md update (for FR changes), and user-guide.md coverage of new fields/behavior as non-optional components. The reviewer at PR merge time verifies these three files are updated before approving. Currently, documentation is treated as a release-time concern, causing accumulated documentation debt that shows up as multiple G4 findings.</td>
+        <td>Documentation Writer + Reviewer (PR checklist)</td>
+        <td>Eliminates F-02/F-03/F-04 class of findings from accumulating to the release gate. Estimated savings: ~44,208 tokens per release in doc-fix dispatches; faster G4 gate (smaller diff to review).</td>
+        <td>Low &mdash; add checklist items to reviewer.md and documentation-writer.md; update branching policy docs</td>
+        <td>Agent definition update + workflow change</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Add a version-string update checklist to the documentation-writer G7 task: explicitly enumerate all locations that must be updated when the version changes, including README.md example output blocks containing version numbers. This prevents the stale tool_version example pattern from recurring on each release.</td>
+        <td>Documentation Writer agent definition (G7 checklist)</td>
+        <td>Prevents stale version examples in README.md. Low individual impact but prevents a recurring documentation hygiene issue.</td>
+        <td>Low &mdash; one addition to documentation-writer.md G7 section</td>
+        <td>Agent definition update</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>For bug fixes found at G4 (rework loops), require the developer to write a failing regression test before writing the fix. This preserves TDD ordering: the failing test confirms the bug exists, the fix makes it pass, and the commit sequence documents both. Currently the developer in this cycle authored the test and fix together, skipping the "write failing test first" step. The fix is small but preserves methodological consistency.</td>
+        <td>Developer agent definition + Tester coordination</td>
+        <td>Restores TDD discipline in rework loops. Provides cleaner commit history showing the bug being confirmed before being fixed. No token efficiency gain but improves process integrity.</td>
+        <td>Low &mdash; add a "rework TDD" note to developer.md</td>
+        <td>Agent definition update</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Investigate whether G8 Release Readiness can be split into a "lightweight first pass" and "full verification pass". The current single dispatch at 42,270 tokens performs both checklist verification and detailed smoke testing. If the checklist items (version consistency, test pass, coverage) could be verified cheaply in a pre-check before full smoke testing, the NO-GO case would cost less. This is a medium-effort optimization for future cycles.</td>
+        <td>Release Manager agent definition + G8 gate policy</td>
+        <td>Reduces G8 token cost when NO-GO is expected (e.g., first pass before G9/G10 complete). Estimated savings: 15,000&ndash;20,000 tokens when NO-GO is a known outcome.</td>
+        <td>Medium &mdash; requires redesigning the G8 task description and release-manager.md</td>
+        <td>Gate policy update + agent definition update</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 8: Trend Assessment ─────────────��────────────────────── -->
+  <div class="card">
+    <h2>8. Trend Assessment</h2>
+    <table>
+      <tr><th>Trend Area</th><th>v0.2.2</th><th>v0.3.0</th><th>v0.4.0</th><th>v0.5.0</th><th>Trend</th></tr>
+      <tr>
+        <td>CI failure cycles</td>
+        <td>4&ndash;6 cycles</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="delta-neg">Sustained improvement &mdash; structural fix from v0.2.2 effective for 3 consecutive releases</td>
+      </tr>
+      <tr>
+        <td>Gate pass rate</td>
+        <td>11/11 (100%)</td>
+        <td>11/11 (100%)</td>
+        <td>11/11 (100%)</td>
+        <td>11/11 (100%)</td>
+        <td class="delta-flat">Stable &mdash; consistent gate discipline across all releases</td>
+      </tr>
+      <tr>
+        <td>G4 MAJOR findings</td>
+        <td>Multiple (D1 deferred)</td>
+        <td>0</td>
+        <td>0</td>
+        <td>1 (F-01 DEPENDENCY_OF)</td>
+        <td class="delta-pos">Mild regression vs v0.4.0 &mdash; multi-parser consistency gap introduces new failure mode</td>
+      </tr>
+      <tr>
+        <td>Rework ratio</td>
+        <td>~24%</td>
+        <td>~6&ndash;9%</td>
+        <td>~4&ndash;6%</td>
+        <td>~5&ndash;8%</td>
+        <td class="delta-flat">Plateau &mdash; rework ratio stabilized at 4&ndash;8% range; not improving further without PR-level doc enforcement</td>
+      </tr>
+      <tr>
+        <td>Token analytics confidence</td>
+        <td>Low (all est.)</td>
+        <td>Low (all est.)</td>
+        <td>Medium (all est.)</td>
+        <td>High for agents (measured)</td>
+        <td class="delta-neg">Improving &mdash; telemetry DB integration now provides measured per-agent costs</td>
+      </tr>
+      <tr>
+        <td>Security review quality</td>
+        <td>D1 deferred</td>
+        <td>D1 resolved</td>
+        <td>Full review (APPROVED, 0 findings)</td>
+        <td>Full review (APPROVED, 4 MINOR)</td>
+        <td class="delta-flat">Stable &mdash; security gate consistently executed, findings proportional to scope</td>
+      </tr>
+      <tr>
+        <td>Agent compliance (role fulfilled)</td>
+        <td>100%</td>
+        <td>100%</td>
+        <td>100%</td>
+        <td>~83% (10 of 12, with 2 Partial)</td>
+        <td class="delta-pos">Mild regression &mdash; documentation and TDD discipline gaps at PR level create Partial ratings</td>
+      </tr>
+    </table>
+    <h3>Overall Trend Verdict</h3>
+    <p><span class="verdict-attention">STABLE WITH IDENTIFIED PLATEAU</span></p>
+    <p>The sbom-validator workflow has maintained strong structural health across four releases: zero CI failure cycles sustained, 100% gate pass rate, and consistently clean security posture. However, two metrics have plateaued or mildly regressed in v0.5.0: the rework ratio is not declining further (4&ndash;8% range for two consecutive releases), and agent compliance dropped to 83% due to documentation and TDD discipline gaps that are rooted in PR-level practices rather than release-level practices.</p>
+    <p>The primary lever for the next improvement phase is clear: shift documentation completeness requirements upstream from the release gate to the PR merge gate. If CHANGELOG, requirements.md, and user-guide.md updates are enforced at PR merge time, the G4 documentation finding pattern (F-02/F-03/F-04 in v0.5.0, ADR-001 staleness in v0.4.0) will be eliminated. Similarly, the multi-parser consistency check addresses a new failure mode introduced by having multiple structurally related parser files with no shared enforcement mechanism.</p>
+    <p>The measured token telemetry introduced in v0.5.0 is a meaningful improvement: it provides objective per-agent cost data that was previously unavailable. This enables precise identification of where rework cost is occurring, which directly supports targeted improvements in future releases.</p>
+  </div>
+
+</div>
+</body>
+</html>

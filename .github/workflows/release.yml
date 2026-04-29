@@ -57,6 +57,63 @@ jobs:
           fi
           echo "Workflow report verified: $REPORT"
 
+  generate-sboms:
+    needs: verify-tag-provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.8.3"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install production dependencies only
+        run: poetry install --only main
+
+      - name: Generate CycloneDX 1.6 SBOM
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          poetry run cyclonedx-py poetry \
+            --spec-version 1.6 \
+            --output-format JSON \
+            --no-dev \
+            -o "sbom-validator-${VERSION}.cdx.json"
+
+      - name: Install syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Generate SPDX 2.3 SBOM
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          syft scan .venv \
+            --source-name "sbom-validator" \
+            --source-version "${VERSION#v}" \
+            --output "spdx-json=sbom-validator-${VERSION}.spdx.json"
+
+      - name: Generate checksums
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          sha256sum "sbom-validator-${VERSION}.cdx.json"  > "sbom-validator-${VERSION}.cdx.json.sha256"
+          sha256sum "sbom-validator-${VERSION}.spdx.json" > "sbom-validator-${VERSION}.spdx.json.sha256"
+
+      - name: Upload SBOMs to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sbom-validator-${{ github.ref_name }}.cdx.json
+            sbom-validator-${{ github.ref_name }}.cdx.json.sha256
+            sbom-validator-${{ github.ref_name }}.spdx.json
+            sbom-validator-${{ github.ref_name }}.spdx.json.sha256
+
   build-linux:
     needs: verify-tag-provenance
     runs-on: ubuntu-latest

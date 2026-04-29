@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token Delta Report — v0.4.0 to v0.5.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #4c1d95; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #f5f3ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .tag-measured { color: #166534; font-size: 0.8rem; font-weight: bold; }
+    .delta-pos { color: #b91c1c; }
+    .delta-neg { color: #166534; }
+    .delta-flat { color: #6b7280; }
+    .verdict-regressed { color: #b91c1c; font-weight: bold; font-size: 1.1rem; }
+    .verdict-improved { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    .verdict-flat { color: #b45309; font-weight: bold; font-size: 1.1rem; }
+    ul li { margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Token Delta Report — v0.4.0 to v0.5.0</h1>
+  <p class="muted">SBOM Validator &middot; Generated: 2026-04-29</p>
+
+  <div class="card">
+    <h2>Release Comparison Overview</h2>
+    <table>
+      <tr><th>Dimension</th><th>v0.4.0 (Baseline)</th><th>v0.5.0 (Current)</th><th>Delta</th></tr>
+      <tr><td>Release date</td><td>2026-04-14</td><td>2026-04-29</td><td class="delta-flat">+15 days</td></tr>
+      <tr><td>Sessions</td><td>1</td><td>1</td><td class="delta-flat">Flat</td></tr>
+      <tr><td>Scope type</td><td>Feature addition: SPDX TV + YAML format support</td><td>Bug fix + feature polish: FR-07 removal, DEPENDENCY_OF fix, issue categories, report improvements</td><td class="delta-neg">Smaller scope</td></tr>
+      <tr><td>New parsers</td><td>2 (spdx_tv_parser.py, spdx_yaml_parser.py)</td><td>0</td><td class="delta-neg">-2 parsers</td></tr>
+      <tr><td>New ADRs</td><td>1 (ADR-009)</td><td>0 (note only)</td><td class="delta-neg">-1 ADR</td></tr>
+      <tr><td>Test count</td><td>594</td><td>616</td><td class="delta-pos">+22 tests (+3.7%)</td></tr>
+      <tr><td>Coverage</td><td>96%</td><td>95.93%</td><td class="delta-flat">Flat (within margin)</td></tr>
+      <tr><td>Agents dispatched</td><td>~7 (est.)</td><td>6 (measured)</td><td class="delta-neg">-1</td></tr>
+      <tr><td>Rework cycles (G4 findings)</td><td>0 MAJOR, 2 MINOR findings</td><td>1 MAJOR (F-01), 3 MINOR (F-02/F-03/F-04) findings; all fixed</td><td class="delta-pos">+1 MAJOR finding + fix loop</td></tr>
+      <tr><td>Rework ratio</td><td>~4–6% (est.)</td><td>~5–8%</td><td class="delta-pos">Slight increase</td></tr>
+      <tr><td>Token data confidence</td><td>Medium (all estimated)</td><td>High for agent totals (measured); Medium for rework breakdown</td><td class="delta-neg">Improved confidence</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Token Comparison Table</h2>
+    <p class="muted">v0.4.0 values are estimates <span class="tag-est">(EST)</span> from <code>docs/releases/token-report-v0.4.0.html</code>. v0.5.0 total is <span class="tag-measured">MEASURED</span>.</p>
+    <table>
+      <tr><th>Category</th><th>v0.4.0</th><th>v0.5.0</th><th>Delta</th><th>Notes</th></tr>
+      <tr>
+        <td>Total tokens</td>
+        <td>~200,000 – 260,000 <span class="tag-est">EST</span></td>
+        <td>297,770 <span class="tag-measured">MEASURED</span></td>
+        <td class="delta-pos">+15% – +49% vs estimate range</td>
+        <td>v0.5.0 exceeds v0.4.0 midpoint (~230,000) despite smaller scope. Key driver: G4 review + G5 review each required large context windows for a 14-commit diff review. In v0.4.0, review agents had smaller context (fewer merged commits, fresh branch). This is a structural cost of verification-only release cycles.</td>
+      </tr>
+      <tr>
+        <td>Productive tokens</td>
+        <td>~185,000 – 245,000 <span class="tag-est">EST</span></td>
+        <td>~272,000 – 282,000 <span class="tag-est">EST</span></td>
+        <td class="delta-pos">+15% – +52%</td>
+        <td>Higher absolute productive spend driven by large-context review agents (G4: 79,592; G5: 75,886). The productive fraction is high relative to total — most tokens generated useful quality and security verification output.</td>
+      </tr>
+      <tr>
+        <td>Rework tokens</td>
+        <td>~8,000 – 15,000 <span class="tag-est">EST</span></td>
+        <td>~15,000 – 25,000 <span class="tag-est">EST</span></td>
+        <td class="delta-pos">+87% at midpoints</td>
+        <td>Increase driven by F-01 MAJOR finding requiring developer fix dispatch. F-01 (DEPENDENCY_OF missing from spdx_tv_parser.py) was a genuine defect gap from original feature development. Rework cost was real but contained.</td>
+      </tr>
+      <tr>
+        <td>Rework ratio</td>
+        <td>~4–6% <span class="tag-est">EST</span></td>
+        <td>~5–8% <span class="tag-est">EST</span></td>
+        <td class="delta-pos">+1pp to +2pp</td>
+        <td>Slight increase — attributable to single MAJOR defect gap. Still within acceptable range for a bug-fix/polish release.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Per-Phase Token Comparison</h2>
+    <table>
+      <tr><th>Gate / Phase</th><th>v0.4.0 <span class="tag-est">EST</span></th><th>v0.5.0 <span class="tag-measured">MEASURED*</span></th><th>Delta</th><th>Notes</th></tr>
+      <tr><td>G0 Intake</td><td>~3,000</td><td>~0 (folded in)</td><td class="delta-neg">-3,000</td><td>v0.5.0 scope pre-defined from merged commits; no intake cost.</td></tr>
+      <tr><td>G1 Planning</td><td>~8,000 – 12,000</td><td>~0 (folded in)</td><td class="delta-neg">-8,000 to -12,000</td><td>No feature branch planning needed; TASKS tracker creation was minimal.</td></tr>
+      <tr><td>G2 Architecture</td><td>~18,000 – 25,000</td><td>~0 (note only)</td><td class="delta-neg">-18,000 to -25,000</td><td>No new ADR. Additive model change only. Architect note was a few lines.</td></tr>
+      <tr><td>G3 TDD Build</td><td>~110,000 – 145,000</td><td>~0 (verification only)</td><td class="delta-neg">-110,000 to -145,000</td><td>Largest gate eliminated entirely — all implementation already merged. This is the structural reason v0.5.0 should be cheaper than v0.4.0 on a per-unit-of-scope basis.</td></tr>
+      <tr><td>G4 Quality Review (incl. fix loop)</td><td>~12,000 – 18,000</td><td>158,189</td><td class="delta-pos">+140,000 – +146,000</td><td>Dominant gate reversal: G4 became the single largest gate in v0.5.0. Reviewer context window spans 14 merged commits. F-01 MAJOR triggered developer dispatch (34,389) and F-02/F-03/F-04 triggered doc-writer dispatch (44,208). In v0.4.0 the same gate was fast (clean branch, 0 MAJOR findings).</td></tr>
+      <tr><td>G5 Security</td><td>~10,000 – 15,000</td><td>75,886</td><td class="delta-pos">+60,000 – +66,000</td><td>FR-07 behavioral change required full scope analysis. In v0.4.0, YAML deserialization risk was a well-understood pattern and the review was fast. In v0.5.0, the security reviewer needed to reason about the consequences of removing a NTIA check from the validation pipeline.</td></tr>
+      <tr><td>G6 CI Stabilization</td><td>~3,000 – 5,000</td><td>~0</td><td class="delta-neg">-3,000 to -5,000</td><td>Pre-commit hooks eliminated all CI failure cycles. Fourth consecutive clean release.</td></tr>
+      <tr><td>G7 Docs Sync</td><td>~15,000 – 20,000</td><td>21,425</td><td class="delta-flat">Flat to slight increase</td><td>v0.5.0 G7 included version bump + CHANGELOG promotion only. Comparable to v0.4.0 G7 in cost despite narrower scope — version bump requires reading and verifying multiple files.</td></tr>
+      <tr><td>G8 Release Readiness</td><td>~5,000 – 8,000</td><td>42,270</td><td class="delta-pos">+34,000 – +37,000</td><td>Significant increase. v0.5.0 G8 required JSON output key stability verification (new requirement: category field, tool_version field must be stable). v0.4.0 G8 was a simpler smoke test.</td></tr>
+      <tr><td>G9 Token Analytics</td><td>~12,000 – 18,000</td><td>~20,000 – 28,000</td><td class="delta-pos">+6,000 – +10,000</td><td>Slightly higher: delta report now covers measured vs estimated comparison, adding analytical depth. <span class="tag-est">EST</span>.</td></tr>
+    </table>
+    <p class="muted">* G4 and G5 values are measured from agent dispatch telemetry. G0/G1/G2/G3/G6 values are effectively zero (no agent dispatched). G7 and G8 are measured. G9/G10 are estimated.</p>
+  </div>
+
+  <div class="card">
+    <h2>Per-Agent Token Comparison</h2>
+    <table>
+      <tr><th>Agent Family</th><th>v0.4.0 Share <span class="tag-est">EST</span></th><th>v0.5.0 Share <span class="tag-measured">MEASURED</span></th><th>Delta</th><th>Notes</th></tr>
+      <tr><td>Developer</td><td>~46%</td><td>11.5% (34,389 tokens)</td><td class="delta-neg">-34pp</td><td>Dramatic reduction — no implementation work in v0.5.0. The one developer dispatch was a targeted bug fix (DEPENDENCY_OF), not a full feature build.</td></tr>
+      <tr><td>Tester</td><td>~15%</td><td>~0% (folded into developer fix)</td><td class="delta-neg">-15pp</td><td>No separate tester agent dispatched; regression test was written by the developer as part of the F-01 fix.</td></tr>
+      <tr><td>Architect</td><td>~8%</td><td>~0%</td><td class="delta-neg">-8pp</td><td>No ADR required; architecture note folded into TASKS tracker.</td></tr>
+      <tr><td>Security Reviewer</td><td>~5% (~10,000–15,000 est.)</td><td>25.5% (75,886 tokens)</td><td class="delta-pos">+20pp</td><td>Major share increase driven by FR-07 behavioral change scope analysis. Security review became the second-largest agent spend in v0.5.0. Absolute cost ~5x higher than v0.4.0.</td></tr>
+      <tr><td>Reviewer (quality, G4)</td><td>~6% (~12,000–18,000 est.)</td><td>26.7% (79,592 tokens)</td><td class="delta-pos">+21pp</td><td>Largest single agent in v0.5.0. Context window spans 14 merged commits. In v0.4.0 the reviewer had a clean, small branch and 0 MAJOR findings. Cost increase reflects the verification-only release cycle pattern.</td></tr>
+      <tr><td>Documentation Writer</td><td>~7% (~15,000–20,000 est.)</td><td>22.0% (65,633 tokens combined)</td><td class="delta-pos">+15pp</td><td>Two separate documentation-writer dispatches (G7 version bump: 21,425; F-02/F-03/F-04 fixes: 44,208). The reactive fix dispatch accounts for most of the increase. Absolute cost approximately 3x higher than v0.4.0 estimate.</td></tr>
+      <tr><td>Release Manager</td><td>~7% (bundled)</td><td>14.2% (42,270 tokens)</td><td class="delta-pos">+7pp</td><td>Standalone G8 readiness check with JSON output key stability verification. Higher than v0.4.0 due to expanded checklist scope.</td></tr>
+      <tr><td>Token Analyst</td><td>~6% (~12,000–18,000 est.)</td><td>~7–9% (~20,000–28,000 est.)</td><td class="delta-flat">Flat</td><td>Consistent per-release overhead. Slight increase reflects additional analytical depth (measured vs estimated comparison).</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Improvements Adopted from v0.4.0 Recommendations</h2>
+    <table>
+      <tr><th>v0.4.0 Recommendation</th><th>v0.5.0 Status</th></tr>
+      <tr>
+        <td>Maintain G5 security review cadence: add yaml.safe_load audit to security checklist</td>
+        <td>Adopted and extended. G5 executed with full checklist. FR-07 behavioral change received thorough security scope analysis beyond yaml.safe_load. Checklist evolution is working.</td>
+      </tr>
+      <tr>
+        <td>Token Analytics: use session context to record actual token counts for measured reporting</td>
+        <td>Partially adopted. v0.5.0 agent dispatch token counts were captured from session telemetry, upgrading six agent values from EST to MEASURED. Full TASKS tracker integration (recording counts at dispatch time) not yet implemented.</td>
+      </tr>
+      <tr>
+        <td>mypy strict mode CI step for yaml.safe_load type annotation regressions</td>
+        <td>Not implemented. mypy already catches these at CI time; no regression observed in v0.5.0. Deferred as LOW priority.</td>
+      </tr>
+      <tr>
+        <td>Fixture generation helper script for SPDX serialization formats</td>
+        <td>Not implemented. v0.5.0 added no new fixture files. Deferred — only relevant if additional formats are added.</td>
+      </tr>
+      <tr>
+        <td>Abstract YAML/JSON raw doc loading into shared utility</td>
+        <td>Not implemented. No new parsers added in v0.5.0. Cosmetic improvement deferred.</td>
+      </tr>
+      <tr>
+        <td>ADR-001 context section update to reference ADR-009</td>
+        <td>Not confirmed. v0.5.0 scope did not include ADR maintenance. Remains deferred.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>New Friction Points Identified in v0.5.0</h2>
+    <ul>
+      <li><strong>Verification-only releases amplify review gate costs:</strong> When no new feature branch is created and all work is already merged to develop, the G4 reviewer must examine a cumulative diff (14 commits) rather than a focused feature branch. This inflated the reviewer context window by ~5–6x vs v0.4.0, making G4 the dominant gate instead of G3. Future verification-only releases should scope the reviewer's input to the diff since the last release tag, not the full session history.</li>
+      <li><strong>Cross-parser consistency gap (F-01 root cause):</strong> DEPENDENCY_OF was added to the JSON/YAML SPDX parsers but not to spdx_tv_parser.py. The original feature implementation had no checklist item requiring "apply fix to all SPDX serialization variants." This is a structural pattern risk — any parser-level fix can have this omission.</li>
+      <li><strong>Documentation written across multiple files without a consolidation pass:</strong> F-02 (CHANGELOG), F-03 (requirements.md), F-04 (user-guide.md) were all documentation consistency gaps. All three could have been caught in a single proactive documentation-writer pass before merging to develop. Instead they were caught reactively in G4, each requiring a separate fix dispatch with a full context reload.</li>
+      <li><strong>G8 checklist scope expansion without cost calibration:</strong> The release manager's checklist now includes JSON output key stability verification (new in v0.5.0 due to the category and tool_version fields). This expanded the G8 dispatch cost from ~5,000–8,000 (v0.4.0) to 42,270. The checklist expansion is appropriate, but the cost increase was not anticipated in the v0.4.0 forecast.</li>
+      <li><strong>Behavioral change releases (FR-07 removal) require higher G5 security review investment:</strong> The v0.4.0 G5 forecast assumed future security reviews would remain at ~10,000–15,000 tokens. A release that removes a validation check requires substantive scope analysis, not just an input-validation audit. Security review cost scaling should factor in whether the release includes any behavioral change to the validation pipeline.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Net Efficiency Verdict</h2>
+    <p><span class="verdict-flat">FLAT (structurally expected)</span></p>
+    <p>Raw token spend for v0.5.0 (297,770 measured) is approximately 29% above the v0.4.0 midpoint estimate (~230,000). However, this increase is structurally expected given the release pattern: v0.5.0 is a verification-only release (no new feature branches), which eliminates the large G3 TDD Build cost but shifts the token burden entirely to the G4 reviewer, G5 security reviewer, and G8 release manager. These agents each require large context windows proportional to the accumulated diff on develop since the last release tag.</p>
+    <p>The rework ratio increase (5–8% vs 4–6%) reflects one genuine defect (F-01: DEPENDENCY_OF) that was missed during original feature development. This is the primary actionable finding from this release: cross-parser consistency checking must be a mandatory gate item for any parser-level fix.</p>
+    <p>Confidence in v0.5.0 data is higher than v0.4.0 — six of seven agent values are measured rather than estimated. This is a structural improvement that benefits forecast accuracy for future releases.</p>
+  </div>
+
+  <div class="card">
+    <h2>Forecast for v0.6.0</h2>
+    <table>
+      <tr><th>Scenario</th><th>Estimated Token Budget</th><th>Key Driver</th></tr>
+      <tr>
+        <td>Bug fix / polish only (no new features, no behavioral changes)</td>
+        <td>~150,000 – 200,000</td>
+        <td>G4 reviewer context bounded to small diff; G5 security review scoped to input-validation changes only. Lower than v0.5.0 because no behavioral change (FR-07-class removal) requires full G5 scope analysis.</td>
+      </tr>
+      <tr>
+        <td>Single new feature (e.g., one new CycloneDX version, one new CLI option)</td>
+        <td>~200,000 – 270,000</td>
+        <td>Moderate G3 TDD build (schema wiring + fixture set + ~20–30 tests) plus normal G4/G5 review load. Similar profile to v0.3.0.</td>
+      </tr>
+      <tr>
+        <td>Medium scope (new parser or two concurrent features)</td>
+        <td>~280,000 – 360,000</td>
+        <td>G3 TDD Build returns as dominant gate. G4 reviewer context grows proportionally. May require new ADR (G2 cost increases). Similar or higher than v0.4.0.</td>
+      </tr>
+      <tr>
+        <td>Verification-only release with behavioral change (like v0.5.0)</td>
+        <td>~270,000 – 330,000</td>
+        <td>G4 and G5 each require large context windows. If cross-parser consistency checking is added to the reviewer checklist, rework loop cost (~78,000 tokens in v0.5.0) can be eliminated, reducing the ceiling.</td>
+      </tr>
+    </table>
+    <p class="muted">Forecast confidence: <strong>Medium-High</strong> for small scope (well-established baseline). <strong>Medium</strong> for medium scope (depends on whether ADR is required and number of new tests). The v0.5.0 measured data provides a concrete anchor for verification-only release cost modeling.</p>
+  </div>
+
+  <div class="card">
+    <h2>Methodology</h2>
+    <p class="muted">v0.4.0 baseline values are estimates <span class="tag-est">(EST)</span> taken from <code>docs/releases/token-report-v0.4.0.html</code>. v0.5.0 values for the six agent dispatches are <span class="tag-measured">MEASURED</span> from session telemetry (reviewer: 79,592; developer: 34,389; documentation-writer fix: 44,208; security-reviewer: 75,886; documentation-writer G7: 21,425; release-manager: 42,270). Total measured: 297,770 tokens. G9/G10 token values are estimated based on prior release baselines. Delta calculations use exact measured values where available and midpoints of estimate ranges where not. Confidence: <strong>High</strong> for v0.5.0 measured values; <strong>Medium</strong> for v0.4.0 baseline (all estimated); <strong>Medium</strong> for delta precision where one input is estimated.</p>
+  </div>
+
+</div>
+</body>
+</html>

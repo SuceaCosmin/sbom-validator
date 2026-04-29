@@ -36,10 +36,13 @@ from sbom_validator.models import NormalizedComponent, NormalizedRelationship, N
 
 logger = logging.getLogger(__name__)
 
-# Qualifying relationship types (same set as spdx_parser.py)
+# Qualifying relationship types (same set as spdx_parser.py).
+# DEPENDENCY_OF is the inverse of DEPENDS_ON and must be included to avoid
+# false-positive FR-08 failures when producers use the inverse form (#11/#12).
 _QUALIFYING_RELATIONSHIP_TYPES: frozenset[str] = frozenset(
     {
         "DEPENDS_ON",
+        "DEPENDENCY_OF",
         "DYNAMIC_LINK",
         "STATIC_LINK",
         "RUNTIME_DEPENDENCY_OF",

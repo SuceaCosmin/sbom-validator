@@ -26,8 +26,8 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 | ADR-003 | Two-stage pipeline: schema validation (collect-all), then NTIA checks (collect-all, all 7 run independently). **Schema failure blocks the NTIA stage entirely.** |
 | ADR-004 | Frozen dataclasses for all result types. `ValidationStatus` and `IssueSeverity` inherit from `str` for JSON serialization. |
 | ADR-005 | CLI uses Click. Command: `sbom-validator validate <FILE> [--format text\|json]`. Exit codes: 0=PASS, 1=FAIL, 2=ERROR. |
-| ADR-006 | Logging uses Python stdlib `logging`. New `--log-level` CLI option (default: WARNING). All log output goes to stderr only. Logger hierarchy: `sbom_validator.<module>`. `configure_logging(level)` called once at CLI startup. |
-| ADR-007 | New `--report-dir PATH` CLI option writes paired HTML + JSON reports when supplied. Both reports always written together. Filenames: `sbom-report-<basename>-<YYYYMMDD-HHMMSS>.{html,json}`. HTML uses `string.Template` (no Jinja2). `report_writer.py` does not modify `models.py`. |
+| ADR-006 | Logging uses Python stdlib `logging`. New `--log-level` CLI option (default: WARNING). All log output goes to stderr only. Logger hierarchy: `sbom_validator.<module>`. `configure_logging(level)` called once at CLI startup. When INFO or DEBUG is active, the first log line is always `sbom-validator <version>` from `sbom_validator.cli`. |
+| ADR-007 | New `--report-dir PATH` CLI option writes paired HTML + JSON reports when supplied. Both reports always written together. Filenames: `sbom-report-<basename>.{html,json}` (fixed, no timestamp). HTML uses `string.Template` (no Jinja2). `report_writer.py` does not modify `models.py`. `OSError` on write is caught non-fatally in `cli.py` (warns to stderr, exit code unchanged). |
 | ADR-008 | Standalone binary via PyInstaller >= 6.0, `--onefile` mode. Targets: Linux amd64 and Windows amd64. Schema files bundled via `datas` in `sbom_validator.spec`. `spdx-tools` and `cyclonedx-bom` excluded from binary. Release triggered by `v*.*.*` tags via `.github/workflows/release.yml`. |
 | ADR-009 | SPDX TV and YAML sub-formats: `FORMAT_SPDX_TV="spdx-tv"`, `FORMAT_SPDX_YAML="spdx-yaml"`. Detection priority: JSON → CycloneDX XML → TV (`startswith("SPDXVersion: ")`) → YAML (`safe_load`+`spdxVersion`). TV skips schema validation with logged INFO. YAML validates against existing `spdx-2.3.schema.json`. Shared `_parse_spdx_document` helper in `spdx_parser.py`. `pyyaml>=6.0` runtime dep. |
 
@@ -76,7 +76,8 @@ def configure_logging(level: str) -> None: ...
 # src/sbom_validator/report_writer.py  (ADR-007)
 def write_reports(result: ValidationResult, report_dir: Path) -> tuple[Path, Path]: ...
 # Returns (html_path, json_path). Creates report_dir if absent.
-# Called from cli.py only when --report-dir is supplied.
+# Called from cli.py only when --report-dir is supplied; OSError is caught there (non-fatal).
+# Filenames are fixed: sbom-report-<stem>.html / sbom-report-<stem>.json (no timestamp).
 # Does NOT modify ValidationResult or models.py.
 ```
 
@@ -106,7 +107,7 @@ All three types are `@dataclass(frozen=True)`.
 | `name` | `str \| None` | FR-05 |
 | `version` | `str \| None` | FR-06 |
 | `supplier` | `str \| None` | FR-04 |
-| `identifiers` | `tuple[str, ...]` | FR-07 |
+| `identifiers` | `tuple[str, ...]` | *(not enforced — FR-07 removed)* |
 
 **`NormalizedRelationship`**: `from_id: str`, `to_id: str`, `relationship_type: str`
 
@@ -119,7 +120,7 @@ All three types are `@dataclass(frozen=True)`.
 | FR-04 | Supplier Name | `packages[*].supplier` (strip `"Organization: "`/`"Tool: "` prefix; `NOASSERTION`→`None`) | `components[*].supplier.name` |
 | FR-05 | Component Name | `packages[*].name` | `components[*].name` |
 | FR-06 | Component Version | `packages[*].versionInfo` (`NOASSERTION`→`None`) | `components[*].version` |
-| FR-07 | Other Unique IDs | `packages[*].externalRefs` where category is `PACKAGE-MANAGER` (PURL) or `SECURITY` (CPE) | `components[*].purl` and/or `components[*].cpe` |
+| FR-07 | Other Unique IDs *(removed)* | — | — | Parsed but not validated; see issue #12 |
 | FR-08 | Dependency Relationships | `relationships[*]` with `relationshipType` in: `DEPENDS_ON`, `DYNAMIC_LINK`, `STATIC_LINK`, `RUNTIME_DEPENDENCY_OF`, `DEV_DEPENDENCY_OF` | `dependencies[*].dependsOn` — at least one non-empty entry |
 | FR-09 | Author of SBOM Data | `creationInfo.creators` entries starting with `"Tool:"` or `"Organization:"` | `metadata.authors[*].name` OR `metadata.manufacture.name` |
 | FR-10 | Timestamp | `creationInfo.created` (ISO 8601) | `metadata.timestamp` (ISO 8601) |

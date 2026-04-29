@@ -58,9 +58,8 @@ sbom-validator validate incomplete.spdx.json
 Status:  FAIL
 File:    incomplete.spdx.json
 Format:  spdx
-Issues:  2
+Issues:  1
   [ERROR] packages[2].supplier: Component 'libfoo' is missing a supplier name (NTIA FR-04) (FR-04)
-  [ERROR] packages[2].externalRefs: Component 'libfoo' has no PURL or CPE identifier (FR-07)
 ```
 
 **3. Validate with JSON output for CI parsing**
@@ -109,7 +108,7 @@ The [NTIA "Framing Software Component Transparency"](https://www.ntia.gov/files/
 | Supplier Name | FR-04 | `packages[*].supplier` | `components[*].supplier.name` |
 | Component Name | FR-05 | `packages[*].name` | `components[*].name` |
 | Component Version | FR-06 | `packages[*].versionInfo` | `components[*].version` |
-| Unique Identifiers | FR-07 | `packages[*].externalRefs` (PURL or CPE) | `components[*].purl` or `components[*].cpe` |
+| Unique Identifiers | *(FR-07 — removed)* | — | — |
 | Dependency Relationships | FR-08 | `relationships[]` (at least one `DEPENDS_ON` etc.) | `dependencies[]` (at least one non-empty `dependsOn`) |
 | Author of SBOM Data | FR-09 | `creationInfo.creators` | `metadata.authors` or `metadata.manufacture` |
 | Timestamp | FR-10 | `creationInfo.created` | `metadata.timestamp` |
@@ -179,9 +178,8 @@ Issues:  none
 Status:  FAIL
 File:    my-app.spdx.json
 Format:  spdx
-Issues:  3
+Issues:  2
   [ERROR] packages[2].supplier: Component 'libfoo' is missing a supplier name (NTIA FR-04) (FR-04)
-  [ERROR] packages[2].externalRefs: Component 'libfoo' has no PURL or CPE identifier (FR-07)
   [ERROR] packages[3].versionInfo: Component 'libbar' is missing a version (FR-06)
 ```
 
@@ -202,12 +200,14 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS|FAIL|ERROR",
   "file": "path/to/file.json",
   "format_detected": "spdx|cyclonedx|null",
   "issues": [
     {
       "severity": "ERROR|WARNING|INFO",
+      "category": "FORMAT|SCHEMA|NTIA",
       "field_path": "components[0].supplier",
       "message": "Component 'requests' is missing a supplier name (NTIA FR-04)",
       "rule": "FR-04"
@@ -218,11 +218,13 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 | Field | Type | Description |
 |---|---|---|
+| `tool_version` | string | Version of sbom-validator that produced this output (e.g., `"0.4.0"`) |
 | `status` | string | Overall result: `"PASS"`, `"FAIL"`, or `"ERROR"` |
 | `file` | string | The file path as provided to the CLI |
 | `format_detected` | string or null | `"spdx"`, `"cyclonedx"`, or `null` if detection failed |
 | `issues` | array | List of all issues found; empty array on PASS |
 | `issues[].severity` | string | `"ERROR"` for blocking failures, `"WARNING"` for advisory, `"INFO"` for informational |
+| `issues[].category` | string | Issue classification: `"FORMAT"` (detection errors), `"SCHEMA"` (schema violations), or `"NTIA"` (NTIA element failures) |
 | `issues[].field_path` | string | JSONPath expression identifying the field or location involved |
 | `issues[].message` | string | Human-readable description of the issue |
 | `issues[].rule` | string | The functional requirement identifier (e.g., `"FR-04"`) |
@@ -231,6 +233,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS",
   "file": "sbom.spdx.json",
   "format_detected": "spdx",
@@ -242,21 +245,17 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "FAIL",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",
   "issues": [
     {
       "severity": "ERROR",
+      "category": "NTIA",
       "field_path": "packages[2].supplier",
       "message": "Component 'libfoo' is missing a supplier name (NTIA FR-04)",
       "rule": "FR-04"
-    },
-    {
-      "severity": "ERROR",
-      "field_path": "packages[2].externalRefs",
-      "message": "Component 'libfoo' has no PURL or CPE identifier",
-      "rule": "FR-07"
     }
   ]
 }
@@ -356,7 +355,6 @@ fi
 | `Status: FAIL` — FR-02 or FR-03 schema errors | The SBOM does not conform to the SPDX 2.3 or CycloneDX 1.6 JSON schema | Read the reported field paths and fix the structural errors in the SBOM; NTIA checks are skipped until schema passes |
 | `Status: FAIL` — FR-04 missing supplier | One or more packages lack a `supplier` field, or the value is `NOASSERTION` | Add a `supplier` field in the form `"Organization: <name>"` or `"Tool: <name>"` to every package |
 | `Status: FAIL` — FR-06 missing version | One or more components lack a `versionInfo` (SPDX) or `version` (CycloneDX) field | Add a non-empty version string to every component |
-| `Status: FAIL` — FR-07 no unique identifier | One or more components have no PURL or CPE | Add a `purl` (CycloneDX) or an `externalRefs` entry with `referenceCategory` `PACKAGE-MANAGER` or `SECURITY` (SPDX) to every component |
 | `Status: FAIL` — FR-08 no dependency relationships | The SBOM contains no qualifying relationship entries | Add at least one `DEPENDS_ON` relationship (SPDX) or one `dependencies` entry with a non-empty `dependsOn` list (CycloneDX) |
 | `Status: FAIL` — FR-09 no SBOM author | `creationInfo.creators` (SPDX) or `metadata.authors` / `metadata.manufacture` (CycloneDX) is missing or empty | Add at least one creator entry beginning with `"Tool:"` or `"Organization:"` (SPDX), or at least one author with a non-empty `name` (CycloneDX) |
 
@@ -414,6 +412,7 @@ cat validator.log
 ```
 
 ```
+2026-04-08T14:22:01Z INFO     sbom_validator.cli — sbom-validator 0.4.0
 2026-04-08T14:22:01Z INFO     sbom_validator.validator — Validation started for: sbom.spdx.json
 2026-04-08T14:22:01Z INFO     sbom_validator.format_detector — Format detected: spdx (file: sbom.spdx.json)
 2026-04-08T14:22:01Z INFO     sbom_validator.schema_validator — Schema validation passed (0 issues)
@@ -474,23 +473,25 @@ When `--report-dir` is supplied, **both** an HTML report and a JSON report are a
 
 ### Filename convention
 
-Both files share a common stem derived from the validated file's base name and the UTC timestamp at the moment of report generation:
+Both files use a fixed stem derived from the validated file's base name:
 
 ```
-sbom-report-<basename>-<YYYYMMDD-HHMMSS>.html
-sbom-report-<basename>-<YYYYMMDD-HHMMSS>.json
+sbom-report-<basename>.html
+sbom-report-<basename>.json
 ```
 
-- `<basename>` is the filename without extension (e.g., `bom` for `bom.json`, `my-sbom` for `my-sbom.cdx.json`).
-- `<YYYYMMDD-HHMMSS>` is the UTC time at the moment `write_reports` is called (e.g., `20260408-142201`).
-- Both files always share the identical stem, so the pair is easy to identify.
+- `<basename>` is the filename without extension (e.g., `bom` for `bom.json`, `my-sbom.cdx` for `my-sbom.cdx.json`).
+- The names are stable across runs, so CI pipelines can reference them at a known path without globbing.
+- The `generated_at` field inside the report content still records the UTC timestamp of the run.
 
-Example: validating `bom.json` at 2026-04-08 14:22:01 UTC writes:
+Example: validating `bom.json` writes:
 
 ```
-reports/sbom-report-bom-20260408-142201.html
-reports/sbom-report-bom-20260408-142201.json
+reports/sbom-report-bom.html
+reports/sbom-report-bom.json
 ```
+
+If your workflow retains reports from multiple runs, point `--report-dir` at a run-scoped subdirectory (e.g., `--report-dir reports/$GITHUB_RUN_ID/`) rather than relying on filename uniqueness.
 
 ### Example invocation
 

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from sbom_validator import __version__
 from sbom_validator.cli import main
 
 SPDX_FIXTURES = Path("tests/fixtures/spdx")
@@ -129,6 +130,21 @@ class TestCliJsonOutputPass:
         data = json.loads(result.output)
         assert data["issues"] == []
 
+    def test_valid_spdx_json_has_tool_version_key(self, runner: CliRunner) -> None:
+        result = self._invoke_valid_spdx(runner)
+        data = json.loads(result.output)
+        assert "tool_version" in data
+
+    def test_valid_spdx_json_tool_version_matches_version(self, runner: CliRunner) -> None:
+        result = self._invoke_valid_spdx(runner)
+        data = json.loads(result.output)
+        assert data["tool_version"] == __version__
+
+    def test_valid_spdx_json_tool_version_is_first_key(self, runner: CliRunner) -> None:
+        result = self._invoke_valid_spdx(runner)
+        data = json.loads(result.output)
+        assert list(data.keys())[0] == "tool_version"
+
     def test_valid_cyclonedx_xml_json_format_detected_is_cyclonedx(self, runner: CliRunner) -> None:
         result = runner.invoke(
             main,
@@ -217,12 +233,29 @@ class TestCliJsonOutputFail:
         assert "rule" in issue
 
     def test_failing_spdx_json_issue_required_keys_all_present(self, runner: CliRunner) -> None:
-        """Single assertion verifying all four required keys exist on every issue."""
+        """Single assertion verifying all required keys exist on every issue."""
         result = self._invoke_missing_supplier(runner)
         data = json.loads(result.output)
         for issue in data["issues"]:
-            for key in ("severity", "field_path", "message", "rule"):
+            for key in ("severity", "category", "field_path", "message", "rule"):
                 assert key in issue, f"Issue is missing key '{key}': {issue}"
+
+    def test_failing_spdx_json_issue_has_category_key(self, runner: CliRunner) -> None:
+        result = self._invoke_missing_supplier(runner)
+        data = json.loads(result.output)
+        assert "category" in data["issues"][0]
+
+    def test_failing_spdx_json_issue_category_is_valid_value(self, runner: CliRunner) -> None:
+        result = self._invoke_missing_supplier(runner)
+        data = json.loads(result.output)
+        valid_categories = {"SCHEMA", "NTIA", "FORMAT"}
+        for issue in data["issues"]:
+            assert issue["category"] in valid_categories
+
+    def test_failing_spdx_json_ntia_issue_category_is_ntia(self, runner: CliRunner) -> None:
+        result = self._invoke_missing_supplier(runner)
+        data = json.loads(result.output)
+        assert all(issue["category"] == "NTIA" for issue in data["issues"])
 
     def test_failing_spdx_json_issue_severity_is_valid_value(self, runner: CliRunner) -> None:
         result = self._invoke_missing_supplier(runner)
@@ -275,18 +308,6 @@ class TestCliJsonOutputFail:
             [
                 "validate",
                 str(SPDX_FIXTURES / "missing-relationships.spdx.json"),
-                "--format",
-                "json",
-            ],
-        )
-        assert result.exit_code == 1
-
-    def test_missing_identifiers_json_exits_one(self, runner: CliRunner) -> None:
-        result = runner.invoke(
-            main,
-            [
-                "validate",
-                str(SPDX_FIXTURES / "missing-identifiers.spdx.json"),
                 "--format",
                 "json",
             ],

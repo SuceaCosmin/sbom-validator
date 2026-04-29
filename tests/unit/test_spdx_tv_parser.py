@@ -341,6 +341,30 @@ class TestParseSpdxTvEdgeCases:
 
 
 # ---------------------------------------------------------------------------
+# DEPENDENCY_OF relationship type (inverse of DEPENDS_ON — issues #11/#12)
+# ---------------------------------------------------------------------------
+
+
+class TestParseSpdxTvDependencyOf:
+    """DEPENDENCY_OF is a qualifying relationship type and must not trigger FR-08 false positives."""
+
+    def test_dependency_of_relationship_is_recognized(self) -> None:
+        result = parse_spdx_tv(FIXTURES_DIR / "valid-dependency-of.spdx")
+        assert len(result.relationships) == 1
+
+    def test_dependency_of_relationship_type_preserved(self) -> None:
+        result = parse_spdx_tv(FIXTURES_DIR / "valid-dependency-of.spdx")
+        assert result.relationships[0].relationship_type == "DEPENDENCY_OF"
+
+    def test_dependency_of_has_relationships_passes_ntia_check(self) -> None:
+        """has_relationships must be True when the only relationship is DEPENDENCY_OF."""
+        result = parse_spdx_tv(FIXTURES_DIR / "valid-dependency-of.spdx")
+        # NTIA FR-08: at least one qualifying relationship present
+        assert len(result.components) >= 1
+        assert len(result.relationships) >= 1
+
+
+# ---------------------------------------------------------------------------
 # Error paths
 # ---------------------------------------------------------------------------
 

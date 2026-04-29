@@ -5,6 +5,8 @@ validation rule codes, supported version strings) must be defined here and
 imported by the modules that need them.
 """
 
+from sbom_validator.models import IssueCategory
+
 # ── Format identifiers ─────────────────────────────────────────────────────
 # Returned by detect_format() and threaded through the whole pipeline.
 FORMAT_SPDX = "spdx"  # SPDX 2.3 JSON
@@ -33,7 +35,14 @@ RULE_CDX_SCHEMA = "FR-03"
 RULE_SUPPLIER = "FR-04"
 RULE_COMPONENT_NAME = "FR-05"
 RULE_VERSION = "FR-06"
-RULE_IDENTIFIERS = "FR-07"
 RULE_RELATIONSHIPS = "FR-08"
 RULE_AUTHOR = "FR-09"
 RULE_TIMESTAMP = "FR-10"
+
+# ── Issue category display constants ───────────────────────────────────────
+CATEGORY_LABELS: dict[str, str] = {
+    IssueCategory.FORMAT: "Format / Detection Errors",
+    IssueCategory.SCHEMA: "Schema Issues",
+    IssueCategory.NTIA: "NTIA Compliance Issues",
+}
+CATEGORY_ORDER: list[str] = [IssueCategory.FORMAT, IssueCategory.SCHEMA, IssueCategory.NTIA]

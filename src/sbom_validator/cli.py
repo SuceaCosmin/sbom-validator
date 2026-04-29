@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any
@@ -10,22 +11,27 @@ from typing import Any
 import click
 
 from sbom_validator import __version__
+from sbom_validator.constants import CATEGORY_LABELS, CATEGORY_ORDER
 from sbom_validator.logging_config import configure_logging
-from sbom_validator.models import ValidationResult, ValidationStatus
+from sbom_validator.models import ValidationIssue, ValidationResult, ValidationStatus
 from sbom_validator.presentation import humanize_field_path, humanize_message
 from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
+
+logger = logging.getLogger(__name__)
 
 
 def _result_to_dict(result: ValidationResult) -> dict[str, Any]:
     """Serialise a ValidationResult to a JSON-compatible dict."""
     return {
+        "tool_version": __version__,
         "status": result.status.value,
         "file": result.file_path,
         "format_detected": result.format_detected,
         "issues": [
             {
                 "severity": issue.severity.value,
+                "category": issue.category.value,
                 "field_path": issue.field_path,
                 "message": issue.message,
                 "rule": issue.rule,
@@ -48,7 +54,7 @@ def _render_text(result: ValidationResult) -> str:
     """Render a human-readable text report.
 
     Rule IDs are intentionally omitted from text output to reduce
-    implementation-detail noise for end users.
+    implementation-detail noise for end users. Issues are grouped by category.
     """
     lines: list[str] = []
     status_label = result.status.value  # "PASS", "FAIL", "ERROR"
@@ -58,11 +64,20 @@ def _render_text(result: ValidationResult) -> str:
         lines.append(f"Format:  {result.format_detected}")
     if result.issues:
         lines.append(f"Issues:  {len(result.issues)}")
+        grouped: dict[str, list[ValidationIssue]] = {}
         for issue in result.issues:
-            lines.append(
-                f"  [{issue.severity.value}] {humanize_field_path(issue.field_path)}: "
-                f"{humanize_message(issue.message)}"
-            )
+            grouped.setdefault(issue.category.value, []).append(issue)
+        for cat in CATEGORY_ORDER:
+            cat_issues = grouped.get(cat, [])
+            if not cat_issues:
+                continue
+            label = CATEGORY_LABELS.get(cat, cat)
+            lines.append(f"\n{label} ({len(cat_issues)})")
+            for issue in cat_issues:
+                lines.append(
+                    f"  [{issue.severity.value}] {humanize_field_path(issue.field_path)}: "
+                    f"{humanize_message(issue.message)}"
+                )
     else:
         if result.status == ValidationStatus.PASS:
             lines.append("Issues:  none")
@@ -104,6 +119,7 @@ def validate_cmd(file: str, output_format: str, log_level: str, report_dir: Path
     Exits with code 0 (PASS), 1 (validation FAIL), or 2 (tool ERROR).
     """
     configure_logging(log_level)
+    logger.info("sbom-validator %s", __version__)
     file_path = Path(file)
     result = validate(file_path)
 
@@ -113,7 +129,10 @@ def validate_cmd(file: str, output_format: str, log_level: str, report_dir: Path
         click.echo(_render_text(result))
 
     if report_dir is not None:
-        write_reports(result, report_dir)
+        try:
+            write_reports(result, report_dir)
+        except OSError as exc:
+            click.echo(f"Warning: could not write reports to {report_dir}: {exc}", err=True)
 
     sys.exit(_exit_code(result))
 

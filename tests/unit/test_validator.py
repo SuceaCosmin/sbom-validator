@@ -131,7 +131,7 @@ class TestValidatorSchemaFailScenarios:
     def test_schema_fail_has_no_ntia_issues(self) -> None:
         # When schema fails, NTIA is NOT run — so no FR-04 through FR-10 issues
         result = validate(SPDX_FIXTURES / "invalid-schema.spdx.json")
-        ntia_rules = {"FR-04", "FR-05", "FR-06", "FR-07", "FR-08", "FR-09", "FR-10"}
+        ntia_rules = {"FR-04", "FR-05", "FR-06", "FR-08", "FR-09", "FR-10"}
         issue_rules = {i.rule for i in result.issues}
         assert issue_rules.isdisjoint(ntia_rules)
 
@@ -178,14 +178,6 @@ class TestValidatorNtiaFailScenarios:
         result = validate(SPDX_FIXTURES / "missing-relationships.spdx.json")
         assert any(i.rule == "FR-08" for i in result.issues)
 
-    def test_missing_identifiers_spdx_returns_fail(self) -> None:
-        result = validate(SPDX_FIXTURES / "missing-identifiers.spdx.json")
-        assert result.status == ValidationStatus.FAIL
-
-    def test_missing_identifiers_has_fr07_issue(self) -> None:
-        result = validate(SPDX_FIXTURES / "missing-identifiers.spdx.json")
-        assert any(i.rule == "FR-07" for i in result.issues)
-
     def test_missing_supplier_cdx_returns_fail(self) -> None:
         result = validate(CDX_FIXTURES / "missing-supplier.cdx.json")
         assert result.status == ValidationStatus.FAIL
@@ -200,10 +192,6 @@ class TestValidatorNtiaFailScenarios:
 
     def test_missing_relationships_cdx_returns_fail(self) -> None:
         result = validate(CDX_FIXTURES / "missing-relationships.cdx.json")
-        assert result.status == ValidationStatus.FAIL
-
-    def test_missing_identifiers_cdx_returns_fail(self) -> None:
-        result = validate(CDX_FIXTURES / "missing-identifiers.cdx.json")
         assert result.status == ValidationStatus.FAIL
 
     def test_ntia_fail_has_no_schema_issues(self) -> None:
@@ -230,7 +218,6 @@ class TestValidatorNtiaFailScenarios:
         for fixture in (
             SPDX_FIXTURES / "missing-timestamp.spdx.json",
             SPDX_FIXTURES / "missing-relationships.spdx.json",
-            SPDX_FIXTURES / "missing-identifiers.spdx.json",
         ):
             result = validate(fixture)
             for issue in result.issues:

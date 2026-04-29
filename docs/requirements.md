@@ -75,9 +75,9 @@ The tool **must** verify that every component in the SBOM declares a non-empty c
 
 The tool **must** verify that every component in the SBOM declares a version. A missing or empty version field on any component **must** produce an `ERROR`-severity issue identifying the specific component.
 
-### FR-07 — NTIA Element: Other Unique Identifiers
+### FR-07 — NTIA Element: Other Unique Identifiers *(removed)*
 
-The tool **must** verify that every component declares at least one unique identifier beyond its name and version (e.g., PURL or CPE). A component lacking any qualifying identifier **must** produce an `ERROR`-severity issue. See Section 5 for field mappings.
+> **Removed in v0.5.0.** The NTIA minimum elements guideline lists "Other Unique Identifiers" (PURL, CPE) as a recommended best practice, not a mandatory requirement. Enforcing this check produced false positives on otherwise-compliant SBOMs. The `identifiers` field is still parsed and stored on each component but is no longer validated.
 
 ### FR-08 — NTIA Element: Dependency Relationships
 
@@ -155,7 +155,7 @@ The table below defines the precise JSON field paths used to satisfy each NTIA m
 | **Supplier Name** | `packages[*].supplier` | `components[*].supplier.name` | SPDX value must match the pattern `"Organization: <name>"` or `"Tool: <name>"`. A `NOASSERTION` value is treated as absent. |
 | **Component Name** | `packages[*].name` | `components[*].name` | Must be a non-empty string. |
 | **Component Version** | `packages[*].versionInfo` | `components[*].version` | Must be a non-empty string. `NOASSERTION` is treated as absent. |
-| **Other Unique Identifiers** | `packages[*].externalRefs` where `referenceCategory` is `PACKAGE-MANAGER` (PURL) or `SECURITY` (CPE) | `components[*].purl` or `components[*].cpe` | At least one qualifying identifier must be present per component. Both fields are checked; either is sufficient. |
+| **Other Unique Identifiers** *(not enforced)* | `packages[*].externalRefs` (`PACKAGE-MANAGER` / `SECURITY`) | `components[*].purl` or `components[*].cpe` | Parsed and stored but not validated — see FR-07. |
 | **Dependency Relationships** | `relationships` array — at least one entry with `relationshipType` of `DEPENDS_ON`, `DYNAMIC_LINK`, `STATIC_LINK`, `RUNTIME_DEPENDENCY_OF`, or `DEV_DEPENDENCY_OF` | `dependencies` array — at least one entry where the `dependsOn` array is non-empty | This is a document-level check. At least one relationship must exist in the entire document. |
 | **Author of SBOM Data** | `creationInfo.creators` — at least one entry starting with `"Tool:"` or `"Organization:"` | `metadata.authors` (at least one entry with a non-empty `name`) OR `metadata.manufacture` (non-empty `name`) | Either field satisfies the requirement for CycloneDX. |
 | **Timestamp** | `creationInfo.created` | `metadata.timestamp` | Must be a valid ISO 8601 date-time string (e.g., `"2024-01-15T10:30:00Z"`). |
@@ -176,7 +176,7 @@ The file is validated against the bundled JSON schema for its detected format an
 
 ### Stage 2 — NTIA Element Checking
 
-Each of the seven NTIA elements is checked independently (FR-04 through FR-10). All failures are collected before the tool exits — there is no fail-fast behavior within Stage 2. This ensures the user receives a complete picture of compliance gaps in a single run.
+Each of the six actively enforced NTIA elements is checked independently (FR-04 through FR-10, excluding FR-07 — see FR-07 for rationale). All failures are collected before the tool exits — there is no fail-fast behavior within Stage 2. This ensures the user receives a complete picture of compliance gaps in a single run.
 
 **If Stage 2 produces no issues:** status is `PASS`, exit code is `0`.  
 **If Stage 2 produces any issues:** status is `FAIL`, exit code is `1`.
@@ -198,7 +198,7 @@ Input File
          │
          ▼
     [Stage 2: NTIA Element Checks]
-    FR-04 │ FR-05 │ FR-06 │ FR-07 │ FR-08 │ FR-09 │ FR-10
+    FR-04 │ FR-05 │ FR-06 │ FR-08 │ FR-09 │ FR-10
          │
          ├── issues found ──► report all issues ──► exit 1 (FAIL)
          │
@@ -239,6 +239,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS|FAIL|ERROR",
   "file": "<path>",
   "format_detected": "spdx|cyclonedx|null",
@@ -257,11 +258,13 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 | Field | Type | Description |
 |---|---|---|
+| `tool_version` | `string` | Version of sbom-validator that produced this output (e.g., `"0.4.0"`) |
 | `status` | `string` | Overall result: `"PASS"`, `"FAIL"`, or `"ERROR"` |
 | `file` | `string` | The file path as provided to the CLI |
 | `format_detected` | `string \| null` | `"spdx"`, `"cyclonedx"`, or `null` if detection failed |
 | `issues` | `array` | List of all issues found; empty array on `PASS` |
 | `issues[].severity` | `string` | `"ERROR"` for blocking failures, `"WARNING"` for advisory, `"INFO"` for informational |
+| `issues[].category` | `string` | Issue classification: `"FORMAT"` (detection errors), `"SCHEMA"` (schema violations), or `"NTIA"` (NTIA element failures) |
 | `issues[].field_path` | `string` | JSONPath expression identifying the field or location involved |
 | `issues[].message` | `string` | Human-readable description of the issue |
 | `issues[].rule` | `string` | The functional requirement identifier that this issue corresponds to (e.g., `"FR-04"`) |
@@ -270,21 +273,17 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "FAIL",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",
   "issues": [
     {
       "severity": "ERROR",
+      "category": "NTIA",
       "field_path": "packages[2].supplier",
       "message": "Component 'libfoo' is missing a supplier name.",
       "rule": "FR-04"
-    },
-    {
-      "severity": "ERROR",
-      "field_path": "packages[2].externalRefs",
-      "message": "Component 'libfoo' has no PURL or CPE identifier.",
-      "rule": "FR-07"
     }
   ]
 }
@@ -294,6 +293,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 
 ```json
 {
+  "tool_version": "0.4.0",
   "status": "PASS",
   "file": "my-app.spdx.json",
   "format_detected": "spdx",
