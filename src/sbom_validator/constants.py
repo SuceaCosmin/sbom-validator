@@ -13,9 +13,13 @@ FORMAT_SPDX = "spdx"  # SPDX 2.3 JSON
 FORMAT_SPDX_TV = "spdx-tv"  # SPDX 2.3 Tag-Value
 FORMAT_SPDX_YAML = "spdx-yaml"  # SPDX 2.3 YAML
 FORMAT_CYCLONEDX = "cyclonedx"
+FORMAT_SPDX3_JSONLD = "spdx3-jsonld"  # SPDX 3.x JSON-LD
 
 # ── Supported specification versions ───────────────────────────────────────
 SPDX_SUPPORTED_VERSION = "SPDX-2.3"
+SPDX3_SUPPORTED_VERSION = "3.0.1"
+SPDX3_CONTEXT_URL = "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+SPDX3_SCHEMA_FILE = "spdx-3.0.1.schema.json"
 CYCLONEDX_SUPPORTED_VERSIONS: frozenset[str] = frozenset({"1.3", "1.4", "1.5", "1.6"})
 CYCLONEDX_BOM_FORMAT_VALUE = "CycloneDX"  # value of the "bomFormat" JSON field
 CYCLONEDX_XML_NAMESPACE_PREFIX = "http://cyclonedx.org/schema/bom/"
@@ -32,6 +36,7 @@ CDX_FIELD_SPEC_VERSION = "specVersion"
 RULE_FORMAT_DETECTION = "FR-01"
 RULE_SPDX_SCHEMA = "FR-02"
 RULE_CDX_SCHEMA = "FR-03"
+RULE_SPDX3_SCHEMA = "FR-15"
 RULE_SUPPLIER = "FR-04"
 RULE_COMPONENT_NAME = "FR-05"
 RULE_VERSION = "FR-06"
