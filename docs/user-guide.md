@@ -207,6 +207,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
   "issues": [
     {
       "severity": "ERROR|WARNING|INFO",
+      "category": "FORMAT|SCHEMA|NTIA",
       "field_path": "components[0].supplier",
       "message": "Component 'requests' is missing a supplier name (NTIA FR-04)",
       "rule": "FR-04"
@@ -223,6 +224,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
 | `format_detected` | string or null | `"spdx"`, `"cyclonedx"`, or `null` if detection failed |
 | `issues` | array | List of all issues found; empty array on PASS |
 | `issues[].severity` | string | `"ERROR"` for blocking failures, `"WARNING"` for advisory, `"INFO"` for informational |
+| `issues[].category` | string | Issue classification: `"FORMAT"` (detection errors), `"SCHEMA"` (schema violations), or `"NTIA"` (NTIA element failures) |
 | `issues[].field_path` | string | JSONPath expression identifying the field or location involved |
 | `issues[].message` | string | Human-readable description of the issue |
 | `issues[].rule` | string | The functional requirement identifier (e.g., `"FR-04"`) |
@@ -250,6 +252,7 @@ JSON output is intended for downstream tooling: parsing in shell scripts, storin
   "issues": [
     {
       "severity": "ERROR",
+      "category": "NTIA",
       "field_path": "packages[2].supplier",
       "message": "Component 'libfoo' is missing a supplier name (NTIA FR-04)",
       "rule": "FR-04"

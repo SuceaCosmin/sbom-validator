@@ -264,6 +264,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
 | `format_detected` | `string \| null` | `"spdx"`, `"cyclonedx"`, or `null` if detection failed |
 | `issues` | `array` | List of all issues found; empty array on `PASS` |
 | `issues[].severity` | `string` | `"ERROR"` for blocking failures, `"WARNING"` for advisory, `"INFO"` for informational |
+| `issues[].category` | `string` | Issue classification: `"FORMAT"` (detection errors), `"SCHEMA"` (schema violations), or `"NTIA"` (NTIA element failures) |
 | `issues[].field_path` | `string` | JSONPath expression identifying the field or location involved |
 | `issues[].message` | `string` | Human-readable description of the issue |
 | `issues[].rule` | `string` | The functional requirement identifier that this issue corresponds to (e.g., `"FR-04"`) |
@@ -279,6 +280,7 @@ When `--format json` is used, the tool writes the following JSON object to `stdo
   "issues": [
     {
       "severity": "ERROR",
+      "category": "NTIA",
       "field_path": "packages[2].supplier",
       "message": "Component 'libfoo' is missing a supplier name.",
       "rule": "FR-04"

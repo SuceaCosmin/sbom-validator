@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Validation issues are now classified by category. Each `ValidationIssue` carries a `category` field with one of three values: `"FORMAT"` (format detection errors), `"SCHEMA"` (schema validation failures), or `"NTIA"` (NTIA minimum element failures). The `category` field appears in `--format json` stdout output, in the JSON report written by `--report-dir`, and groups issues in text and HTML output. (Issue #13)
+
+### Fixed
+- FR-07 (Other Unique Identifiers / PURL / CPE) NTIA check removed. The NTIA minimum elements guidance lists unique identifiers as a recommended best practice rather than a mandatory requirement; enforcing the check produced false positives on otherwise-compliant SBOMs. The `identifiers` field is still parsed and stored per component but is no longer validated. (Issues #11, #12)
+- SPDX `DEPENDENCY_OF` relationship type is now recognized as a qualifying relationship for the FR-08 dependency check. Previously only `DEPENDS_ON`, `DYNAMIC_LINK`, `STATIC_LINK`, `RUNTIME_DEPENDENCY_OF`, and `DEV_DEPENDENCY_OF` were recognized; SBOMs that expressed relationships exclusively via `DEPENDENCY_OF` (the semantic inverse of `DEPENDS_ON`) were incorrectly reported as non-compliant. `OPTIONAL_DEPENDENCY_OF` is also now recognized. (Issues #11, #12)
+
 ### Changed
 - Report filenames are now fixed and predictable: `sbom-report-<basename>.html` / `sbom-report-<basename>.json`. The `<YYYYMMDD-HHMMSS>` timestamp suffix has been removed to enable deterministic CI artefact references. The `generated_at` field inside the report content is unchanged.
 - `--format json` stdout output now includes `"tool_version"` as the first key in the JSON object, making every machine-readable result self-identifying without requiring `--report-dir`.
