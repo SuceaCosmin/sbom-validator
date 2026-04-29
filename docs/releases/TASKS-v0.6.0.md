@@ -58,14 +58,14 @@
 | 0.A1 | Create feature branch `feature/spdx3-jsonld` from `develop` | Developer | `feature/spdx3-jsonld` | None | ✅ | Branch exists locally | `git branch` shows `feature/spdx3-jsonld` |
 | 0.A2 | Create `docs/releases/TASKS-v0.6.0.md` | Developer | `feature/spdx3-jsonld` | 0.A1 | ✅ | This file | File exists and all task IDs are listed |
 | 1.B1 | Write ADR-010, amend ADR-001, add FR-15 to requirements.md | Architect | `feature/spdx3-jsonld` | 0.A2 | ✅ | `docs/architecture/ADR-010-spdx3-jsonld-support.md`, ADR-001 amendment, `docs/requirements.md` FR-15 | ADR committed; all interface stubs, resolution contracts, and detection fingerprint documented |
-| 2.C1 | Write failing tests for new SPDX 3.x constants | Tester | `feature/spdx3-jsonld` | 1.B1 | ⏳ | `tests/unit/test_constants_spdx3.py` | Tests fail (constants not yet defined); ruff+mypy pass on test file |
-| 2.C2 | Implement new constants in `constants.py` | Developer | `feature/spdx3-jsonld` | 2.C1 | ⏳ | `src/sbom_validator/constants.py` updated | `test_constants_spdx3.py` passes; ruff+mypy pass |
-| 2.C3 | Bundle SPDX 3.0.1 JSON Schema | Developer | `feature/spdx3-jsonld` | 1.B1 | ✅ | `src/sbom_validator/schemas/spdx-3.0.1.schema.json` | File is valid JSON; present in repo |
-| 3.D1 | Write failing tests for SPDX 3.x format detection | Tester | `feature/spdx3-jsonld` | 2.C2 | ⏳ | New class in `tests/unit/test_format_detector.py`; fixture `tests/fixtures/spdx/valid-minimal.spdx3.jsonld` | Tests fail; existing detection tests still pass; ruff+mypy pass |
+| 2.C1 | Write failing tests for new SPDX 3.x constants | Tester | `feature/spdx3-jsonld` | 1.B1 | ✅ | `tests/unit/test_constants_spdx3.py` | 7/7 tests pass; ruff+mypy clean |
+| 2.C2 | Implement new constants in `constants.py` | Developer | `feature/spdx3-jsonld` | 2.C1 | ✅ | `src/sbom_validator/constants.py` updated | 7/7 tests pass; ruff+mypy clean |
+| 2.C3 | Bundle SPDX 3.0.1 JSON Schema | Developer | `feature/spdx3-jsonld` | 1.B1 | ✅ | `src/sbom_validator/schemas/spdx-3.0.1.schema.json` | File is valid JSON; committed in b8c9da8 |
+| 3.D1 | Write failing tests for SPDX 3.x format detection | Tester | `feature/spdx3-jsonld` | 2.C2 | ✅ | New class `TestDetectFormatSPDX3JsonLD` in `tests/unit/test_format_detector.py`; `tests/fixtures/spdx/valid-minimal.spdx3.jsonld` | 2 tests correctly failing; 42 existing pass; ruff+mypy clean |
 | 3.D2 | Implement SPDX 3.x detection branch in `format_detector.py` | Developer | `feature/spdx3-jsonld` | 3.D1 | ⏳ | `src/sbom_validator/format_detector.py` updated | `test_format_detector.py` all pass; ruff+mypy pass |
-| 3.E1 | Write failing tests for SPDX 3.x schema validation | Tester | `feature/spdx3-jsonld` | 2.C2, 2.C3 | ⏳ | New class in `tests/unit/test_schema_validator.py`; fixture `tests/fixtures/spdx/invalid-schema.spdx3.jsonld` | Tests fail; existing schema tests unaffected; ruff+mypy pass |
+| 3.E1 | Write failing tests for SPDX 3.x schema validation | Tester | `feature/spdx3-jsonld` | 2.C2, 2.C3 | ✅ | New class `TestValidateSchemaSPDX3JsonLD` in `tests/unit/test_schema_validator.py`; `tests/fixtures/spdx/invalid-schema.spdx3.jsonld` | 9 tests correctly failing (ValueError); 30 existing pass; ruff+mypy clean |
 | 3.E2 | Extend `schema_validator.py` to handle `spdx3-jsonld` | Developer | `feature/spdx3-jsonld` | 3.E1 | ⏳ | `src/sbom_validator/schema_validator.py` updated (new `_validate_json_schema_2020()` helper) | `test_schema_validator.py` all pass; ruff+mypy pass |
-| 3.F1 | Write failing tests for the SPDX 3.x JSON-LD parser | Tester | `feature/spdx3-jsonld` | 2.C2 | ⏳ | `tests/unit/test_spdx3_jsonld_parser.py`; fixtures: `valid-minimal.spdx3.jsonld`, `valid-full.spdx3.jsonld`, `missing-supplier.spdx3.jsonld`, `missing-relationships.spdx3.jsonld` | Tests fail; fixtures are valid JSON with correct fingerprint; ruff+mypy pass |
+| 3.F1 | Write failing tests for the SPDX 3.x JSON-LD parser | Tester | `feature/spdx3-jsonld` | 2.C2 | ✅ | `tests/unit/test_spdx3_jsonld_parser.py` (44 tests, 5 classes); fixtures: `valid-full.spdx3.jsonld`, `missing-supplier.spdx3.jsonld`, `missing-relationships.spdx3.jsonld` | All 44 tests fail with ImportError; ruff+mypy clean |
 | 3.F2 | Implement `parse_spdx3_jsonld()` in new parser module | Developer | `feature/spdx3-jsonld` | 3.F1 | ⏳ | `src/sbom_validator/parsers/spdx3_jsonld_parser.py` | `test_spdx3_jsonld_parser.py` all pass; ruff+mypy pass |
 | 3.G1 | Write failing integration tests for SPDX 3.x end-to-end pipeline | Tester | `feature/spdx3-jsonld` | 3.D2, 3.E2, 3.F2 | ⏳ | New class in `tests/unit/test_validator.py`; `tests/integration/test_cli_spdx3.py` | Tests fail; ruff+mypy pass |
 | 3.G2 | Wire SPDX 3.x into `validator.py` pipeline | Developer | `feature/spdx3-jsonld` | 3.G1 | ⏳ | `src/sbom_validator/validator.py` updated (`_SPDX_FORMATS`, dispatch branch) | All pipeline tests pass; ruff+mypy pass |
@@ -97,8 +97,8 @@
 - Status: ✅ PASS
 
 ### G3 TDD Build
-- Evidence:
-- Status: ⏳ PENDING
+- Evidence: In progress. Tests written for all three parallel tracks. Constants (2.C1/2.C2): 7/7 passing. Schema bundle (2.C3): committed. Detection tests (3.D1): 2 correctly failing, 42 passing. Schema validator tests (3.E1): 9 correctly failing, 30 passing. Parser tests (3.F1): 44 correctly failing (ImportError). Session stopped at 98% token limit before implementations (3.D2, 3.E2, 3.F2) were written.
+- Status: 🔄 IN PROGRESS — next: implement 3.D2 (format_detector.py), 3.E2 (schema_validator.py), 3.F2 (spdx3_jsonld_parser.py) in parallel
 
 ### G4 Quality Review
 - Evidence:
