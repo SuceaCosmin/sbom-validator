@@ -12,7 +12,7 @@ import click
 
 from sbom_validator import __version__
 from sbom_validator.logging_config import configure_logging
-from sbom_validator.models import ValidationResult, ValidationStatus
+from sbom_validator.models import IssueCategory, ValidationIssue, ValidationResult, ValidationStatus
 from sbom_validator.presentation import humanize_field_path, humanize_message
 from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
@@ -30,6 +30,7 @@ def _result_to_dict(result: ValidationResult) -> dict[str, Any]:
         "issues": [
             {
                 "severity": issue.severity.value,
+                "category": issue.category.value,
                 "field_path": issue.field_path,
                 "message": issue.message,
                 "rule": issue.rule,
@@ -48,11 +49,20 @@ def _exit_code(result: ValidationResult) -> int:
     return 2  # ERROR
 
 
+_CATEGORY_LABELS: dict[str, str] = {
+    IssueCategory.SCHEMA: "Schema Issues",
+    IssueCategory.NTIA: "NTIA Compliance Issues",
+    IssueCategory.FORMAT: "Format / Detection Errors",
+}
+
+_CATEGORY_ORDER: list[str] = [IssueCategory.FORMAT, IssueCategory.SCHEMA, IssueCategory.NTIA]
+
+
 def _render_text(result: ValidationResult) -> str:
     """Render a human-readable text report.
 
     Rule IDs are intentionally omitted from text output to reduce
-    implementation-detail noise for end users.
+    implementation-detail noise for end users. Issues are grouped by category.
     """
     lines: list[str] = []
     status_label = result.status.value  # "PASS", "FAIL", "ERROR"
@@ -62,11 +72,20 @@ def _render_text(result: ValidationResult) -> str:
         lines.append(f"Format:  {result.format_detected}")
     if result.issues:
         lines.append(f"Issues:  {len(result.issues)}")
+        grouped: dict[str, list[ValidationIssue]] = {}
         for issue in result.issues:
-            lines.append(
-                f"  [{issue.severity.value}] {humanize_field_path(issue.field_path)}: "
-                f"{humanize_message(issue.message)}"
-            )
+            grouped.setdefault(issue.category.value, []).append(issue)
+        for cat in _CATEGORY_ORDER:
+            cat_issues = grouped.get(cat, [])
+            if not cat_issues:
+                continue
+            label = _CATEGORY_LABELS.get(cat, cat)
+            lines.append(f"\n{label} ({len(cat_issues)})")
+            for issue in cat_issues:
+                lines.append(
+                    f"  [{issue.severity.value}] {humanize_field_path(issue.field_path)}: "
+                    f"{humanize_message(issue.message)}"
+                )
     else:
         if result.status == ValidationStatus.PASS:
             lines.append("Issues:  none")

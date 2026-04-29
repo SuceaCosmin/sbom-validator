@@ -22,7 +22,7 @@ from sbom_validator.constants import (
     RULE_CDX_SCHEMA,
     RULE_SPDX_SCHEMA,
 )
-from sbom_validator.models import IssueSeverity, ValidationIssue
+from sbom_validator.models import IssueCategory, IssueSeverity, ValidationIssue
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +90,7 @@ def _validate_json_schema(
         issues.append(
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.SCHEMA,
                 field_path=field_path,
                 message=error.message,
                 rule=rule,
@@ -107,6 +108,7 @@ def _validate_cyclonedx_xml(raw_doc: str, cdx_version: str, rule: str) -> list[V
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.SCHEMA,
                 field_path="$",
                 message=f"Invalid XML: {exc}",
                 rule=rule,
@@ -119,6 +121,7 @@ def _validate_cyclonedx_xml(raw_doc: str, cdx_version: str, rule: str) -> list[V
         issues.append(
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.SCHEMA,
                 field_path=field_path,
                 message=error.reason or str(error),
                 rule=rule,

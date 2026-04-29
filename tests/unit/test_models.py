@@ -12,6 +12,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from sbom_validator.models import (
+    IssueCategory,
     IssueSeverity,
     NormalizedComponent,
     NormalizedRelationship,
@@ -57,6 +58,25 @@ class TestIssueSeverity:
 
 
 # ---------------------------------------------------------------------------
+# IssueCategory
+# ---------------------------------------------------------------------------
+
+
+class TestIssueCategory:
+    def test_schema_value_equals_string(self):
+        assert IssueCategory.SCHEMA.value == "SCHEMA"
+
+    def test_ntia_value_equals_string(self):
+        assert IssueCategory.NTIA.value == "NTIA"
+
+    def test_format_value_equals_string(self):
+        assert IssueCategory.FORMAT.value == "FORMAT"
+
+    def test_has_exactly_three_members(self):
+        assert len(IssueCategory) == 3
+
+
+# ---------------------------------------------------------------------------
 # ValidationIssue
 # ---------------------------------------------------------------------------
 
@@ -65,18 +85,21 @@ class TestValidationIssue:
     def test_instantiation_with_all_fields(self):
         issue = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
             field_path="packages[0].name",
             message="Name is missing",
             rule="PKG-001",
         )
         assert issue.severity == IssueSeverity.ERROR
+        assert issue.category == IssueCategory.SCHEMA
         assert issue.field_path == "packages[0].name"
         assert issue.message == "Name is missing"
         assert issue.rule == "PKG-001"
 
-    def test_instantiation_with_required_fields_only_rule_defaults_to_empty_string(self):
+    def test_rule_defaults_to_empty_string(self):
         issue = ValidationIssue(
             severity=IssueSeverity.WARNING,
+            category=IssueCategory.NTIA,
             field_path="metadata.author",
             message="Author not provided",
         )
@@ -85,6 +108,7 @@ class TestValidationIssue:
     def test_immutability_raises_frozen_instance_error(self):
         issue = ValidationIssue(
             severity=IssueSeverity.INFO,
+            category=IssueCategory.FORMAT,
             field_path="root",
             message="Info note",
         )
@@ -94,26 +118,45 @@ class TestValidationIssue:
     def test_equality_same_fields_are_equal(self):
         issue_a = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
             field_path="foo.bar",
             message="Something wrong",
             rule="R-01",
         )
         issue_b = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
             field_path="foo.bar",
             message="Something wrong",
             rule="R-01",
         )
         assert issue_a == issue_b
 
-    def test_equality_different_fields_are_not_equal(self):
+    def test_equality_different_category_not_equal(self):
         issue_a = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
+            field_path="foo",
+            message="msg",
+        )
+        issue_b = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            category=IssueCategory.NTIA,
+            field_path="foo",
+            message="msg",
+        )
+        assert issue_a != issue_b
+
+    def test_equality_different_severity_not_equal(self):
+        issue_a = ValidationIssue(
+            severity=IssueSeverity.ERROR,
+            category=IssueCategory.NTIA,
             field_path="foo",
             message="msg",
         )
         issue_b = ValidationIssue(
             severity=IssueSeverity.WARNING,
+            category=IssueCategory.NTIA,
             field_path="foo",
             message="msg",
         )
@@ -240,6 +283,7 @@ class TestValidationResult:
     def test_instantiation_with_all_fields(self):
         issue = ValidationIssue(
             severity=IssueSeverity.ERROR,
+            category=IssueCategory.SCHEMA,
             field_path="root",
             message="Missing required field",
         )

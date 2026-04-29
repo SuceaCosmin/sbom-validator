@@ -14,7 +14,7 @@ from sbom_validator.constants import (
     RULE_TIMESTAMP,
     RULE_VERSION,
 )
-from sbom_validator.models import IssueSeverity, NormalizedSBOM, ValidationIssue
+from sbom_validator.models import IssueCategory, IssueSeverity, NormalizedSBOM, ValidationIssue
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,7 @@ def _check_supplier(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             issues.append(
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
+                    category=IssueCategory.NTIA,
                     field_path=f"components[{i}].supplier",
                     message=(
                         f"Component '{component.name}' is missing a supplier name (NTIA FR-04)"
@@ -64,6 +65,7 @@ def _check_component_name(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             issues.append(
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
+                    category=IssueCategory.NTIA,
                     field_path=f"components[{i}].name",
                     message=(f"Component at index {i} is missing a component name (NTIA FR-05)"),
                     rule=RULE_COMPONENT_NAME,
@@ -80,6 +82,7 @@ def _check_version(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             issues.append(
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
+                    category=IssueCategory.NTIA,
                     field_path=f"components[{i}].version",
                     message=(f"Component '{component.name}' is missing a version (NTIA FR-06)"),
                     rule=RULE_VERSION,
@@ -96,6 +99,7 @@ def _check_identifiers(sbom: NormalizedSBOM) -> list[ValidationIssue]:
             issues.append(
                 ValidationIssue(
                     severity=IssueSeverity.ERROR,
+                    category=IssueCategory.NTIA,
                     field_path=f"components[{i}].identifiers",
                     message=(
                         f"Component '{component.name}' has no unique identifiers "
@@ -113,6 +117,7 @@ def _check_relationships(sbom: NormalizedSBOM) -> list[ValidationIssue]:
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.NTIA,
                 field_path="relationships",
                 message=("SBOM declares no dependency relationships (NTIA FR-08)"),
                 rule=RULE_RELATIONSHIPS,
@@ -127,6 +132,7 @@ def _check_author(sbom: NormalizedSBOM) -> list[ValidationIssue]:
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.NTIA,
                 field_path="author",
                 message=("SBOM is missing author information (NTIA FR-09)"),
                 rule=RULE_AUTHOR,
@@ -141,6 +147,7 @@ def _check_timestamp(sbom: NormalizedSBOM) -> list[ValidationIssue]:
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.NTIA,
                 field_path="timestamp",
                 message=("SBOM is missing a creation timestamp (NTIA FR-10)"),
                 rule=RULE_TIMESTAMP,
@@ -156,6 +163,7 @@ def _check_timestamp(sbom: NormalizedSBOM) -> list[ValidationIssue]:
         return [
             ValidationIssue(
                 severity=IssueSeverity.ERROR,
+                category=IssueCategory.NTIA,
                 field_path="timestamp",
                 message=(
                     f"SBOM timestamp '{raw_timestamp}' is not a valid ISO 8601 date-time "

@@ -20,6 +20,7 @@ from sbom_validator.constants import (
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
 from sbom_validator.format_detector import detect_format
 from sbom_validator.models import (
+    IssueCategory,
     IssueSeverity,
     ValidationIssue,
     ValidationResult,
@@ -58,6 +59,7 @@ def _error_issue(message: str, rule: str = "SYS-ERROR") -> ValidationIssue:
     """Build a consistent ERROR issue payload for tool/input failures."""
     return ValidationIssue(
         severity=IssueSeverity.ERROR,
+        category=IssueCategory.FORMAT,
         field_path="",
         message=message,
         rule=rule,
