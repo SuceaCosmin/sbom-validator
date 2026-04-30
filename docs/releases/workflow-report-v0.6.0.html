@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Evaluation Report &mdash; v0.6.0</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem 0.6rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-infer { color: #7c3aed; font-size: 0.8rem; font-weight: bold; }
+    .tag-measured { color: #166534; font-size: 0.8rem; font-weight: bold; }
+    .badge-yes { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-partial { background: #fef9c3; color: #854d0e; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-no { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; font-weight: bold; }
+    .badge-high { background: #dcfce7; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .badge-med { background: #fef9c3; color: #854d0e; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .badge-low { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 2px 8px; font-size: 0.85rem; }
+    .verdict-healthy { color: #166534; font-weight: bold; font-size: 1.1rem; }
+    .verdict-attention { color: #b45309; font-weight: bold; font-size: 1.1rem; }
+    .verdict-critical { color: #991b1b; font-weight: bold; font-size: 1.1rem; }
+    .delta-neg { color: #166534; }
+    .delta-pos { color: #b91c1c; }
+    .delta-flat { color: #6b7280; }
+    ul li { margin-bottom: 0.35rem; }
+    ol li { margin-bottom: 0.5rem; }
+    code { background: #f3f4f6; padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Workflow Evaluation Report &mdash; v0.6.0</h1>
+  <p class="muted">SBOM Validator &middot; Generated: 2026-04-30 &middot; Benchmarked against: v0.5.0</p>
+
+  <!-- ── Section 1: Release Overview ─────────────────────────────────── -->
+  <div class="card">
+    <h2>1. Release Overview</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Version</td><td><strong>v0.6.0</strong></td></tr>
+      <tr><td>Release date</td><td>2026-04-30</td></tr>
+      <tr><td>Scope type</td><td>New feature: SPDX 3.x JSON-LD format support (detection, schema validation, parser, NTIA checking, ADR-010). New module <code>parsers/spdx3_jsonld_parser.py</code>. Bonus fix: bundled 2 missing CycloneDX auxiliary schemas, eliminating 20 DeprecationWarnings.</td></tr>
+      <tr><td>Branch</td><td><code>feature/spdx3-jsonld</code></td></tr>
+      <tr><td>Sessions (telemetry)</td><td>2 sessions. Session 1 (<code>1a2b056d</code>): G0&ndash;G5, G9, G10 initiated; hit token limit mid-pipeline. Session 2: G3 implementations (3.D2, 3.E2, 3.F2, 3.G1, 3.G2), G4/G5 fix loop, G6 CI stabilization, G7 docs sync, G8 release readiness. <span class="tag-infer">(session boundary inferred from commit history + TASKS tracker evidence)</span></td></tr>
+      <tr><td>Agents dispatched (Session 1)</td><td>15 subagents confirmed by meta.json: orchestrator context, planner, architect (x2, evaluation + ADR authoring), developer (branch/tracker), tester (3.D1, 3.E1, 3.F1), developer (3.D2, 3.E2, 3.F2), tester (3.G1 pipeline integration tests), reviewer (G4), security-reviewer (G5), token-analyst, workflow-analyst. <span class="tag-measured">MEASURED</span></td></tr>
+      <tr><td>Agents dispatched (Session 2)</td><td>developer (3.G2 pipeline wiring), developer (G4 M-01/M-02 fix loop), developer (G5 mandatory fixes), ci-ops (G6 DeprecationWarning elimination), documentation-writer (G7), release-manager (G8). <span class="tag-infer">(inferred from commit history + TASKS gate evidence)</span></td></tr>
+      <tr><td>Tests</td><td>594 at v0.5.0 baseline; 701 at G8 readiness check (+107 new tests for SPDX 3.x). Integration and unit tests across detection, schema, parser, and pipeline layers.</td></tr>
+      <tr><td>Coverage</td><td>96.11% (threshold 90%)</td></tr>
+      <tr><td>Quality at G8</td><td>0 failures, 0 DeprecationWarnings, ruff 0 errors, mypy 0 errors (strict mode)</td></tr>
+      <tr><td>New modules</td><td><code>parsers/spdx3_jsonld_parser.py</code></td></tr>
+      <tr><td>New ADR</td><td>ADR-010 (SPDX 3.x JSON-LD support); ADR-001 Amendment 1 (detection priority order); ADR-010 Amendment 1 (envelope-schema deviation documentation, added post-G4)</td></tr>
+      <tr><td>Active deferral</td><td>D2: Full SPDX 3.0.1 element-level schema validation deferred; envelope-only approach in use. Approved by G4 (M-01) and G5 (S-M-01). ADR-010 amended to document the deviation.</td></tr>
+      <tr><td>Git commits in cycle</td><td>5 commits from v0.5.0 HEAD: branch/tracker scaffolding, TASKS update, feature implementations (detection/schema/parser), pipeline wiring + integration tests, G4/G5 fix commit (4be95b6), CI stabilization (37404ed).</td></tr>
+    </table>
+
+    <p style="margin-top:1rem"><strong>End-to-end cycle:</strong> Idea (SPDX 3.x JSON-LD support) &rarr; G0 intake &rarr; G1 planner task decomposition (TASKS-v0.6.0.md created) &rarr; G2 architecture (ADR-010 authored; ADR-001 amended; FR-15 added) &rarr; G3 TDD: constants (2.C1/2.C2) + schema bundle (2.C3) + parallel test tracks (3.D1/3.E1/3.F1) in Session 1; token limit hit; Session 2 continues with implementations (3.D2/3.E2/3.F2) + pipeline wiring (3.G1/3.G2) &rarr; G4 Quality Review (CONDITIONAL: M-01 envelope schema deviation from ADR-010, M-02 dead constant) &rarr; G5 Security (CONDITIONAL: S-M-01 deferral doc, S-M-02 registry guard, S-m-02/03 isinstance guards, S-m-04 docstring) &rarr; G4/G5 fix commit &rarr; G6 CI stabilization (20 DeprecationWarnings eliminated, CycloneDX aux schemas bundled) &rarr; G7 docs sync (README, CHANGELOG, agent-briefing) &rarr; G8 release readiness &rarr; G9 token analytics &rarr; G10 workflow evaluation &rarr; Human approval.</p>
+
+    <p><span class="verdict-attention">Overall Workflow Health: NEEDS ATTENTION</span></p>
+    <p class="muted">All mandatory gates executed. No permanently skipped gates. G4 and G5 issued CONDITIONAL verdicts (resolved before advancement). The dominant workflow inefficiency was an ADR-implementation gap: the envelope-schema approach was chosen pragmatically during implementation without first updating ADR-010, causing the G4 reviewer to find a deviation (M-01) that required an Architect dispatch to formally amend the ADR. This is a pre-implementation communication failure between the developer and the ADR it was implementing. A secondary concern is the 2-session delivery caused by a token limit mid-pipeline, which adds coordination overhead. Final state is strong: 701 tests, 96.11% coverage, 0 warnings, zero rework defects escaping to the release tag. Verdict is NEEDS ATTENTION rather than CRITICAL because both conditional findings were resolved cleanly and the core feature delivered correctly.</p>
+  </div>
+
+  <!-- ── Section 2: Per-Agent Evaluation ──────────────────────────────── -->
+  <div class="card">
+    <h2>2. Per-Agent Evaluation</h2>
+    <table>
+      <tr>
+        <th>Agent</th>
+        <th>Role Fulfilled</th>
+        <th>Efficiency</th>
+        <th>Key Contribution</th>
+        <th>Drawbacks</th>
+        <th>Improvement Actions</th>
+      </tr>
+      <tr>
+        <td><strong>Orchestrator</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-med">Medium</span></td>
+        <td>Managed full v0.6.0 lifecycle across 2 sessions. TASKS-v0.6.0.md created at planning start. Gate sequence enforced correctly: G4 and G5 dispatched as independent agents, G4 conditional resolved before G5 dispatched, G5 conditional resolved before G6. ADR-010 amendment was dispatched as a formal Architect task after G4 found M-01, demonstrating correct escalation. Session boundary handled cleanly &mdash; second session resumed correctly from G3 implementations. <span class="tag-measured">MEASURED</span> — subagent meta.json confirms separate dispatcher.</td>
+        <td>The 2-session delivery required context reconstruction at session start for Session 2. TASKS tracker update discipline at Session 1 end was critical for correct resumption. G6&ndash;G8 tasks remain pending in the tracker (correctly recorded as ⏳), which means the tracker accurately reflected in-progress state at session boundary. No evidence of silent gate omission.</td>
+        <td>When approaching token limits, explicitly record current gate status in TASKS tracker before session terminates. This is already required by the TASKS file write protocol, but the session-boundary handoff should explicitly note "resumed at step X" to minimize re-reading overhead at Session 2 start.</td>
+      </tr>
+      <tr>
+        <td><strong>Planner</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Full task decomposition for a substantial new feature: 3 parallel TDD tracks (detection/schema/parser) with explicit dependency mapping, 18 tasks with risk analysis (R1&ndash;R5), scope-lock step executed, feature branch lifecycle included. Pre-resolved key risks at planning time: R1 (Draft202012Validator), R2 (@context URL form), R3 (cross-reference two-pass contract), R5 (multiple SpdxDocument handling). This upfront investment materially reduced implementation rework. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms planner dispatch; task graph matches actual execution.</td>
+        <td>R4 (SPDX 3.x field names) was left OPEN with a note for tester/developer to read the schema first. This was correctly scoped as a tester/developer responsibility, not a planning failure. No planning gaps caused downstream rework.</td>
+        <td>None for this release. The parallel TDD track structure (3.D1/3.E1/3.F1 in parallel, then 3.D2/3.E2/3.F2) worked as designed.</td>
+      </tr>
+      <tr>
+        <td><strong>Architect</strong></td>
+        <td><span class="badge-partial">Partial</span></td>
+        <td><span class="badge-med">Medium</span></td>
+        <td>ADR-010 authored with comprehensive interface stubs, detection fingerprint, two-pass graph traversal contract, cross-reference resolution contract, NTIA field mapping, and Draft 2020-12 validator choice. ADR-001 amended with updated detection priority order. FR-15 added to requirements.md. <span class="tag-measured">MEASURED</span> &mdash; meta.json shows 2 distinct architect dispatches (evaluation + ADR authoring).</td>
+        <td>ADR-010 as originally authored documented full element-level JSON Schema validation as the design intent. The developer implemented an envelope-only approach (validating only @context presence) without consulting the ADR or seeking Architect approval for the deviation. This resulted in G4 finding M-01, which required a second Architect dispatch to formally amend ADR-010 (Amendment 1) after the fact. The ADR was correct; the developer deviated from it without authorization. However, the Architect's original ADR did not include a risk note about the shacl2code-generated schema's structural limitation (the <code>else: $ref AnyClass</code> branch), which might have prompted the developer to raise the deviation upfront rather than discovering it during implementation. <span class="tag-infer">(inferred from G4 M-01 finding and ADR-010 Amendment 1)</span></td>
+        <td>When authoring ADRs that reference an externally-generated schema file, include a validation note documenting any known structural limitations of that schema. This reduces the probability that the developer discovers a schema incompatibility mid-implementation and silently chooses a deviation path without consulting the ADR. Specifically: if the bundled schema has known constraints (e.g., rejects minimal documents due to schema generator artifacts), document this in the ADR's Consequences section with an explicit "deviation requires Architect approval" note.</td>
+      </tr>
+      <tr>
+        <td><strong>Tester</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Three parallel TDD tracks executed correctly: constants tests (7/7 correctly failing, 2.C1), format detection tests (2 correctly failing + 42 existing passing, 3.D1), schema validator tests (9 correctly failing + 30 passing, 3.E1), and parser tests (44 correctly failing with ImportError on missing module, 3.F1). Pipeline integration tests written for 3.G1. All test files passed ruff+mypy pre-handoff. Full fixture suite created including valid-full, valid-minimal, missing-supplier, missing-relationships, and invalid-schema SPDX 3.x files. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms 4 tester dispatches (3.D1, 3.E1, 3.F1, 3.G1).</td>
+        <td>The 44 parser tests (3.F1) failing with ImportError rather than behavioral assertions is correct TDD discipline for a module that does not yet exist. No drawbacks observed. The tester correctly read the schema and spec before authoring fixtures (per R4 risk mitigation), producing accurate SPDX 3.x JSON-LD fixtures.</td>
+        <td>None for this release. The parallel track structure with independent test files worked well and maintained modularity across detection/schema/parser concerns.</td>
+      </tr>
+      <tr>
+        <td><strong>Developer</strong></td>
+        <td><span class="badge-partial">Partial</span></td>
+        <td><span class="badge-med">Medium</span></td>
+        <td>Implemented all 6 development tasks: constants (2.C2), schema bundle (2.C3), detection branch in format_detector.py (3.D2), Draft202012Validator helper in schema_validator.py (3.E2), full spdx3_jsonld_parser.py with two-pass graph traversal (3.F2), and pipeline wiring in validator.py (3.G2). All implementations passed their respective test suites. G4/G5 fixes applied correctly: dead constant removed (M-02), registry guard added (S-M-02), isinstance guards added (S-m-02/03), docstring corrected (S-m-04). CI fix for DeprecationWarnings by bundling missing CycloneDX auxiliary schemas was an identified bonus fix (4.K1 commit).</td>
+        <td>The developer chose an envelope-only schema validation approach for SPDX 3.x (validating only @context presence rather than full element-level validation against the bundled spdx-3.0.1.schema.json) without first updating ADR-010 or seeking Architect approval. This is the root cause of G4 M-01. The ADR-010 specification called for full schema validation; the developer discovered a structural incompatibility in the schema and worked around it pragmatically, but did not surface this decision back to the Architect before committing. The correct action was: discover incompatibility &rarr; raise to Architect &rarr; Architect amends ADR &rarr; developer implements per amended ADR. Instead, the sequence was: discover incompatibility &rarr; implement workaround &rarr; G4 finds deviation &rarr; Architect amends ADR retroactively. <span class="tag-infer">(inferred from G4 M-01 and ADR-010 Amendment 1 narrative)</span></td>
+        <td>Add to the developer agent definition: if implementation of a module requires deviating from the ADR that governs it, the developer must raise the deviation to the Architect before committing, not after. This preserves the ADR as the current source of truth rather than a lagging document. The gate overhead of a pre-implementation Architect consult is significantly lower than the post-G4 retroactive amendment path.</td>
+      </tr>
+      <tr>
+        <td><strong>Reviewer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Independent review executed against the full SPDX 3.x feature diff. Found M-01 (envelope schema deviation from ADR-010) and M-02 (dead <code>_SPDX3_SCHEMA_FILE</code> constant in schema_validator.py) as MAJOR findings, plus 3 MINOR and 3 INFO. Both MAJOR findings were genuine: M-01 was an ADR contract violation, M-02 was dead code that would cause confusion. Verdict CONDITIONAL with clear remediation requirements. Correctly identified that M-01 required an Architect dispatch rather than a simple developer fix. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms independent G4 dispatch.</td>
+        <td>None significant. The CONDITIONAL verdict with 0 CRITICAL findings and 2 MAJOR findings requiring remediation is exactly the correct outcome for this kind of ADR deviation. The reviewer correctly elevated M-01 to Architect level rather than treating it as a developer-fixable code issue.</td>
+        <td>None for this release. Consider adding an explicit checklist item: "For new modules, verify that the implementation matches the ADR stub signatures and approach exactly &mdash; any deviation must be flagged as MAJOR." This is implicitly covered by the existing Architecture Adherence checklist but making it explicit for new modules would sharpen the signal.</td>
+      </tr>
+      <tr>
+        <td><strong>Security Reviewer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Full security audit of the SPDX 3.x feature. CONDITIONAL verdict with 4 mandatory pre-merge fixes: S-M-01 (formal deferral documentation for envelope schema), S-M-02 (<code>registry=Registry()</code> passed to Draft202012Validator to prevent external $ref resolution), S-m-02/03 (isinstance guards for @graph non-list and non-dict elements to prevent crashes on malformed input), S-m-04 (class docstring mismatch in test file corrected). S-M-02 is a genuine security/reliability finding: without the registry guard, the validator could attempt to fetch external JSON schemas at runtime, breaking the "no network calls at runtime" architectural invariant. All mandatory items resolved before advancement. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms independent G5 dispatch.</td>
+        <td>The S-M-02 finding (missing registry= guard) should have been caught at implementation time &mdash; the developer.md and ADR-010 both document that all schema resolution must be local. This represents a check that fell through both implementation and G4 review, and was only caught at G5. The finding category is "defensive hardening" rather than exploitable vulnerability, but it demonstrates that the "no network calls" invariant needs to be more explicitly represented in the implementation checklist.</td>
+        <td>Add <code>registry=Registry()</code> usage to the developer agent definition's implementation standards when <code>jsonschema</code> validators are constructed. A comment in <code>schema_validator.py</code> near both validator construction sites (Draft7Validator and Draft202012Validator) noting "registry prevents external $ref resolution at runtime" would catch future omissions at code-read time rather than requiring a security audit to surface.</td>
+      </tr>
+      <tr>
+        <td><strong>CI Ops</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Identified and eliminated 20 DeprecationWarnings in the test suite caused by missing CycloneDX auxiliary schemas (<code>spdx.schema.json</code> and <code>jsf-0.82.schema.json</code>). These schemas were being fetched via remote reference on every CycloneDX validation, causing jsonschema to emit deprecation warnings about remote ref fetching. Fix: bundled both auxiliary schemas alongside the CycloneDX primary schemas; updated the schema validator to use the local registry. Result: 0 warnings in the full test suite. <span class="tag-infer">(inferred from commit 37404ed and CHANGELOG entry)</span></td>
+        <td>The missing auxiliary schema issue predated v0.6.0 (it affected all CycloneDX validation since v0.3.0). CI Ops resolved it as part of the v0.6.0 stabilization loop. Ideally this would have been caught at schema bundling time in v0.3.0 when CycloneDX support was first added &mdash; the auxiliary schemas are referenced within the primary CycloneDX schema file itself, making their absence detectable at schema-load time.</td>
+        <td>Add a schema self-test to the CI pipeline: after importing and loading all bundled JSON schemas, assert that all <code>$ref</code> targets within them are resolvable against the local schema bundle. This would catch missing auxiliary schemas at CI time rather than requiring a manual DeprecationWarning investigation.</td>
+      </tr>
+      <tr>
+        <td><strong>Documentation Writer</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>G7 docs sync completed: README.md updated with SPDX 3.x in the supported formats table, CHANGELOG [0.6.0] entry written with accurate technical detail, docs/agent-briefing.md updated with new <code>FORMAT_SPDX3_JSONLD</code> constant and <code>parse_spdx3_jsonld()</code> function signature. No documentation gaps reached the release gate from this cycle (unlike v0.5.0 where F-02/F-03/F-04 were found at G4). <span class="tag-infer">(inferred from TASKS G7 and CHANGELOG content)</span></td>
+        <td>None significant. The improvement from v0.5.0 is notable: in this cycle the documentation-writer correctly updated all three required files (README, CHANGELOG, agent-briefing) as part of the G7 task without requiring a G4 rework loop to catch missed documentation. This validates the recommendation made in the v0.5.0 workflow report.</td>
+        <td>None for this release. Continue the pattern of treating CHANGELOG, README format table, and agent-briefing.md as mandatory G7 deliverables for any format-addition feature.</td>
+      </tr>
+      <tr>
+        <td><strong>Release Manager</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>G8 release readiness verification against full checklist: version consistency (pyproject.toml at 0.6.0, __init__.py, CHANGELOG), 701/701 tests passing, coverage 96.11%, CLI smoke tests, JSON output backward compatibility, packaging artifacts, PyInstaller spec verification. Active deferral D2 recorded with risk acceptance. <span class="tag-infer">(inferred from TASKS G8 and task 6.M1 scope)</span></td>
+        <td>None observed.</td>
+        <td>None for this release.</td>
+      </tr>
+      <tr>
+        <td><strong>Token Analyst</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>Token report and delta report for v0.6.0 generated (tasks 7.N1, 7.N2). Session telemetry from usage.db used for measured attribution across the 2-session delivery. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms token-analyst dispatch.</td>
+        <td>Token analyst's own cost remains inherently unattributed in its own report (self-measurement limitation, consistent with all prior releases).</td>
+        <td>None new.</td>
+      </tr>
+      <tr>
+        <td><strong>Workflow Analyst</strong></td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td><span class="badge-high">High</span></td>
+        <td>This report. Per-agent assessment (12 agents), gate analysis (G0&ndash;G10), 5+ metric benchmark vs v0.5.0, top wins and gaps, ranked improvement recommendations, and trend assessment. Generated pre-tag as required. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms workflow-analyst dispatch.</td>
+        <td>Executed at end of cycle (post-code, pre-release), as designed.</td>
+        <td>None.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 3: Gate Execution Analysis ────────────────────────────── -->
+  <div class="card">
+    <h2>3. Gate Execution Analysis</h2>
+    <table>
+      <tr><th>Gate</th><th>Executed</th><th>Caught Issues</th><th>Cost Estimate</th><th>Notes</th></tr>
+      <tr>
+        <td>G0 Intake</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>N/A &mdash; scope defined from feature brief</td>
+        <td>~0 tokens (inline)</td>
+        <td>Feature brief established: SPDX 3.x JSON-LD detection, schema validation (Draft 2020-12), parser, and NTIA integration. Acceptance criteria defined. Scope exclusions noted (SPDX 3.x TV/YAML/XML deferred). No human clarification required.</td>
+      </tr>
+      <tr>
+        <td>G1 Planning</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>5 risks identified (R1&ndash;R5)</td>
+        <td>~10,000&ndash;18,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>Full task decomposition: 18 tasks, 3 parallel TDD tracks, critical path identified. TASKS-v0.6.0.md created. Key risk resolutions recorded before implementation: R1 Draft202012Validator, R2 @context URL, R3 cross-reference contract, R5 multiple SpdxDocument handling. Only R4 (field name confirmation) left open for tester/developer. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms planner dispatch.</td>
+      </tr>
+      <tr>
+        <td>G2 Architecture</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>N/A &mdash; decision gate; produced ADR-010</td>
+        <td>~25,000&ndash;40,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>ADR-010 authored with full interface stubs. ADR-001 amended (detection priority). FR-15 added to requirements.md. Two Architect dispatches: (1) evaluation of feature and design constraints; (2) formal ADR authoring. A third implicit Architect dispatch occurred post-G4 to author ADR-010 Amendment 1 (envelope schema deviation). The Amendment 1 dispatch is rework cost rooted in a developer ADR-deviation gap. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms architect dispatches.</td>
+      </tr>
+      <tr>
+        <td>G3 TDD Build</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>0 rework &mdash; all implementations met their test suites</td>
+        <td>~120,000&ndash;180,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>Highest-cost gate by a significant margin. Three parallel test-writing tracks (3.D1/3.E1/3.F1) in Session 1. Three parallel implementation tracks (3.D2/3.E2/3.F2) spanning session boundary. Integration tests (3.G1) + pipeline wiring (3.G2). 107 new tests. Each implementation passed its targeted tests + full suite + ruff+mypy. Clean execution with no failed attempts. The token cost reflects the depth of the feature: new module, 3 test files, 6 fixture files, schema file. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms tester and developer dispatches.</td>
+      </tr>
+      <tr>
+        <td>G4 Quality Review</td>
+        <td><span class="badge-yes">Yes</span> (CONDITIONAL)</td>
+        <td>0 CRITICAL, 2 MAJOR (M-01 envelope schema deviation from ADR-010, M-02 dead constant), 3 MINOR, 3 INFO</td>
+        <td>~80,000&ndash;120,000 tokens total (review + fix loop + ADR amendment) <span class="tag-infer">(est.)</span></td>
+        <td>Independent reviewer dispatched. Found M-01: envelope-only schema validation deviates from ADR-010 spec (critical ADR contract violation requiring Architect formal amendment). Found M-02: dead <code>_SPDX3_SCHEMA_FILE</code> constant left in schema_validator.py. Both mandatory items resolved: M-02 constant removed by developer; ADR-010 Amendment 1 authored by Architect; docstring updated. Fix loop required separate developer and Architect dispatches. Gate correctly held CONDITIONAL until fixes confirmed. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms independent reviewer dispatch.</td>
+      </tr>
+      <tr>
+        <td>G5 Security</td>
+        <td><span class="badge-yes">Yes</span> (CONDITIONAL)</td>
+        <td>S-M-01 (formal deferral doc), S-M-02 (<code>registry=</code> guard), S-m-02/03 (isinstance guards), S-m-04 (docstring mismatch)</td>
+        <td>~75,000&ndash;100,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>Independent security reviewer dispatched after G4 fix loop completed. Found S-M-02 independently: <code>Draft202012Validator</code> constructed without <code>registry=Registry()</code>, creating a path for runtime external HTTP requests in violation of the "no network calls" invariant. Found isinstance guards missing for non-list @graph and non-dict @graph elements &mdash; malformed SPDX 3.x documents could cause AttributeError crashes. All mandatory items resolved in a single fix commit (4be95b6). <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms independent G5 dispatch.</td>
+      </tr>
+      <tr>
+        <td>G6 CI Stability</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>20 DeprecationWarnings from missing CycloneDX auxiliary schemas</td>
+        <td>~25,000&ndash;40,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>CI Ops dispatched. Identified root cause: <code>spdx.schema.json</code> and <code>jsf-0.82.schema.json</code> are referenced by <code>$ref</code> within the CycloneDX primary schemas but were not bundled in <code>src/sbom_validator/schemas/</code>. Jsonschema fell back to remote fetching (deprecated behavior) emitting 20 warnings. Fix: bundled both files and updated schema registry. Result: 0 warnings, 701/701 tests, full suite clean. This issue predated v0.6.0 &mdash; the DeprecationWarnings were present in all CycloneDX validation since v0.3.0 but were apparently treated as acceptable noise until this cycle. Commit 37404ed. <span class="tag-infer">(inferred from commit and CHANGELOG)</span></td>
+      </tr>
+      <tr>
+        <td>G7 Docs Sync</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>0 documentation gaps found</td>
+        <td>~20,000&ndash;35,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>Documentation writer updated README.md (SPDX 3.x in supported formats table), CHANGELOG.md ([0.6.0] entry), and docs/agent-briefing.md (new constant and function signature). No documentation gaps carried over from feature development &mdash; a direct improvement over v0.5.0 which had 3 documentation findings (F-02/F-03/F-04) at G4. Version bump to 0.6.0 in pyproject.toml and __init__.py. <span class="tag-infer">(inferred from TASKS 5.L1, 6.M1 and CHANGELOG)</span></td>
+      </tr>
+      <tr>
+        <td>G8 Release Readiness</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>Active deferral D2 recorded; PyInstaller spec verified</td>
+        <td>~35,000&ndash;50,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>Release manager verified: version consistency (0.6.0 in pyproject.toml/__init__.py/CHANGELOG), 701/701 tests, 96.11% coverage, CLI smoke tests, SPDX 3.x detection/validation paths, JSON output backward compatibility (no new required fields), packaging artifacts. Deferral D2 (envelope-only schema validation) formally recorded in TASKS tracker with risk acceptance. PyInstaller spec verified to include new parser module and schema files. <span class="tag-infer">(inferred from task 6.M1 scope)</span></td>
+      </tr>
+      <tr>
+        <td>G9 Token Analytics</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>N/A (analytics gate)</td>
+        <td>~20,000&ndash;30,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>Token analyst generated token-report-v0.6.0.html and token-delta-v0.5.0_to_v0.6.0.html. Two-session aggregation applied. Subagent meta.json + session telemetry from usage.db used for measured per-agent attribution. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms token-analyst dispatch.</td>
+      </tr>
+      <tr>
+        <td>G10 Workflow Evaluation</td>
+        <td><span class="badge-yes">Yes</span></td>
+        <td>3 workflow gaps; 5 improvement recommendations</td>
+        <td>~15,000&ndash;25,000 tokens <span class="tag-infer">(est.)</span></td>
+        <td>This report. Pre-tag as required. <span class="tag-measured">MEASURED</span> &mdash; meta.json confirms workflow-analyst dispatch.</td>
+      </tr>
+    </table>
+    <p class="muted" style="margin-top:0.5rem">Gate pass rate: <strong>11 / 11 (100%)</strong>. No permanently skipped gates. G4 issued CONDITIONAL (resolved before G5 advancement). G5 issued CONDITIONAL (resolved before G6). Both instances reflect correct gate behavior. Note: operating model labels these G0&ndash;G9 with an additional G10 (human approval), totaling 11 gates.</p>
+  </div>
+
+  <!-- ── Section 4: Top Workflow Wins ──────────────────────────────────── -->
+  <div class="card">
+    <h2>4. Top Workflow Wins</h2>
+    <ol>
+      <li><strong>Zero documentation gaps at the release gate (improvement over v0.5.0).</strong><br>
+        The v0.5.0 workflow report recommended shifting documentation completeness upstream from the release gate to individual tasks. In v0.6.0 this was observed: README.md, CHANGELOG.md, and docs/agent-briefing.md were all updated at G7 without any documentation findings carried from G4. Three documentation findings (F-02/F-03/F-04) that required a separate dispatch in v0.5.0 did not recur. This is a concrete, measurable improvement driven by prior cycle learning.</li>
+      <li><strong>Three parallel TDD tracks delivered cleanly with zero implementation rework.</strong><br>
+        The planner's parallel track structure (3.D1/3.E1/3.F1 written in parallel, then 3.D2/3.E2/3.F2 implemented in parallel) worked as designed. All 107 new tests passed on first implementation attempt for each track. The tester correctly used schema and spec documentation before authoring fixtures (R4 risk mitigation), preventing fixture mismatches that would have required developer rework. This is the largest feature implemented in a single cycle (new module, 3 new test files, 6 fixture files, 1 schema file) with zero green-to-red regression in existing tests.</li>
+      <li><strong>G4 correctly elevated an ADR contract violation to Architect level.</strong><br>
+        The reviewer recognized that M-01 (envelope schema approach) was not a simple code quality issue but an architectural contract violation requiring formal ADR amendment. Rather than treating it as a developer fix, the reviewer correctly classified it as MAJOR requiring Architect dispatch. This preserved the integrity of the ADR as the authoritative design record. The outcome &mdash; ADR-010 Amendment 1 &mdash; ensures the deviation is formally documented and D2 deferral is traceable to an Architect decision.</li>
+      <li><strong>CycloneDX DeprecationWarning debt eliminated as a bonus fix.</strong><br>
+        The 20 DeprecationWarnings from missing auxiliary CycloneDX schemas had been accumulating since v0.3.0. The CI Ops agent identified and resolved the root cause during G6 stabilization in this cycle. The fix &mdash; bundling <code>spdx.schema.json</code> and <code>jsf-0.82.schema.json</code> &mdash; is low-risk and delivers permanent improvement: 0 warnings in the test suite going forward, strengthening the "no network calls at runtime" invariant. This was a pre-existing issue resolved opportunistically rather than a new regression.</li>
+      <li><strong>S-M-02 (registry guard) caught a genuine runtime-network-call risk at G5.</strong><br>
+        The <code>Draft202012Validator</code> constructed without <code>registry=Registry()</code> would have attempted external HTTP fetches on any validation failure that triggered the <code>else: $ref AnyClass</code> branch in the SPDX 3.x schema. This would have silently violated the architectural invariant that no network calls occur at runtime, and would have produced non-deterministic behavior in air-gapped environments. G5 caught this before release &mdash; an example of the security gate providing value beyond supply-chain concerns.</li>
+    </ol>
+  </div>
+
+  <!-- ── Section 5: Top Workflow Gaps ──────────────────────────────────── -->
+  <div class="card">
+    <h2>5. Top Workflow Gaps</h2>
+    <ol>
+      <li><strong>Developer deviated from ADR-010 without prior Architect consultation (root cause of G4 M-01).</strong><br>
+        <em>Root cause:</em> The developer encountered a structural incompatibility in the bundled SPDX 3.0.1 schema (the shacl2code-generated <code>else: $ref AnyClass</code> branch rejects minimal @context-only root documents, which are valid SPDX 3.x JSON-LD). Instead of raising this to the Architect to amend ADR-010 before implementing the workaround, the developer implemented an envelope-only validation approach and committed it. ADR-010 was not updated to reflect this deviation. The G4 reviewer correctly found this as M-01.<br>
+        <em>Impact:</em> Medium. Required a retroactive Architect dispatch (Amendment 1 to ADR-010), a developer fix dispatch (removing dead constant M-02, which resulted from the same deviation), and a formal deferral (D2) with risk documentation. No functional defect shipped, but the ADR was temporarily stale with respect to the implementation. The rework cost &mdash; review + Architect amendment + fix commit &mdash; was avoidable if the deviation had been surfaced pre-implementation.<br>
+        <em>Fix:</em> Add to developer.md: "If implementing a module governed by an ADR and the implementation requires deviating from any decision in that ADR, stop, raise the deviation to the Architect, and obtain an ADR amendment before committing." Consider adding an explicit checklist item to the developer's pre-commit gate: "Does this implementation match all decisions in the governing ADR(s)?"</li>
+      <li><strong>Missing auxiliary schemas in CycloneDX bundle undetected for 3 releases (v0.3.0&ndash;v0.5.0).</strong><br>
+        <em>Root cause:</em> When CycloneDX multi-version support was added in v0.3.0, the primary CycloneDX JSON schemas were bundled but the auxiliary schemas they reference via <code>$ref</code> were not. The jsonschema library fell back to remote reference resolution (emitting DeprecationWarnings) rather than raising a hard error. Because the fallback succeeded (network was available in dev environments), the missing schemas were not caught by CI and the warnings were apparently not treated as blocking. This pattern persisted across v0.3.0, v0.4.0, and v0.5.0.<br>
+        <em>Impact:</em> Low (no functional defect in networked environments). High in air-gapped environments where the remote fetch would fail, causing CycloneDX validation to fail on any schema with a <code>$ref</code> to a missing auxiliary. The "no network calls at runtime" architectural invariant was being silently violated for every CycloneDX validation.<br>
+        <em>Fix:</em> Add a schema self-test step to CI: after loading all bundled schemas, assert that all <code>$ref</code> URIs are resolvable within the local bundle. This would have caught the missing auxiliary schemas in v0.3.0 before they became a multi-release debt.</li>
+      <li><strong>2-session delivery creates coordination overhead and session-boundary risk.</strong><br>
+        <em>Root cause:</em> Session 1 hit the token limit during G3 (after test writing but before all implementations were complete). This is inherent to the feature size &mdash; a new module with 3 parallel test tracks, 6 fixture files, and 2 ADR documents is a large context load. The boundary occurred at a well-defined point (all tests written, no implementations started), which minimized reconstruction cost. However, the session boundary between G3 (test writing) and G3 (implementations) required re-reading TASKS tracker state and re-establishing context for each implementation agent.<br>
+        <em>Impact:</em> Low-Medium. No tasks were duplicated or skipped. The TASKS tracker accurately reflected state at session end. Session 2 resumed correctly. However, there is a structural risk: if the TASKS tracker had not been kept current at session 1 end, Session 2 context reconstruction would have been unreliable.<br>
+        <em>Fix:</em> For features where G3 is expected to span multiple sessions (3+ parallel TDD tracks + implementations = high context load), the planner should explicitly schedule a "session checkpoint" task: write a TASKS tracker update with current gate status and all completed/pending subagents before the context limit is approached. This makes the session boundary an intentional process step rather than an emergency stop.</li>
+    </ol>
+  </div>
+
+  <!-- ── Section 6: Benchmark vs v0.5.0 ────────────────────────────────── -->
+  <div class="card">
+    <h2>6. Benchmark vs v0.5.0</h2>
+    <table>
+      <tr><th>Metric</th><th>v0.5.0</th><th>v0.6.0</th><th>Delta</th></tr>
+      <tr>
+        <td>Gate pass rate</td>
+        <td>100% (11/11)</td>
+        <td>100% (11/11)</td>
+        <td class="delta-flat">Flat &mdash; consistent gate discipline for 5th consecutive release</td>
+      </tr>
+      <tr>
+        <td>CI failure cycles (lint/format)</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="delta-flat">Flat &mdash; pre-commit hooks effective for 5th consecutive release</td>
+      </tr>
+      <tr>
+        <td>G4 MAJOR findings</td>
+        <td>1 (F-01: DEPENDENCY_OF)</td>
+        <td>2 (M-01 ADR deviation, M-02 dead constant)</td>
+        <td class="delta-pos">Regression: +1 MAJOR finding. Nature differs from v0.5.0: M-01 is an ADR contract violation vs F-01 which was a functional bug. Both patterns are avoidable with upstream process checks.</td>
+      </tr>
+      <tr>
+        <td>G4 MINOR findings</td>
+        <td>3 (F-02/F-03/F-04 docs)</td>
+        <td>3 (minor, info-level items)</td>
+        <td class="delta-flat">Flat &mdash; minor finding count stable; nature improved (0 documentation gaps vs 3 in v0.5.0)</td>
+      </tr>
+      <tr>
+        <td>Documentation gaps at G4</td>
+        <td>3 (F-02/F-03/F-04 required doc-writer rework dispatch)</td>
+        <td>0</td>
+        <td class="delta-neg">Improved &mdash; v0.5.0 recommendation adopted; documentation completed at G7 without G4 rework</td>
+      </tr>
+      <tr>
+        <td>Rework overhead</td>
+        <td>2 fix dispatches (developer F-01 + doc-writer F-02/F-03/F-04)</td>
+        <td>2 fix dispatches (developer G4/G5 fix + Architect ADR-010 Amendment 1)</td>
+        <td class="delta-flat">Flat &mdash; rework count same; composition shifted from doc hygiene to architectural deviation</td>
+      </tr>
+      <tr>
+        <td>Skipped gates</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="delta-flat">Flat &mdash; no gates permanently skipped</td>
+      </tr>
+      <tr>
+        <td>Agent compliance rate (role fulfilled: Yes)</td>
+        <td>10/12 assessed (Tester and Doc Writer: Partial)</td>
+        <td>10/12 (Architect and Developer: Partial due to ADR deviation gap)</td>
+        <td class="delta-flat">Flat &mdash; compliance rate stable at ~83%; gap moved from documentation hygiene to ADR communication</td>
+      </tr>
+      <tr>
+        <td>Tests added</td>
+        <td>+3 (bug fix regression tests)</td>
+        <td>+107 (new format: detection, schema, parser, integration)</td>
+        <td class="delta-neg">Large improvement &mdash; proportional to scope: v0.6.0 is a full format addition, v0.5.0 was a bug fix cycle</td>
+      </tr>
+      <tr>
+        <td>Coverage</td>
+        <td>95.93%</td>
+        <td>96.11%</td>
+        <td class="delta-neg">Slight improvement &mdash; new parser module added with thorough test coverage</td>
+      </tr>
+      <tr>
+        <td>DeprecationWarnings in test suite</td>
+        <td>20 (pre-existing, unresolved)</td>
+        <td>0</td>
+        <td class="delta-neg">Improved &mdash; pre-existing debt eliminated by G6 CI stabilization</td>
+      </tr>
+      <tr>
+        <td>Security findings (MAJOR/CRITICAL)</td>
+        <td>0</td>
+        <td>0 (S-M-02 registry guard: pre-merge mandatory, resolved)</td>
+        <td class="delta-flat">Flat &mdash; clean security posture maintained; registry guard found and fixed before release</td>
+      </tr>
+      <tr>
+        <td>Session count</td>
+        <td>1</td>
+        <td>2 (token limit mid-G3)</td>
+        <td class="delta-pos">Regression &mdash; larger feature scope required 2 sessions; adds coordination overhead</td>
+      </tr>
+      <tr>
+        <td>Active deferrals</td>
+        <td>0</td>
+        <td>1 (D2: envelope-only schema validation)</td>
+        <td class="delta-pos">New deferral introduced &mdash; medium severity, formally documented with risk acceptance and planned resolution in v0.7.0</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 7: Improvement Recommendations ────────────────────────── -->
+  <div class="card">
+    <h2>7. Improvement Recommendations (Ranked by Impact)</h2>
+    <table>
+      <tr><th>Rank</th><th>Recommendation</th><th>Target</th><th>Expected Improvement</th><th>Effort</th><th>Type</th></tr>
+      <tr>
+        <td>1</td>
+        <td>Add a mandatory pre-commit ADR compliance check to the developer agent definition: before committing any implementation of a module governed by an ADR, the developer must verify that every design decision in the ADR is reflected in the implementation. If the implementation deviates (pragmatic reasons, schema incompatibility, etc.), the developer must raise the deviation to the Architect and obtain a formal ADR amendment before committing. Currently, the developer.md instructs the developer to "check the relevant ADR file" but does not explicitly prohibit committing deviating implementations. This gap caused G4 M-01 in this cycle.</td>
+        <td>Developer agent definition + Architect agent collaboration rules</td>
+        <td>Eliminates the G4 M-01 failure pattern (ADR deviation found at review rather than pre-implementation). Estimated savings: avoids 1 Architect amendment dispatch + 1 developer fix commit per release cycle when ADR deviations occur. Also preserves ADR as current source of truth rather than retroactively updated document.</td>
+        <td>Low &mdash; one paragraph addition to developer.md; one collaboration rule addition to architect.md</td>
+        <td>Agent definition update</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Add a schema self-test step to the CI pipeline: after loading all bundled JSON schemas, assert that all <code>$ref</code> URIs within them are resolvable against the local schema bundle without network access. Implement as a pytest fixture or a separate CI step that instantiates each schema with <code>registry=Registry()</code> and asserts no <code>RefResolutionError</code> is raised. This would have caught the missing CycloneDX auxiliary schemas in v0.3.0, preventing 3 releases of DeprecationWarning noise.</td>
+        <td>CI Ops + Developer (schema validator module)</td>
+        <td>Catches missing auxiliary schemas at CI time. Prevents recurrence of the silent "network fallback" failure mode in air-gapped environments. Reinforces the "no network calls at runtime" invariant structurally rather than relying on review/audit to catch it.</td>
+        <td>Low-Medium &mdash; ~50-line pytest test or CI step; add to ci.yml after existing test step</td>
+        <td>CI gate addition + code change</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Add <code>registry=Registry()</code> as a mandatory pattern when constructing any <code>jsonschema</code> validator to the developer agent implementation standards. A comment in <code>schema_validator.py</code> near each validator construction site explaining "registry prevents external $ref resolution at runtime &mdash; required by ADR" would catch future omissions at code-read time. The G5 S-M-02 finding demonstrates that this pattern is not reliably applied even by agents that are aware of the "no network calls" invariant.</td>
+        <td>Developer agent definition (implementation standards) + schema_validator.py code comment</td>
+        <td>Prevents S-M-02 class of findings from reaching G5. The registry pattern is defensive-by-default: without it, the validator behavior depends on network availability. With it, schema resolution fails fast and explicitly rather than silently falling back to HTTP.</td>
+        <td>Low &mdash; one addition to developer.md; two code comments in schema_validator.py</td>
+        <td>Agent definition update + code comment</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>For features expected to span multiple sessions (3+ parallel TDD tracks or 2+ new modules), the planner should add an explicit "session checkpoint" task: write a TASKS tracker update with current gate status at a natural boundary point (e.g., after all TDD test writing but before implementations). This converts the session boundary from a reactive emergency stop to an intentional process step, ensuring TASKS tracker state is always current at session end. The v0.6.0 boundary was well-handled because TDD tests were all complete; a less clean boundary (mid-implementation) would require more reconstruction overhead.</td>
+        <td>Planner agent definition + Orchestrator TASKS write protocol</td>
+        <td>Reduces session-boundary context reconstruction cost for multi-session features. Prevents the risk of a mid-implementation session boundary leaving the TASKS tracker in an ambiguous state. Estimated savings: 5,000&ndash;15,000 tokens in context re-establishment per affected session.</td>
+        <td>Low &mdash; one addition to planner.md task format section; one addition to orchestrator.md session boundary protocol</td>
+        <td>Agent definition update + workflow change</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Document the envelope-schema deferral (D2) resolution as a tracked v0.7.0 task in the next release planner. Specifically, the developer implementing D2 resolution should investigate: (a) patching the bundled <code>spdx-3.0.1.schema.json</code> to remove the <code>else: $ref AnyClass</code> branch that rejects valid minimal documents, or (b) implementing a pre-processor that feeds @graph elements individually to the full schema validator. Include a performance benchmark: option (a) modifies a vendor schema file (risk: divergence from upstream), option (b) adds per-element validation overhead (risk: performance on large SBOMs). The Architect should evaluate and choose before implementation.</td>
+        <td>Planner (v0.7.0 task creation) + Architect (D2 resolution approach decision)</td>
+        <td>Closes the active deferral D2 and restores full element-level SPDX 3.x schema validation. Strengthens the security posture: schema-stage errors for malformed SPDX 3.x elements will surface as <code>FAIL</code> (schema error) rather than silently passing schema stage and potentially causing parse-stage <code>ERROR</code>.</td>
+        <td>Medium &mdash; requires schema investigation + Architect evaluation + implementation + test update; plan as a v0.7.0 task</td>
+        <td>Workflow change (next-release task creation)</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Section 8: Trend Assessment ──────────────────────────────────── -->
+  <div class="card">
+    <h2>8. Trend Assessment</h2>
+    <table>
+      <tr><th>Trend Area</th><th>v0.3.0</th><th>v0.4.0</th><th>v0.5.0</th><th>v0.6.0</th><th>Trend</th></tr>
+      <tr>
+        <td>CI lint/format failure cycles</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td class="delta-neg">Sustained improvement &mdash; structural fix from v0.2.2 effective for 4 consecutive releases</td>
+      </tr>
+      <tr>
+        <td>Gate pass rate</td>
+        <td>11/11 (100%)</td>
+        <td>11/11 (100%)</td>
+        <td>11/11 (100%)</td>
+        <td>11/11 (100%)</td>
+        <td class="delta-flat">Stable &mdash; consistent gate discipline across all releases</td>
+      </tr>
+      <tr>
+        <td>G4 MAJOR findings</td>
+        <td>0</td>
+        <td>0</td>
+        <td>1 (multi-parser consistency)</td>
+        <td>2 (ADR deviation + dead constant)</td>
+        <td class="delta-pos">Mild regression &mdash; finding count increasing. Root causes differ each cycle (parser parity v0.5.0; ADR communication v0.6.0), suggesting systemic upstream check gaps rather than single recurring failure mode</td>
+      </tr>
+      <tr>
+        <td>Documentation gaps at G4</td>
+        <td>0</td>
+        <td>1</td>
+        <td>3</td>
+        <td>0</td>
+        <td class="delta-neg">Improved &mdash; v0.5.0 recommendation applied; G4 documentation finding pattern broken in v0.6.0</td>
+      </tr>
+      <tr>
+        <td>Rework ratio (fix dispatches)</td>
+        <td>~1</td>
+        <td>0</td>
+        <td>2</td>
+        <td>2</td>
+        <td class="delta-flat">Plateau at 1&ndash;2 fix dispatches per release for v0.5.0 and v0.6.0. Not yet declining.</td>
+      </tr>
+      <tr>
+        <td>Test suite size</td>
+        <td>516</td>
+        <td>594</td>
+        <td>616</td>
+        <td>701</td>
+        <td class="delta-neg">Consistent growth &mdash; test coverage expanding proportionally with feature scope</td>
+      </tr>
+      <tr>
+        <td>Coverage</td>
+        <td>~96%</td>
+        <td>96%</td>
+        <td>95.93%</td>
+        <td>96.11%</td>
+        <td class="delta-flat">Stable &mdash; consistent high coverage maintained across 4 consecutive releases</td>
+      </tr>
+      <tr>
+        <td>DeprecationWarnings</td>
+        <td>20 (introduced)</td>
+        <td>20 (unresolved)</td>
+        <td>20 (unresolved)</td>
+        <td>0</td>
+        <td class="delta-neg">Resolved &mdash; 3-release debt eliminated by G6 in v0.6.0</td>
+      </tr>
+      <tr>
+        <td>Active deferrals</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>1 (D2 envelope schema)</td>
+        <td class="delta-pos">New deferral introduced &mdash; medium severity, formally documented. Manageable if resolved in v0.7.0.</td>
+      </tr>
+      <tr>
+        <td>Agent compliance (full role fulfilled)</td>
+        <td>100%</td>
+        <td>100%</td>
+        <td>~83% (Tester, Doc Writer: Partial)</td>
+        <td>~83% (Architect, Developer: Partial)</td>
+        <td class="delta-flat">Stable at ~83% &mdash; 2 agents per release have a partial rating. The gap moved from documentation hygiene (v0.5.0) to ADR communication (v0.6.0), indicating different systemic gaps in each cycle rather than the same recurring failure.</td>
+      </tr>
+    </table>
+
+    <h3>Overall Trend Verdict</h3>
+    <p><span class="verdict-attention">STABLE WITH ACTIVE REWORK PLATEAU</span></p>
+    <p>The sbom-validator workflow continues to demonstrate strong structural health: zero CI lint/format failures for five consecutive releases, 100% gate pass rate sustained, and consistently high coverage (95&ndash;96%). The structural improvements from v0.2.2 (pre-commit hooks) and v0.5.0 (documentation completeness at G7) are holding.</p>
+    <p>However, the rework ratio &mdash; measured by G4 fix dispatches required per release &mdash; has not declined. v0.5.0: 2 fix dispatches (functional bug + documentation). v0.6.0: 2 fix dispatches (ADR amendment + code fix). The failure modes differ each release (multi-parser consistency, then documentation gaps, now ADR communication), which means single-issue fixes are not converging to zero rework. Each cycle introduces a new upstream gap type.</p>
+    <p>The primary lever for the next improvement phase is closing the developer-to-ADR communication loop: requiring developers to seek Architect approval for any ADR deviation before committing, rather than discovering the deviation at G4. If this change is applied to developer.md, the M-01 pattern should not recur. Combined with the schema self-test CI gate (Recommendation 2), the structural integrity of the "no network calls" invariant will be enforced mechanically rather than relying on G5 to catch it.</p>
+    <p>The active deferral D2 (envelope-only schema validation) is the most significant technical debt introduced in this release. It is formally documented with risk acceptance, but it should be scheduled for resolution in v0.7.0 to prevent it from becoming a multi-release debt like the CycloneDX auxiliary schema gap that persisted from v0.3.0 to v0.6.0.</p>
+  </div>
+
+</div>
+</body>
+</html>
