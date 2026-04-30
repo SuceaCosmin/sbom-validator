@@ -12,7 +12,7 @@ from typing import Any
 import jsonschema
 import jsonschema.exceptions
 import xmlschema
-from referencing import Registry
+from referencing import Registry, Resource
 
 from sbom_validator.constants import (
     CYCLONEDX_SUPPORTED_VERSIONS,
@@ -52,11 +52,44 @@ _CDX_XSD_SCHEMA_FILES: dict[str, str] = {
 
 _SPDX_SCHEMA_FILE = "spdx-2.3.schema.json"
 
+# Auxiliary schemas that the CycloneDX schemas reference via relative $ref.
+# Bundled locally so Draft7Validator never makes outbound network calls.
+_CDX_AUXILIARY_SCHEMA_FILES = ("spdx.schema.json", "jsf-0.82.schema.json")
+
 # Cache key used for the SPDX 3.x envelope-only schema (see _load_spdx3_schema docstring).
 _SPDX3_ENVELOPE_CACHE_KEY = "spdx3-jsonld-envelope"
 
 _loaded_json_schemas: dict[str, dict[str, Any]] = {}
 _loaded_xml_schemas: dict[str, xmlschema.XMLSchemaBase] = {}
+_cdx_registry: Registry | None = None
+
+
+def _build_cdx_registry() -> Registry:
+    """Build (and cache) a referencing.Registry pre-loaded with CycloneDX auxiliary schemas.
+
+    The CycloneDX JSON schemas contain relative $ref entries that point to
+    ``spdx.schema.json`` and ``jsf-0.82.schema.json``.  Without a pre-populated
+    registry, jsonschema attempts to fetch these over the network, which triggers
+    a DeprecationWarning (and will become an error in a future release).
+
+    Both files are bundled in ``src/sbom_validator/schemas/``.  This function
+    reads them once, registers them under their ``$id`` URIs, and caches the
+    resulting Registry for the lifetime of the process.
+    """
+    global _cdx_registry
+    if _cdx_registry is not None:
+        return _cdx_registry
+
+    schemas_dir = _schemas_dir()
+    resources: list[tuple[str, Resource[Any]]] = []
+    for name in _CDX_AUXILIARY_SCHEMA_FILES:
+        schema = json.loads((schemas_dir / name).read_text(encoding="utf-8"))
+        schema_id: str = schema.get("$id", "")
+        if schema_id:
+            resources.append((schema_id, Resource.from_contents(schema)))
+
+    _cdx_registry = Registry().with_resources(resources)
+    return _cdx_registry
 
 
 def _load_spdx_schema() -> dict[str, Any]:
@@ -124,7 +157,7 @@ def _validate_json_schema(
     raw_doc: dict[str, Any], schema: dict[str, Any], rule: str
 ) -> list[ValidationIssue]:
     """Validate a JSON document against a Draft 7 schema and return ValidationIssue items."""
-    validator = jsonschema.Draft7Validator(schema)
+    validator = jsonschema.Draft7Validator(schema, registry=_build_cdx_registry())
     issues: list[ValidationIssue] = []
     for error in validator.iter_errors(raw_doc):
         field_path = ".".join(str(p) for p in error.absolute_path) if error.absolute_path else "$"
