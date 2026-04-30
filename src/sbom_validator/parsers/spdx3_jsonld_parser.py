@@ -53,6 +53,8 @@ def _build_graph_index(graph: list[dict[str, Any]]) -> dict[str, dict[str, Any]]
     """
     index: dict[str, dict[str, Any]] = {}
     for element in graph:
+        if not isinstance(element, dict):
+            continue
         element_id: str | None = element.get("spdxId")
         if element_id is not None:
             index[element_id] = element
@@ -252,7 +254,13 @@ def parse_spdx3_jsonld(file_path: Path) -> NormalizedSBOM:
         raise ParseError(f"SPDX 3.x file '{file_path}' contains invalid JSON: {e}") from e
 
     # --- Extract @graph -------------------------------------------------------
-    graph: list[dict[str, Any]] = document.get("@graph", [])
+    raw_graph = document.get("@graph", [])
+    if not isinstance(raw_graph, list):
+        raise ParseError(
+            f"SPDX 3.x file '{file_path}': '@graph' must be a JSON array, "
+            f"got {type(raw_graph).__name__!r}."
+        )
+    graph: list[dict[str, Any]] = raw_graph
     if not graph:
         raise ParseError(f"No elements found in @graph of '{file_path}'")
 

@@ -62,16 +62,16 @@
 | 2.C2 | Implement new constants in `constants.py` | Developer | `feature/spdx3-jsonld` | 2.C1 | ✅ | `src/sbom_validator/constants.py` updated | 7/7 tests pass; ruff+mypy clean |
 | 2.C3 | Bundle SPDX 3.0.1 JSON Schema | Developer | `feature/spdx3-jsonld` | 1.B1 | ✅ | `src/sbom_validator/schemas/spdx-3.0.1.schema.json` | File is valid JSON; committed in b8c9da8 |
 | 3.D1 | Write failing tests for SPDX 3.x format detection | Tester | `feature/spdx3-jsonld` | 2.C2 | ✅ | New class `TestDetectFormatSPDX3JsonLD` in `tests/unit/test_format_detector.py`; `tests/fixtures/spdx/valid-minimal.spdx3.jsonld` | 2 tests correctly failing; 42 existing pass; ruff+mypy clean |
-| 3.D2 | Implement SPDX 3.x detection branch in `format_detector.py` | Developer | `feature/spdx3-jsonld` | 3.D1 | ⏳ | `src/sbom_validator/format_detector.py` updated | `test_format_detector.py` all pass; ruff+mypy pass |
+| 3.D2 | Implement SPDX 3.x detection branch in `format_detector.py` | Developer | `feature/spdx3-jsonld` | 3.D1 | ✅ | `src/sbom_validator/format_detector.py` updated | `test_format_detector.py` all pass; ruff+mypy pass |
 | 3.E1 | Write failing tests for SPDX 3.x schema validation | Tester | `feature/spdx3-jsonld` | 2.C2, 2.C3 | ✅ | New class `TestValidateSchemaSPDX3JsonLD` in `tests/unit/test_schema_validator.py`; `tests/fixtures/spdx/invalid-schema.spdx3.jsonld` | 9 tests correctly failing (ValueError); 30 existing pass; ruff+mypy clean |
-| 3.E2 | Extend `schema_validator.py` to handle `spdx3-jsonld` | Developer | `feature/spdx3-jsonld` | 3.E1 | ⏳ | `src/sbom_validator/schema_validator.py` updated (new `_validate_json_schema_2020()` helper) | `test_schema_validator.py` all pass; ruff+mypy pass |
+| 3.E2 | Extend `schema_validator.py` to handle `spdx3-jsonld` | Developer | `feature/spdx3-jsonld` | 3.E1 | ✅ | `src/sbom_validator/schema_validator.py` updated (new `_validate_json_schema_2020()` helper) | `test_schema_validator.py` all pass; ruff+mypy pass |
 | 3.F1 | Write failing tests for the SPDX 3.x JSON-LD parser | Tester | `feature/spdx3-jsonld` | 2.C2 | ✅ | `tests/unit/test_spdx3_jsonld_parser.py` (44 tests, 5 classes); fixtures: `valid-full.spdx3.jsonld`, `missing-supplier.spdx3.jsonld`, `missing-relationships.spdx3.jsonld` | All 44 tests fail with ImportError; ruff+mypy clean |
-| 3.F2 | Implement `parse_spdx3_jsonld()` in new parser module | Developer | `feature/spdx3-jsonld` | 3.F1 | ⏳ | `src/sbom_validator/parsers/spdx3_jsonld_parser.py` | `test_spdx3_jsonld_parser.py` all pass; ruff+mypy pass |
-| 3.G1 | Write failing integration tests for SPDX 3.x end-to-end pipeline | Tester | `feature/spdx3-jsonld` | 3.D2, 3.E2, 3.F2 | ⏳ | New class in `tests/unit/test_validator.py`; `tests/integration/test_cli_spdx3.py` | Tests fail; ruff+mypy pass |
-| 3.G2 | Wire SPDX 3.x into `validator.py` pipeline | Developer | `feature/spdx3-jsonld` | 3.G1 | ⏳ | `src/sbom_validator/validator.py` updated (`_SPDX_FORMATS`, dispatch branch) | All pipeline tests pass; ruff+mypy pass |
-| 3.H1 | Run full test suite; verify coverage >= 90% | Developer | `feature/spdx3-jsonld` | 3.G2 | ⏳ | Clean pytest run output | 0 failures; coverage >= 90%; ruff+mypy clean |
-| 4.I1 | Independent code review | Reviewer | `feature/spdx3-jsonld` | 3.H1 | ⏳ | Review findings and verdict | No open CRITICAL/MAJOR (or approved deferrals recorded) |
-| 4.J1 | Security/compliance review | Security Reviewer | `feature/spdx3-jsonld` | 3.H1 | ⏳ | Security findings and verdict | Verdict APPROVED/CONDITIONAL; no runtime network calls; graceful malformed input handling confirmed |
+| 3.F2 | Implement `parse_spdx3_jsonld()` in new parser module | Developer | `feature/spdx3-jsonld` | 3.F1 | ✅ | `src/sbom_validator/parsers/spdx3_jsonld_parser.py` | `test_spdx3_jsonld_parser.py` all pass; ruff+mypy pass |
+| 3.G1 | Write failing integration tests for SPDX 3.x end-to-end pipeline | Tester | `feature/spdx3-jsonld` | 3.D2, 3.E2, 3.F2 | ✅ | New class in `tests/unit/test_validator.py`; `tests/integration/test_cli_spdx3.py` | Tests fail; ruff+mypy pass |
+| 3.G2 | Wire SPDX 3.x into `validator.py` pipeline | Developer | `feature/spdx3-jsonld` | 3.G1 | ✅ | `src/sbom_validator/validator.py` updated (`_SPDX_FORMATS`, dispatch branch) | All pipeline tests pass; ruff+mypy pass |
+| 3.H1 | Run full test suite; verify coverage >= 90% | Developer | `feature/spdx3-jsonld` | 3.G2 | ✅ | Clean pytest run output | 0 failures; coverage >= 90%; ruff+mypy clean |
+| 4.I1 | Independent code review | Reviewer | `feature/spdx3-jsonld` | 3.H1 | ✅ | Review findings and verdict | No open CRITICAL/MAJOR (or approved deferrals recorded) |
+| 4.J1 | Security/compliance review | Security Reviewer | `feature/spdx3-jsonld` | 3.H1 | ✅ | Security findings and verdict | Verdict APPROVED/CONDITIONAL; no runtime network calls; graceful malformed input handling confirmed |
 | 4.K1 | CI stabilization | CI Ops | `feature/spdx3-jsonld` | 4.I1, 4.J1 | ⏳ | CI stabilization report | All required CI checks green |
 | 5.L1 | Update README, CHANGELOG, agent-briefing.md | Documentation Writer | `feature/spdx3-jsonld` | 4.K1 | ⏳ | Updated `README.md`, `CHANGELOG.md`, `docs/agent-briefing.md` | SPDX 3.x listed in supported formats table; `[Unreleased]` changelog entry present; briefing updated with new format constant and function |
 | 6.M1 | Version bump to 0.6.0 and release brief | Release Manager | `feature/spdx3-jsonld` | 5.L1 | ⏳ | `pyproject.toml` at `0.6.0`; release brief in tracker | Version consistent; all gate evidence sections populated; PyInstaller spec verified |
@@ -101,12 +101,12 @@
 - Status: 🔄 IN PROGRESS — next: implement 3.D2 (format_detector.py), 3.E2 (schema_validator.py), 3.F2 (spdx3_jsonld_parser.py) in parallel
 
 ### G4 Quality Review
-- Evidence:
-- Status: ⏳ PENDING
+- Evidence: Reviewer agent dispatched post-3.H1. Verdict: **CONDITIONAL** — 0 critical, 2 major, 3 minor, 3 info. M-01: envelope schema deviates from ADR-010 (Architect must formally amend ADR-010); M-02: dead `_SPDX3_SCHEMA_FILE` constant in `schema_validator.py`. All mandatory findings addressed: M-02 constant removed; `detect_format()` docstring updated to list `spdx3-jsonld`; ADR-010 amendment dispatched (see Deferrals D2).
+- Status: ✅ PASS (mandatory fixes applied)
 
 ### G5 Security
-- Evidence:
-- Status: ⏳ PENDING
+- Evidence: Security Reviewer agent dispatched post-3.H1. Verdict: **CONDITIONAL** — mandatory pre-merge: S-M-01 (formal deferral for envelope schema; see Deferrals D2), S-M-02 (`registry=Registry()` added to `Draft202012Validator`), S-m-02/03 (`isinstance` guards added in parser for `@graph` non-list and non-dict elements), S-m-04 (class docstring mismatch fixed in `test_spdx3_jsonld_parser.py`). All mandatory items addressed.
+- Status: ✅ PASS (mandatory fixes applied)
 
 ### G6 CI Stability
 - Evidence:
@@ -135,6 +135,7 @@
 | ID | Description | Severity | Deferral Reason | Planned Release |
 |----|-------------|----------|-----------------|-----------------|
 | D1 | SPDX 3.x Tag-Value, YAML, and XML serializations | LOW | Out of scope for this release; SPDX 3.x JSON-LD is the primary use case | v0.7.0 or later |
+| D2 | Full SPDX 3.0.1 JSON Schema validation (envelope-only approach in use) | MEDIUM | The bundled `spdx-3.0.1.schema.json` (Draft 2020-12, shacl2code-generated) uses an `else: $ref AnyClass` branch that rejects minimal `{"@context": ...}` root documents — a valid SPDX 3.x JSON-LD pattern. The schema-validation stage validates only the document envelope (`@context` presence and value); element-level validation is deferred to the parser (two-pass graph traversal). **Risk acceptance:** schema-stage errors for invalid SPDX 3.x elements will surface as parse-stage `ERROR` rather than `FAIL+FR-15`. **Planned resolution:** either patch the bundled schema or implement a pre-processor that feeds the `@graph` elements individually to the full schema validator. Approved by G4 (M-01) and G5 (S-M-01); Architect must formally amend ADR-010 to document this deviation. |
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted — **Amended** (see Amendment 1 below)
 
 ## Context
 
@@ -239,6 +239,77 @@ def parse_spdx3_jsonld(file_path: Path) -> NormalizedSBOM:
   document with a dangling `suppliedBy` reference produces an NTIA FR-04 failure rather
   than a schema failure. This is acceptable: the schema validator catches structural
   conformance; the NTIA checker catches compliance gaps.
+
+---
+
+## Amendment 1 — Envelope-only Schema Validation (approved 2026-04-30)
+
+### Finding
+
+The original decision in section 3 states that `validate_schema()` loads and validates
+against the full bundled `spdx-3.0.1.schema.json`. During implementation it was discovered
+that this schema is incompatible with top-level JSON-LD envelope documents.
+
+The bundled schema has the following structure at the root:
+
+```json
+{
+  "if":   { "required": ["@graph"] },
+  "then": { "properties": { "@graph": { ... } } },
+  "else": { "$ref": "#/$defs/AnyClass" }
+}
+```
+
+The `else` branch requires the root document to be a concrete typed SPDX element when
+`@graph` is absent. Since SPDX 3.x JSON-LD files always carry `@graph`, the schema rejects
+validation of the document envelope itself (`{"@context": "...", "@graph": [...]}`) because
+the root object is not an `AnyClass` element. Feeding the document through `iter_errors()`
+on the full schema produces spurious errors for every valid SPDX 3.x document.
+
+### Decision
+
+The schema-validation stage for `spdx3-jsonld` validates only the document **envelope**:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["@context"],
+  "properties": {
+    "@context": { "const": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld" }
+  }
+}
+```
+
+This schema is synthesised in-memory by `_load_spdx3_schema()` and never written to disk.
+The full `spdx-3.0.1.schema.json` remains bundled (and is available for future use) but is
+not loaded at runtime in this release.
+
+Element-level validation is delegated to the two-pass parser, which raises `ParseError` for
+structural problems (missing `SpdxDocument`, empty `@graph`, non-list `@graph`) and returns
+`None` for broken cross-references — surfacing them as NTIA failures at Stage 4.
+
+### Consequences
+
+- Schema-stage errors for malformed `@graph` elements surface as `ERROR` (parse stage) rather
+  than `FAIL+FR-15` (schema stage). This is a user-visible behavioural deviation.
+- The `SPDX3_SCHEMA_FILE` constant in `constants.py` is retained for completeness and for use
+  by a future full-schema implementation; the dead `_SPDX3_SCHEMA_FILE` module-level constant
+  in `schema_validator.py` has been removed (G4 M-02).
+- `jsonschema.Draft202012Validator` is instantiated with `registry=Registry()` (from the
+  `referencing` package) to prevent automatic remote-reference fetching. The envelope schema
+  has no `$ref` entries, so the registry is a no-op for current use; it is defensive against
+  future schema additions that might introduce `$ref` URIs.
+
+### Risk acceptance
+
+| Risk | Mitigation | Planned resolution |
+|------|------------|-------------------|
+| Invalid `@graph` elements produce ERROR not FAIL+FR-15 | Parser raises `ParseError` on empty/non-list `@graph`; NTIA checker surfaces missing elements | Future release: feed each `@graph` element to a subset of the full schema, or patch the full schema's `else` branch to accept the envelope form |
+
+Recorded as Deferral D2 in `docs/releases/TASKS-v0.6.0.md`.
+
+---
 
 ## Requirements Traceability
 

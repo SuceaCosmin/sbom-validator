@@ -113,7 +113,7 @@ def _detect_non_json(content: str, file_path: Path, supported_versions_str: str)
 def detect_format(file_path: Path) -> str:
     """Return the format string detected from file content.
 
-    Returns one of: 'spdx', 'spdx-tv', 'spdx-yaml', 'cyclonedx'.
+    Returns one of: 'spdx', 'spdx-tv', 'spdx-yaml', 'cyclonedx', 'spdx3-jsonld'.
 
     Raises:
         ParseError: If the file cannot be read.

@@ -79,7 +79,7 @@ class TestParseSpdx3JsonldHappyPath:
       - One tool_Tool element (sbom-generator-3.0)
       - Two software_Package elements:
           requests 2.28.0 (suppliedBy pointing to an Organization)
-          urllib3 1.26.14 (no suppliedBy)
+          urllib3 1.26.14 (suppliedBy: Python Software Foundation)
       - One Organization element (Python Software Foundation)
       - One DEPENDS_ON Relationship (requests → urllib3)
       - One DESCRIBES Relationship (doc → requests, must be excluded)

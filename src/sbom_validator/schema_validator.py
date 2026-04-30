@@ -12,6 +12,7 @@ from typing import Any
 import jsonschema
 import jsonschema.exceptions
 import xmlschema
+from referencing import Registry
 
 from sbom_validator.constants import (
     CYCLONEDX_SUPPORTED_VERSIONS,
@@ -50,7 +51,6 @@ _CDX_XSD_SCHEMA_FILES: dict[str, str] = {
 }
 
 _SPDX_SCHEMA_FILE = "spdx-2.3.schema.json"
-_SPDX3_SCHEMA_FILE = "spdx-3.0.1.schema.json"
 
 # Cache key used for the SPDX 3.x envelope-only schema (see _load_spdx3_schema docstring).
 _SPDX3_ENVELOPE_CACHE_KEY = "spdx3-jsonld-envelope"
@@ -148,7 +148,7 @@ def _validate_json_schema_2020(
     SPDX 3.x uses JSON Schema Draft 2020-12, which requires a dedicated validator
     class — Draft7Validator does not understand the 2020-12 dialect keywords.
     """
-    validator = jsonschema.Draft202012Validator(schema)
+    validator = jsonschema.Draft202012Validator(schema, registry=Registry())
     issues: list[ValidationIssue] = []
     for error in validator.iter_errors(raw_doc):
         field_path = ".".join(str(p) for p in error.absolute_path) if error.absolute_path else "$"
