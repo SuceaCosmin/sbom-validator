@@ -1,0 +1,27 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "https://example.org/doc/missing-supplier",
+      "creationInfo": {
+        "specVersion": "3.0.1",
+        "created": "2024-01-15T10:00:00Z",
+        "createdBy": ["https://example.org/tool/gen"]
+      },
+      "name": "missing-supplier-spdx3-document"
+    },
+    {
+      "type": "tool_Tool",
+      "spdxId": "https://example.org/tool/gen",
+      "name": "test-tool"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "https://example.org/pkg/requests",
+      "name": "requests",
+      "packageVersion": "2.28.0",
+      "suppliedBy": ["https://example.org/org/does-not-exist"]
+    }
+  ]
+}

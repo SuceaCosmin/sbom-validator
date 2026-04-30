@@ -9,7 +9,7 @@
 - **Base branch:** `master` (v0.4.0)
 - **Target merge branch:** `master` (via PR from `develop`)
 - **Owner:** Release Manager / Orchestrator
-- **Status:** `⏳ Awaiting Human GO`
+- **Status:** `✅ Released`
 
 ## Status Legend
 
@@ -60,7 +60,7 @@
 | R9 | Generate release token report | Token Analyst | `develop` | R8 | ✅ | `docs/releases/token-report-v0.5.0.html` | Report generated |
 | R10 | Generate release token delta report | Token Analyst | `develop` | R9 | ✅ | `docs/releases/token-delta-v0.4.0_to_v0.5.0.html` | Delta vs v0.4.0 generated |
 | R11 | Generate workflow evaluation report | Workflow Analyst | `develop` | R9 | ✅ | `docs/releases/workflow-report-v0.5.0.html` | Per-agent and gate evaluation generated |
-| R12 | Final human gate and release action | Human + Release Manager | `develop`->`master` | R10,R11 | ⏳ | Approval record, git tag v0.5.0 | Human GO recorded; tag pushed |
+| R12 | Final human gate and release action | Human + Release Manager | `develop`->`master` | R10,R11 | ✅ | Approval record, git tag v0.5.0 | Human GO recorded; tag pushed |
 
 ---
 
@@ -121,7 +121,7 @@
 
 ## Final Verdict
 
-- **Recommendation:** (pending)
-- **Approved by (Human):**
-- **Date:**
-- **Notes:**
+- **Recommendation:** `GO`
+- **Approved by (Human):** Approved
+- **Date:** 2026-04-29
+- **Notes:** All gates passed. PR #19 merged to master. Tag v0.5.0 pushed. GitHub Release workflow triggered.

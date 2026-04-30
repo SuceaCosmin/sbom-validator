@@ -1,0 +1,10 @@
+{
+    "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+    "@graph": [
+        {
+            "type": "ThisTypeDoesNotExistInSPDX3",
+            "spdxId": "https://example.com/invalid-element",
+            "unknownProperty": "this property is not defined in the SPDX 3.x schema"
+        }
+    ]
+}

@@ -6,6 +6,7 @@ JSON/XML input to determine whether the SBOM is in SPDX or CycloneDX format.
 Expected behaviour:
 - Returns "spdx" when the JSON contains a top-level "spdxVersion" key.
 - Returns "cyclonedx" when the JSON contains "bomFormat": "CycloneDX".
+- Returns "spdx3-jsonld" when the JSON contains the SPDX 3.x @context URL.
 - Raises UnsupportedFormatError when neither key is present or bomFormat has
   an unrecognised value.
 - Raises ParseError when the file does not exist or cannot be read.
@@ -15,11 +16,14 @@ Real fixture files are used for the happy-path detection tests; temporary
 files (via the pytest `tmp_path` fixture) are used for edge-case scenarios.
 """
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 
 import pytest
 
+from sbom_validator import constants
 from sbom_validator.exceptions import ParseError, UnsupportedFormatError
 from sbom_validator.format_detector import detect_format
 
@@ -333,3 +337,97 @@ class TestDetectFormatPriorityOrdering:
         f = tmp_path / "yaml_no_tv.spdx.yaml"
         f.write_text(content, encoding="utf-8")
         assert detect_format(f) == "spdx-yaml"
+
+
+# ---------------------------------------------------------------------------
+# SPDX 3.x JSON-LD detection (FR-01 extension for SPDX 3.x)
+# ---------------------------------------------------------------------------
+
+SPDX3_JSONLD_FIXTURE = FIXTURES_DIR / "spdx" / "valid-minimal.spdx3.jsonld"
+
+
+class TestDetectFormatSPDX3JsonLD:
+    """Covers detection of SPDX 3.x JSON-LD documents via the @context URL.
+
+    Detection logic (not yet implemented):
+      JSON with "@context" == constants.SPDX3_CONTEXT_URL -> "spdx3-jsonld"
+    """
+
+    def test_valid_spdx3_jsonld_fixture_returns_spdx3_jsonld(self):
+        """Happy path: the shared SPDX 3.x fixture must be detected as spdx3-jsonld."""
+        assert detect_format(SPDX3_JSONLD_FIXTURE) == constants.FORMAT_SPDX3_JSONLD
+
+    def test_minimal_context_only_document_returns_spdx3_jsonld(self, tmp_path: Path):
+        """Detection is based solely on @context URL — empty @graph is fine.
+
+        A document with only the @context key (no @graph) must still return
+        "spdx3-jsonld"; detection must not inspect graph contents.
+        """
+        f = tmp_path / "context-only.spdx3.jsonld"
+        f.write_text(
+            json.dumps({"@context": constants.SPDX3_CONTEXT_URL}),
+            encoding="utf-8",
+        )
+        assert detect_format(f) == constants.FORMAT_SPDX3_JSONLD
+
+    def test_wrong_context_url_raises_unsupported_format_error(self, tmp_path: Path):
+        """A different SPDX 3.x context URL (e.g. a draft version) must raise
+        UnsupportedFormatError, not silently return an incorrect format string."""
+        f = tmp_path / "wrong-context.spdx3.jsonld"
+        f.write_text(
+            json.dumps(
+                {
+                    "@context": "https://spdx.org/rdf/3.0.0/spdx-context.jsonld",
+                    "@graph": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_context_value_is_dict_raises_unsupported_format_error(self, tmp_path: Path):
+        """When @context is a JSON object (not a string), the file is not a
+        supported SPDX 3.x JSON-LD document and must raise UnsupportedFormatError."""
+        f = tmp_path / "dict-context.jsonld"
+        f.write_text(
+            json.dumps(
+                {
+                    "@context": {
+                        "spdx": "https://spdx.org/rdf/3.0.1/",
+                        "type": "@type",
+                    },
+                    "@graph": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    def test_context_value_is_list_raises_unsupported_format_error(self, tmp_path: Path):
+        """@context as a JSON array is also not the supported scalar URL form."""
+        f = tmp_path / "list-context.jsonld"
+        f.write_text(
+            json.dumps(
+                {
+                    "@context": [constants.SPDX3_CONTEXT_URL],
+                    "@graph": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        with pytest.raises(UnsupportedFormatError):
+            detect_format(f)
+
+    # ------------------------------------------------------------------
+    # Regression guards — existing formats must not break
+    # ------------------------------------------------------------------
+
+    def test_regression_spdx23_json_still_returns_spdx(self):
+        """Existing SPDX 2.3 JSON fixture must still be detected as 'spdx'."""
+        assert detect_format(SPDX_FIXTURE) == "spdx"
+
+    def test_regression_cyclonedx_json_still_returns_cyclonedx(self):
+        """Existing CycloneDX JSON fixture must still be detected as 'cyclonedx'."""
+        assert detect_format(CYCLONEDX_FIXTURE) == "cyclonedx"

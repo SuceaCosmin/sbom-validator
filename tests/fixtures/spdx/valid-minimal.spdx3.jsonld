@@ -1,0 +1,39 @@
+{
+  "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+  "@graph": [
+    {
+      "type": "SpdxDocument",
+      "spdxId": "https://example.org/doc/minimal",
+      "creationInfo": {
+        "specVersion": "3.0.1",
+        "created": "2024-01-01T00:00:00Z",
+        "createdBy": ["https://example.org/tool/gen"]
+      },
+      "name": "minimal-spdx3-document"
+    },
+    {
+      "type": "tool_Tool",
+      "spdxId": "https://example.org/tool/gen",
+      "name": "sbom-tool"
+    },
+    {
+      "type": "Organization",
+      "spdxId": "https://example.org/org/acme",
+      "name": "ACME Corp"
+    },
+    {
+      "type": "software_Package",
+      "spdxId": "https://example.org/pkg/mylib",
+      "name": "mylib",
+      "packageVersion": "1.0.0",
+      "suppliedBy": ["https://example.org/org/acme"]
+    },
+    {
+      "type": "Relationship",
+      "spdxId": "https://example.org/rel/dep",
+      "from": "https://example.org/doc/minimal",
+      "to": ["https://example.org/pkg/mylib"],
+      "relationshipType": "DEPENDS_ON"
+    }
+  ]
+}

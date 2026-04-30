@@ -1,12 +1,13 @@
 """Detect SBOM format from raw file content.
 
 Detection priority (first match wins):
-  1. JSON object with spdxVersion == "SPDX-2.3"       -> "spdx"
-  2. JSON object with bomFormat == "CycloneDX"         -> "cyclonedx"
-  3. Non-JSON, valid CycloneDX XML root namespace      -> "cyclonedx"
-  4. Non-JSON, content starts with "SPDXVersion: "     -> "spdx-tv"
-  5. Non-JSON, YAML dict with spdxVersion == "SPDX-2.3"-> "spdx-yaml"
-  6. Otherwise -> UnsupportedFormatError
+  1. JSON object with @context == SPDX3_CONTEXT_URL    -> "spdx3-jsonld"
+  2. JSON object with spdxVersion == "SPDX-2.3"       -> "spdx"
+  3. JSON object with bomFormat == "CycloneDX"         -> "cyclonedx"
+  4. Non-JSON, valid CycloneDX XML root namespace      -> "cyclonedx"
+  5. Non-JSON, content starts with "SPDXVersion: "     -> "spdx-tv"
+  6. Non-JSON, YAML dict with spdxVersion == "SPDX-2.3"-> "spdx-yaml"
+  7. Otherwise -> UnsupportedFormatError
 """
 
 from __future__ import annotations
@@ -27,8 +28,10 @@ from sbom_validator.constants import (
     CYCLONEDX_SUPPORTED_XML_NAMESPACES,
     FORMAT_CYCLONEDX,
     FORMAT_SPDX,
+    FORMAT_SPDX3_JSONLD,
     FORMAT_SPDX_TV,
     FORMAT_SPDX_YAML,
+    SPDX3_CONTEXT_URL,
     SPDX_FIELD_VERSION,
     SPDX_SUPPORTED_VERSION,
 )
@@ -110,7 +113,7 @@ def _detect_non_json(content: str, file_path: Path, supported_versions_str: str)
 def detect_format(file_path: Path) -> str:
     """Return the format string detected from file content.
 
-    Returns one of: 'spdx', 'spdx-tv', 'spdx-yaml', 'cyclonedx'.
+    Returns one of: 'spdx', 'spdx-tv', 'spdx-yaml', 'cyclonedx', 'spdx3-jsonld'.
 
     Raises:
         ParseError: If the file cannot be read.
@@ -135,6 +138,18 @@ def detect_format(file_path: Path) -> str:
 
     if not isinstance(data, dict):
         msg = f"Expected a JSON object at the root of {file_path}, got {type(data).__name__}"
+        logger.warning("Unsupported format in %s: %s", file_path, msg)
+        raise UnsupportedFormatError(msg)
+
+    # SPDX 3.x JSON-LD: @context key present
+    if "@context" in data:
+        if data["@context"] == SPDX3_CONTEXT_URL:
+            logger.info("Format detected: spdx3-jsonld (file: %s)", file_path)
+            return FORMAT_SPDX3_JSONLD
+        msg = (
+            f"Unrecognized SPDX 3.x context URL: {data['@context']!r}. "
+            f"Only {SPDX3_CONTEXT_URL!r} is supported."
+        )
         logger.warning("Unsupported format in %s: %s", file_path, msg)
         raise UnsupportedFormatError(msg)
 
