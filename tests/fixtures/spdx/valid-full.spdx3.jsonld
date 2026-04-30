@@ -27,7 +27,8 @@
       "type": "software_Package",
       "spdxId": "https://example.org/pkg/urllib3",
       "name": "urllib3",
-      "packageVersion": "1.26.14"
+      "packageVersion": "1.26.14",
+      "suppliedBy": ["https://example.org/org/psf"]
     },
     {
       "type": "Organization",

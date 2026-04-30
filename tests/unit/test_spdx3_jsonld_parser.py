@@ -21,10 +21,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from sbom_validator.parsers.spdx3_jsonld_parser import parse_spdx3_jsonld
 
 from sbom_validator.exceptions import ParseError
 from sbom_validator.models import NormalizedComponent, NormalizedRelationship, NormalizedSBOM
+from sbom_validator.parsers.spdx3_jsonld_parser import parse_spdx3_jsonld
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -143,11 +143,32 @@ class TestParseSpdx3JsonldHappyPath:
         requests_pkg = next(c for c in result.components if c.name == "requests")
         assert requests_pkg.supplier == "Python Software Foundation"
 
-    def test_package_without_supplied_by_has_none_supplier(self) -> None:
+    def test_package_without_supplied_by_has_none_supplier(self, tmp_path: Path) -> None:
         """A software_Package without suppliedBy must have supplier == None (FR-04)."""
-        result = parse_spdx3_jsonld(_FIXTURES_PATH / "valid-full.spdx3.jsonld")
-        urllib3_pkg = next(c for c in result.components if c.name == "urllib3")
-        assert urllib3_pkg.supplier is None
+        doc = {
+            "@context": "https://spdx.org/rdf/3.0.1/spdx-context.jsonld",
+            "@graph": [
+                {
+                    "type": "SpdxDocument",
+                    "spdxId": "https://example.org/doc/test",
+                    "creationInfo": {
+                        "specVersion": "3.0.1",
+                        "created": "2024-01-01T00:00:00Z",
+                        "createdBy": [],
+                    },
+                },
+                {
+                    "type": "software_Package",
+                    "spdxId": "https://example.org/pkg/no-supplier",
+                    "name": "no-supplier-pkg",
+                    "packageVersion": "1.0.0",
+                },
+            ],
+        }
+        fixture = tmp_path / "no-supplier.jsonld"
+        fixture.write_text(__import__("json").dumps(doc), encoding="utf-8")
+        result = parse_spdx3_jsonld(fixture)
+        assert result.components[0].supplier is None
 
     def test_one_depends_on_relationship(self) -> None:
         """Only the DEPENDS_ON relationship must appear; DESCRIBES is excluded (FR-08)."""

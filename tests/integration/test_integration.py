@@ -337,3 +337,44 @@ class TestCycloneDXMultiVersion:
         data = json.loads(result.output)
         assert data["format_detected"] == "cyclonedx"
         assert data["status"] == "PASS"
+
+
+class TestSPDX3JsonLDPipeline:
+    """End-to-end CLI tests for SPDX 3.x JSON-LD support (FR-15, task 3.G1).
+
+    These tests are written before validator.py is wired to dispatch to
+    parse_spdx3_jsonld.  They WILL fail until the developer implements the
+    FORMAT_SPDX3_JSONLD branch in validator.py.
+    """
+
+    def test_valid_minimal_spdx3_exits_zero(self, runner):
+        """FR-15: A valid minimal SPDX 3.x JSON-LD file → exit code 0 (PASS)."""
+        result = runner.invoke(
+            main, ["validate", str(SPDX_FIXTURES / "valid-minimal.spdx3.jsonld")]
+        )
+        assert result.exit_code == 0
+
+    def test_missing_supplier_spdx3_exits_one(self, runner):
+        """FR-04 / FR-15: SPDX 3.x with missing supplier → exit code 1 (FAIL)."""
+        result = runner.invoke(
+            main, ["validate", str(SPDX_FIXTURES / "missing-supplier.spdx3.jsonld")]
+        )
+        assert result.exit_code == 1
+
+    def test_valid_minimal_spdx3_json_output_format_detected(self, runner):
+        """FR-15: JSON output for a valid SPDX 3.x file must contain
+        'format_detected': 'spdx3-jsonld' and status PASS.
+        """
+        result = runner.invoke(
+            main,
+            [
+                "validate",
+                str(SPDX_FIXTURES / "valid-minimal.spdx3.jsonld"),
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["status"] == "PASS"
+        assert data["format_detected"] == "spdx3-jsonld"
