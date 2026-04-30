@@ -13,6 +13,7 @@ from sbom_validator.constants import (
     CDX_FIELD_SPEC_VERSION,
     CYCLONEDX_XML_NAMESPACE_PREFIX,
     FORMAT_SPDX,
+    FORMAT_SPDX3_JSONLD,
     FORMAT_SPDX_TV,
     FORMAT_SPDX_YAML,
     RULE_FORMAT_DETECTION,
@@ -28,6 +29,7 @@ from sbom_validator.models import (
 )
 from sbom_validator.ntia_checker import check_ntia
 from sbom_validator.parsers.cyclonedx_parser import parse_cyclonedx
+from sbom_validator.parsers.spdx3_jsonld_parser import parse_spdx3_jsonld
 from sbom_validator.parsers.spdx_parser import parse_spdx
 from sbom_validator.parsers.spdx_tv_parser import parse_spdx_tv
 from sbom_validator.parsers.spdx_yaml_parser import parse_spdx_yaml
@@ -35,8 +37,8 @@ from sbom_validator.schema_validator import validate_schema
 
 logger = logging.getLogger(__name__)
 
-# Set of all SPDX format identifiers (JSON, YAML, Tag-Value)
-_SPDX_FORMATS = frozenset({FORMAT_SPDX, FORMAT_SPDX_TV, FORMAT_SPDX_YAML})
+# Set of all SPDX format identifiers (JSON, YAML, Tag-Value, and 3.x JSON-LD)
+_SPDX_FORMATS = frozenset({FORMAT_SPDX, FORMAT_SPDX_TV, FORMAT_SPDX_YAML, FORMAT_SPDX3_JSONLD})
 
 
 def _extract_cdx_version(raw_doc: dict[str, object] | str) -> str | None:
@@ -78,7 +80,7 @@ def _load_raw_doc(file_path: Path, format_name: str) -> dict[str, object] | str:
     """
     raw_text = file_path.read_text(encoding="utf-8")
 
-    if format_name == FORMAT_SPDX:
+    if format_name in (FORMAT_SPDX, FORMAT_SPDX3_JSONLD):
         parsed: dict[str, object] = json.loads(raw_text)
         return parsed
 
@@ -179,6 +181,8 @@ def validate(file_path: str | Path) -> ValidationResult:
             sbom = parse_spdx_tv(file_path)
         elif format_name == FORMAT_SPDX_YAML:
             sbom = parse_spdx_yaml(file_path)
+        elif format_name == FORMAT_SPDX3_JSONLD:
+            sbom = parse_spdx3_jsonld(file_path)
         else:
             sbom = parse_cyclonedx(file_path)
     except ParseError as e:

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-04-30
+
+### Added
+- SPDX 3.x JSON-LD format support (`format_detected: "spdx3-jsonld"`, version 3.0.1). Files are detected by the canonical `@context` URL at the document root; schema validation uses a JSON Schema Draft 2020-12 envelope validator; NTIA compliance checking uses a two-pass `@graph` parser that resolves `spdxId` cross-references.
+- Full seven-check NTIA minimum element validation for SPDX 3.x files (FR-04 supplier via `suppliedBy` cross-reference; FR-05 component name; FR-06 `packageVersion`; FR-08 `DEPENDS_ON` relationships; FR-09 author via `creationInfo.createdBy` cross-reference; FR-10 `creationInfo.created` timestamp).
+- New format constant `FORMAT_SPDX3_JSONLD = "spdx3-jsonld"` and supporting constants `SPDX3_CONTEXT_URL`, `SPDX3_SCHEMA_FILE`, `RULE_SPDX3_SCHEMA = "FR-15"` in `constants.py`.
+- New parser module `parsers/spdx3_jsonld_parser.py` with public function `parse_spdx3_jsonld(file_path) -> NormalizedSBOM`.
+- Bundled SPDX 3.0.1 JSON Schema (`spdx-3.0.1.schema.json`, Draft 2020-12) for schema-stage validation.
+- Bundled CycloneDX auxiliary schemas (`spdx.schema.json`, `jsf-0.82.schema.json`) — previously missing, causing `jsonschema` to attempt remote-reference fetching and emit `DeprecationWarning` on every CycloneDX validation. All schema resolution is now fully local.
+- ADR-010 documenting SPDX 3.x JSON-LD detection fingerprint, Draft 2020-12 validator choice, two-pass graph traversal, cross-reference resolution contract, and NTIA field mapping. ADR-001 amended with updated detection priority order.
+
+### Technical
+- 701 unit and integration tests passing on Python 3.11 (107 new tests added for SPDX 3.x).
+- Zero `DeprecationWarning` instances in the test suite (previously 20 from CycloneDX schema remote-ref fetching).
+- Zero mypy errors (strict mode), zero ruff lint/format errors.
+- 96% overall code coverage.
+
 ## [0.5.0] - 2026-04-29
 
 ### Added

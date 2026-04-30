@@ -56,3 +56,59 @@ It raises `UnsupportedFormatError` on any unrecognized input. The caller (the to
 
 - Non-JSON files are checked for CycloneDX XML 1.6 signature; unsupported or malformed XML is rejected as unsupported format.
 - The tool does not auto-detect the format if a user provides a file with a typo in `spdxVersion` (e.g., `"spdxversion"`). This is correct behavior — such a file is not a valid SPDX document.
+
+---
+
+## Amendment — ADR-010 (SPDX 3.x JSON-LD Detection)
+
+**Date:** 2026-04-29
+**Related ADR:** ADR-010 — SPDX 3.x JSON-LD Format Support
+
+### Change
+
+A new detection branch for SPDX 3.x JSON-LD files is added to `detect_format()`, placed
+**before** the SPDX 2.3 JSON branch. The SPDX 3.x fingerprint is the presence of a
+`"@context"` key at the document root with the exact value
+`"https://spdx.org/rdf/3.0.1/spdx-context.jsonld"`.
+
+Updated detection priority order:
+
+1. JSON parse succeeds AND `"@context" == "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"`
+   → return `"spdx3-jsonld"`. If `"@context"` is present but holds a different URL,
+   raise `UnsupportedFormatError` (unrecognized SPDX 3.x context version).
+2. JSON parse succeeds AND `"spdxVersion" == "SPDX-2.3"` → return `"spdx"`.
+3. JSON parse succeeds AND `"bomFormat" == "CycloneDX"` AND `specVersion` in supported set
+   → return `"cyclonedx"`.
+4. JSON parse fails → CycloneDX XML namespace detection → return `"cyclonedx"`.
+5. JSON parse fails AND content starts with `"SPDXVersion: "` → return `"spdx-tv"`.
+6. JSON parse fails → `yaml.safe_load` with `spdxVersion == "SPDX-2.3"` → return
+   `"spdx-yaml"`.
+7. Otherwise → raise `UnsupportedFormatError`.
+
+### Updated function signature (unchanged from ADR-009)
+
+```python
+# src/sbom_validator/format_detector.py
+def detect_format(file_path: Path) -> str:
+    # Returns: "spdx3-jsonld" | "spdx" | "spdx-tv" | "spdx-yaml" | "cyclonedx"
+    # Raises: UnsupportedFormatError
+    ...
+```
+
+### Rationale for detection order
+
+The `"@context"` check is placed before the `"spdxVersion"` check because:
+
+- A SPDX 3.x JSON-LD document does **not** contain `"spdxVersion"` — there is no
+  ambiguity between branch 1 and branch 2.
+- Placing the 3.x check first follows the principle of most-specific-first: the `@context`
+  URL is a fully-qualified, version-specific fingerprint that is more specific than any
+  other root-key check.
+
+### Constants added (defined in ADR-010)
+
+```python
+# src/sbom_validator/constants.py
+FORMAT_SPDX3_JSONLD = "spdx3-jsonld"
+SPDX3_CONTEXT_URL   = "https://spdx.org/rdf/3.0.1/spdx-context.jsonld"
+```

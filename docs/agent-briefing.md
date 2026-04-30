@@ -17,11 +17,11 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 
 ---
 
-## Architecture Decisions (8 ADRs in brief)
+## Architecture Decisions (10 ADRs in brief)
 
 | ADR | Decision |
 |-----|----------|
-| ADR-001 | Format detected by root JSON keys: `spdxVersion=="SPDX-2.3"` → SPDX; `bomFormat=="CycloneDX" && specVersion in {"1.3","1.4","1.5","1.6"}` → CycloneDX. Wrong version or no match → `UnsupportedFormatError` (exit 2). |
+| ADR-001 | Format detected by root JSON keys: `@context == SPDX3_CONTEXT_URL` → SPDX3 JSON-LD (checked first); `spdxVersion=="SPDX-2.3"` → SPDX; `bomFormat=="CycloneDX" && specVersion in {"1.3","1.4","1.5","1.6"}` → CycloneDX. Wrong version or no match → `UnsupportedFormatError` (exit 2). Amended in v0.6.0 to add SPDX 3.x `@context` priority step. |
 | ADR-002 | Parsers accept a file path and return `NormalizedSBOM`. NTIA checker only receives `NormalizedSBOM` — it has no imports from the parser layer. |
 | ADR-003 | Two-stage pipeline: schema validation (collect-all), then NTIA checks (collect-all, all 7 run independently). **Schema failure blocks the NTIA stage entirely.** |
 | ADR-004 | Frozen dataclasses for all result types. `ValidationStatus` and `IssueSeverity` inherit from `str` for JSON serialization. |
@@ -30,6 +30,7 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 | ADR-007 | New `--report-dir PATH` CLI option writes paired HTML + JSON reports when supplied. Both reports always written together. Filenames: `sbom-report-<basename>.{html,json}` (fixed, no timestamp). HTML uses `string.Template` (no Jinja2). `report_writer.py` does not modify `models.py`. `OSError` on write is caught non-fatally in `cli.py` (warns to stderr, exit code unchanged). |
 | ADR-008 | Standalone binary via PyInstaller >= 6.0, `--onefile` mode. Targets: Linux amd64 and Windows amd64. Schema files bundled via `datas` in `sbom_validator.spec`. `spdx-tools` and `cyclonedx-bom` excluded from binary. Release triggered by `v*.*.*` tags via `.github/workflows/release.yml`. |
 | ADR-009 | SPDX TV and YAML sub-formats: `FORMAT_SPDX_TV="spdx-tv"`, `FORMAT_SPDX_YAML="spdx-yaml"`. Detection priority: JSON → CycloneDX XML → TV (`startswith("SPDXVersion: ")`) → YAML (`safe_load`+`spdxVersion`). TV skips schema validation with logged INFO. YAML validates against existing `spdx-2.3.schema.json`. Shared `_parse_spdx_document` helper in `spdx_parser.py`. `pyyaml>=6.0` runtime dep. |
+| ADR-010 | SPDX 3.x JSON-LD: `FORMAT_SPDX3_JSONLD="spdx3-jsonld"`. Detection by `@context == SPDX3_CONTEXT_URL`. Schema validation uses `Draft202012Validator` with an inline envelope schema (full `spdx-3.0.1.schema.json` deferred — see Amendment 1 in ADR-010). Parser performs two-pass `@graph` traversal: Pass 1 builds `{spdxId: element}` index; Pass 2 resolves cross-references. Missing cross-refs produce `None`, never raise. `RULE_SPDX3_SCHEMA="FR-15"`. |
 
 ---
 
@@ -38,7 +39,7 @@ Use this briefing for technical contracts/signatures, and the operating model fo
 ```python
 # src/sbom_validator/format_detector.py
 def detect_format(file_path: Path) -> str: ...
-# Returns "spdx", "spdx-tv", "spdx-yaml", or "cyclonedx". Raises UnsupportedFormatError on failure.
+# Returns "spdx3-jsonld", "spdx", "spdx-tv", "spdx-yaml", or "cyclonedx". Raises UnsupportedFormatError on failure.
 
 # src/sbom_validator/parsers/spdx_parser.py
 def parse_spdx(file_path: Path) -> NormalizedSBOM: ...
@@ -53,11 +54,20 @@ def parse_spdx_yaml(file_path: Path) -> NormalizedSBOM: ...
 def parse_spdx_tv(file_path: Path) -> NormalizedSBOM: ...
 # Returns NormalizedSBOM with format="spdx-tv"
 
+# src/sbom_validator/parsers/spdx3_jsonld_parser.py
+def parse_spdx3_jsonld(file_path: Path) -> NormalizedSBOM: ...
+# Two-pass @graph traversal. Returns NormalizedSBOM with format="spdx3-jsonld".
+# Missing spdxId cross-references produce None for the affected field, never raise.
+# Multiple SpdxDocument elements: takes first, logs WARNING.
+# Raises ParseError on: empty/missing @graph, non-list @graph, no SpdxDocument element.
+
 # src/sbom_validator/parsers/cyclonedx_parser.py
 def parse_cyclonedx(file_path: Path) -> NormalizedSBOM: ...
 
 # src/sbom_validator/schema_validator.py
 def validate_schema(raw_doc: dict[str, Any], format_name: str) -> list[ValidationIssue]: ...
+# format_name accepts: "spdx", "spdx-yaml", "spdx-tv", "cyclonedx", "spdx3-jsonld".
+# "spdx3-jsonld" uses Draft202012Validator with an inline envelope schema (ADR-010 Amendment 1).
 # NOTE (ADR-008): _schemas_dir() helper must be updated for PyInstaller frozen-mode compatibility.
 
 # src/sbom_validator/ntia_checker.py
@@ -93,7 +103,7 @@ All three types are `@dataclass(frozen=True)`.
 
 | Field | Type | NTIA FR |
 |-------|------|---------|
-| `format` | `str` — one of `"spdx"`, `"spdx-tv"`, `"spdx-yaml"`, `"cyclonedx"` | — |
+| `format` | `str` — one of `"spdx"`, `"spdx-tv"`, `"spdx-yaml"`, `"spdx3-jsonld"`, `"cyclonedx"` | — |
 | `author` | `str \| None` | FR-09 |
 | `timestamp` | `str \| None` | FR-10 |
 | `components` | `tuple[NormalizedComponent, ...]` | — |
@@ -115,15 +125,15 @@ All three types are `@dataclass(frozen=True)`.
 
 ## NTIA Field Mapping (compact)
 
-| FR | NTIA Element | SPDX 2.3 JSON field | CycloneDX 1.6 JSON field |
-|----|-------------|---------------------|--------------------------|
-| FR-04 | Supplier Name | `packages[*].supplier` (strip `"Organization: "`/`"Tool: "` prefix; `NOASSERTION`→`None`) | `components[*].supplier.name` |
-| FR-05 | Component Name | `packages[*].name` | `components[*].name` |
-| FR-06 | Component Version | `packages[*].versionInfo` (`NOASSERTION`→`None`) | `components[*].version` |
-| FR-07 | Other Unique IDs *(removed)* | — | — | Parsed but not validated; see issue #12 |
-| FR-08 | Dependency Relationships | `relationships[*]` with `relationshipType` in: `DEPENDS_ON`, `DYNAMIC_LINK`, `STATIC_LINK`, `RUNTIME_DEPENDENCY_OF`, `DEV_DEPENDENCY_OF` | `dependencies[*].dependsOn` — at least one non-empty entry |
-| FR-09 | Author of SBOM Data | `creationInfo.creators` entries starting with `"Tool:"` or `"Organization:"` | `metadata.authors[*].name` OR `metadata.manufacture.name` |
-| FR-10 | Timestamp | `creationInfo.created` (ISO 8601) | `metadata.timestamp` (ISO 8601) |
+| FR | NTIA Element | SPDX 2.3 JSON field | SPDX 3.x JSON-LD field | CycloneDX 1.6 JSON field |
+|----|-------------|---------------------|------------------------|--------------------------|
+| FR-04 | Supplier Name | `packages[*].supplier` (strip `"Organization: "`/`"Tool: "` prefix; `NOASSERTION`→`None`) | `Package.suppliedBy[0]` → spdxId cross-ref → `element.name` | `components[*].supplier.name` |
+| FR-05 | Component Name | `packages[*].name` | `Package.name` | `components[*].name` |
+| FR-06 | Component Version | `packages[*].versionInfo` (`NOASSERTION`→`None`) | `Package.packageVersion` | `components[*].version` |
+| FR-07 | Other Unique IDs *(removed)* | — | — | — | Parsed but not validated; see issue #12 |
+| FR-08 | Dependency Relationships | `relationships[*]` with `relationshipType` in: `DEPENDS_ON`, `DYNAMIC_LINK`, `STATIC_LINK`, `RUNTIME_DEPENDENCY_OF`, `DEV_DEPENDENCY_OF` | `Relationship` elements with `relationshipType == "DEPENDS_ON"` | `dependencies[*].dependsOn` — at least one non-empty entry |
+| FR-09 | Author of SBOM Data | `creationInfo.creators` entries starting with `"Tool:"` or `"Organization:"` | `SpdxDocument.creationInfo.createdBy[*]` → spdxId cross-ref → `element.name`, joined `", "` | `metadata.authors[*].name` OR `metadata.manufacture.name` |
+| FR-10 | Timestamp | `creationInfo.created` (ISO 8601) | `SpdxDocument.creationInfo.created` | `metadata.timestamp` (ISO 8601) |
 
 ---
 
