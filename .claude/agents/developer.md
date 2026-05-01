@@ -153,6 +153,7 @@ Do not run the full suite after every individual edit. Run the targeted test fil
 2. Full suite passes (phase end): `poetry run pytest`
 3. **Mandatory lint gate passes** (see top of this file — no exceptions)
 4. The implemented module can be imported without error
+5. **ADR conformance check** — for each ADR governing the module you implemented, answer: *"Does my implementation exactly match the ADR's design approach and interface contract?"* If the answer is no for any reason (schema structural incompatibility, library limitation, performance constraint), **stop — do not commit**. Raise the deviation to the Architect agent and obtain a formal ADR amendment. Implementing first and documenting the deviation retroactively forces a rework loop at G4; the correct sequence is: discover incompatibility → raise to Architect → Architect amends ADR → implement per amended ADR.
 
 > **After any rebase or merge**: the lint gate must be re-run from scratch. Pre-commit hooks do not fire automatically during `git rebase`, so fixes applied at commit time can be lost. Run the full gate again and create a new commit if any issues are found before pushing.
 

@@ -105,6 +105,21 @@ For every release plan, include these end-of-cycle tasks:
 
 Assign both tasks to the **Token Analyst** after Release Readiness and before final human approval.
 
+## Release Closeout Task (mandatory per release)
+
+For every release plan, include a release closeout task owned by the **Documentation Writer**, running after Release Readiness (G8) and before final human approval:
+
+- **Task title:** Release closeout — update meta-documents
+- **Owner:** Documentation Writer
+- **Deliverables:** Updated versions of all drift-prone reference documents:
+  - `CLAUDE.md` — version number, Supported Formats table, Module Map, ADR count
+  - `docs/agent-briefing.md` — Quick-Start Context table (version, format count, test count, ADR count)
+  - `docs/requirements.md` — header version/status/date, JSON output example version strings
+  - `src/sbom_validator/models.py` — `NormalizedSBOM.format` docstring
+- **Acceptance criteria:** All four documents reflect the version being released; no stale version numbers or missing format entries remain.
+
+This task exists because these documents accumulate drift every release when no agent explicitly owns updating them.
+
 ## TDD Discipline
 
 For any implementation task, always produce a pair:
@@ -142,6 +157,7 @@ A Planner output is complete when:
 - [ ] Release task tracker exists at `docs/releases/TASKS-vX.Y.Z.md`
 - [ ] Every task in the plan is reflected in the release tracker with status
 - [ ] Token report and delta report tasks are present and assigned to Token Analyst
+- [ ] Release closeout task is present and assigned to Documentation Writer (updates CLAUDE.md, agent-briefing.md, requirements.md, models.py docstrings)
 
 ## Output Format
 

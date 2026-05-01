@@ -43,7 +43,7 @@ Claude Code writes measured token telemetry to two locations on the host machine
 - **`~/.claude/usage.db`** — SQLite database. Tables: `sessions` (per-session token totals by project/branch/model), `turns` (per-turn breakdown by tool). Query with Python `sqlite3`. `project_name` equals the last two path components of the repo root joined with `/` (e.g. `repos/sbom-validator`). Both analytics agents carry a portable `claude_telemetry_paths()` helper that resolves this automatically from `Path.cwd()`.
 - **`~/.claude/projects/<encoded-cwd>/<session_id>/subagents/`** — Per-subagent `agent-<id>.meta.json` files. Each contains `{"agentType": "...", "description": "<task-id> — <task-title>"}`. These map subagent invocations directly to TASKS tracker entries. `<encoded-cwd>` is the repo path with `:`, `\`, `/` replaced by `-`, leading `-` stripped, first character lowercased — derived automatically by `claude_telemetry_paths()`.
 
-These sources provide **measured facts**, not estimates. Gate 8 (Token Analytics) and Gate 9 (Workflow Evaluation) must consume them as primary inputs.
+These sources provide **measured facts**, not estimates. Gate 9 (Token Analytics) and Gate 10 (Workflow Evaluation) must consume them as primary inputs.
 
 ## Mandatory Inputs Before Starting Any Work
 
@@ -83,45 +83,46 @@ If the task affects architecture or public behavior, require an Architect pass b
    - Developer implements to green.
    - Output: passing targeted tests + local static checks.
 
-5. **Gate 4 - Independent Review** ⚠️ Mandatory agent dispatch — no inline substitution
-   - Dispatch the **Reviewer agent** as a separate Agent tool invocation. Always. No exceptions.
-   - The Orchestrator **must not** perform this review inline, even for small changes. The value of this gate is the independence of perspective — an agent that did not write the code, starting cold, reading the diff with no prior investment in the implementation decisions.
-   - Gate 4 is **not considered passed** if the review was performed inline by the Orchestrator or any agent that participated in Gate 3.
-   - Output: severity-classified findings table and explicit APPROVED / CONDITIONAL / BLOCKED verdict from the Reviewer agent.
-
-6. **Gate 5 - Security and Supply Chain** ⚠️ Mandatory agent dispatch — no inline substitution
-   - Dispatch the **Security Reviewer agent** as a separate Agent tool invocation. Always. No exceptions.
-   - Same independence requirement as Gate 4. The Security Reviewer must not be the agent that wrote or reviewed the implementation.
+5. **Gates 4 + 5 — Independent Review and Security** ⚠️ Mandatory agent dispatch — dispatch both simultaneously
+   - Dispatch the **Reviewer agent** (G4) and **Security Reviewer agent** (G5) as two simultaneous separate Agent tool invocations once G3 passes. Both agents work in parallel: they receive the same code diff and work independently, with no visibility into each other's in-progress findings.
+   - The Orchestrator **must not** perform either review inline. The value of these gates is the independence of perspective — agents that did not write the code, starting cold with no prior investment in the implementation decisions.
+   - Collect both verdicts before proceeding. If either gate issues a CONDITIONAL or BLOCKED verdict, dispatch a single fix round that addresses findings from both G4 and G5 together (one developer fix invocation, not two sequential ones), then re-run both gates in parallel again.
+   - **Gate 4 exit criteria:** severity-classified findings table and explicit APPROVED / CONDITIONAL / BLOCKED verdict from the Reviewer agent.
+   - **Gate 5 exit criteria:** security findings table and explicit APPROVED / CONDITIONAL / BLOCKED verdict from the Security Reviewer agent.
+   - Gate 4 is **not considered passed** if review was performed inline or by any agent that participated in Gate 3.
    - Gate 5 is **not considered passed** if the security check was performed inline.
-   - Output: security findings table and explicit APPROVED / CONDITIONAL / BLOCKED verdict from the Security Reviewer agent.
 
 7. **Gate 6 - CI Stabilization**
    - CI Ops triages and resolves pipeline failures.
    - Output: all required checks green or explicit unresolved blocker.
 
-8. **Gate 7 - Release Readiness**
+8. **Gate 7 - Docs Sync**
+   - Documentation Writer updates user-facing docs, agent-briefing.md, and CHANGELOG for delivered behavior.
+   - Output: README, docs/user-guide.md, CHANGELOG.md, and docs/agent-briefing.md aligned with implementation.
+
+9. **Gate 8 - Release Readiness**
    - Release Manager validates versioning/changelog/artifacts and prepares release recommendation.
    - Output: release brief for human sign-off.
 
-9. **Gate 8 - Token Analytics**
-   - Token Analyst generates release token report and previous-release delta report.
-   - Output: `docs/releases/token-report-vX.Y.Z.html` and `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`.
+10. **Gate 9 - Token Analytics**
+    - Token Analyst generates release token report and previous-release delta report.
+    - Output: `docs/releases/token-report-vX.Y.Z.html` and `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html`.
 
-10. **Gate 9 - Workflow Evaluation**
+11. **Gate 10 - Workflow Evaluation**
     - Workflow Analyst evaluates per-agent efficiency, gate compliance, and benchmarks against previous release.
     - Output: `docs/releases/workflow-report-vX.Y.Z.html`.
 
-11. **Gate 10 - Human Approval**
-   - Human decides go/no-go.
+12. **Human Approval**
+   - Human decides go/no-go based on the release brief from G8 and analytics from G9/G10.
 
-Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-9 all pass.
+Do not skip gates. Do not push the release tag or trigger the release workflow before gates 0-10 all pass.
 
 **Mandatory separate-agent gates** — these gates are not passed unless a distinct Agent tool invocation is recorded:
 - **Gate 2** (when any architectural trigger applies — see above)
 - **Gate 4** (always)
 - **Gate 5** (always)
-- **Gate 8** (always — Token Analyst)
-- **Gate 9** (always — Workflow Analyst)
+- **Gate 9** (always — Token Analyst)
+- **Gate 10** (always — Workflow Analyst)
 
 If any of these cannot be completed, record a formal deferral in the release tracker with justification before proceeding. Silent omission is a process violation. Inline execution at a mandatory-dispatch gate is also a process violation — it must be recorded as a deferral with an explicit rationale, not silently substituted.
 
@@ -226,9 +227,10 @@ Maintain this concise table during orchestration:
 | G4 Review | Reviewer | PASS/FAIL | findings table |
 | G5 Security | Security Reviewer | PASS/FAIL | security report |
 | G6 CI | CI Ops | PASS/FAIL | checks status |
-| G7 Release | Release Manager | PASS/FAIL | release brief |
-| G8 Token Analytics | Token Analyst | PASS/FAIL | token report + delta report |
-| G9 Workflow Evaluation | Workflow Analyst | PASS/FAIL | workflow-report-vX.Y.Z.html |
+| G7 Docs Sync | Documentation Writer | PASS/FAIL | docs/changelog/briefing updated |
+| G8 Release Readiness | Release Manager | PASS/FAIL | release brief |
+| G9 Token Analytics | Token Analyst | PASS/FAIL | token report + delta report |
+| G10 Workflow Evaluation | Workflow Analyst | PASS/FAIL | workflow-report-vX.Y.Z.html |
 
 ## Handoff to Human (required)
 

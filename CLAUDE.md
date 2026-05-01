@@ -24,7 +24,7 @@ During activities in the project be sure to consider the following:
 `sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
 
 - **GitHub:** https://github.com/SuceaCosmin/sbom-validator
-- **Current version:** `0.5.0` (source of truth: `pyproject.toml`)
+- **Current version:** `0.6.0` (source of truth: `pyproject.toml`)
 - **Python:** 3.11+ (3.11 and 3.12 tested in CI)
 - **Package manager:** Poetry (src layout)
 
@@ -33,6 +33,7 @@ During activities in the project be sure to consider the following:
 | Format | Versions | File types |
 |--------|----------|------------|
 | SPDX 2.3 | 2.3 only | JSON, YAML, Tag-Value |
+| SPDX 3.x | 3.0.1 | JSON-LD |
 | CycloneDX | 1.3, 1.4, 1.5, 1.6 | JSON, XML |
 
 ## CLI Contract (backward-compatibility locked)
@@ -137,7 +138,7 @@ This project uses a 12-agent, 11-gate delivery pipeline. Key rules:
 | `docs/agent-briefing.md` | Canonical function signatures and ADR summary |
 | `docs/agent-operating-model.md` | Full gate model, retry policy, approval checkpoints |
 | `docs/requirements.md` | FR-01 to FR-14, NFR-01 to NFR-05, NTIA mapping |
-| `docs/architecture/ADR-*.md` | Full architectural decisions (9 ADRs) |
+| `docs/architecture/ADR-*.md` | Full architectural decisions (10 ADRs) |
 | `docs/releases/README.md` | Release tracker naming and lifecycle |
 | `.claude/agents/*.md` | Per-agent role definitions and checklists |
 | `src/sbom_validator/constants.py` | All format names, rule codes, version strings |
@@ -148,7 +149,7 @@ This project uses a 12-agent, 11-gate delivery pipeline. Key rules:
 src/sbom_validator/
   cli.py               # Click entry point
   validator.py          # Pipeline orchestrator (only module touching filesystem)
-  format_detector.py    # Returns "spdx", "spdx-tv", "spdx-yaml", or "cyclonedx"
+  format_detector.py    # Returns "spdx3-jsonld", "spdx", "spdx-tv", "spdx-yaml", or "cyclonedx"
   schema_validator.py   # JSON schema + XSD validation
   ntia_checker.py       # 7 NTIA minimum element checks (FR-04 to FR-10)
   models.py             # Frozen dataclasses: ValidationResult, NormalizedSBOM, etc.
@@ -160,8 +161,9 @@ src/sbom_validator/
   parsers/
     spdx_parser.py      # SPDX JSON (shared _parse_spdx_document helper)
     spdx_yaml_parser.py # SPDX YAML
-    spdx_tv_parser.py   # SPDX Tag-Value
-    cyclonedx_parser.py  # CycloneDX JSON + XML (multi-version)
+    spdx_tv_parser.py      # SPDX Tag-Value
+    spdx3_jsonld_parser.py # SPDX 3.x JSON-LD (two-pass @graph traversal)
+    cyclonedx_parser.py    # CycloneDX JSON + XML (multi-version)
 ```
 
 ## Test Structure
