@@ -9,7 +9,7 @@
 - **Base branch:** `develop` (from v0.5.0)
 - **Target merge branch:** `develop` (via PR from `feature/spdx3-jsonld`), then `master` (via PR from `develop`)
 - **Owner:** Orchestrator
-- **Status:** `🔄 In Progress`
+- **Status:** `✅ Released`
 
 ## Status Legend
 
@@ -141,7 +141,7 @@
 
 ## Final Verdict
 
-- **Recommendation:** ⏳ PENDING
-- **Approved by (Human):** —
-- **Date:** —
-- **Notes:** —
+- **Recommendation:** ✅ SHIP
+- **Approved by (Human):** PR #20 reviewed with no findings; approved and merged to develop → master
+- **Date:** 2026-04-30
+- **Notes:** Tag v0.6.0 pushed. GitHub Release workflow triggered (run 25178451805). Standalone binaries (Linux + Windows amd64) will be produced by the CI release pipeline.

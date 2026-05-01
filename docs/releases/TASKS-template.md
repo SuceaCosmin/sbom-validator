@@ -53,7 +53,8 @@
 | R10 | Generate release token report | Token Analyst | `feature/<name>` | R9 | ⏳ | `docs/releases/token-report-vX.Y.Z.html` | Report generated and linked in release brief |
 | R11 | Generate release token delta report | Token Analyst | `feature/<name>` | R10 | ⏳ | `docs/releases/token-delta-vA.B.C_to_vX.Y.Z.html` | Delta generated (or N/A rationale documented) |
 | R12 | Generate workflow evaluation report | Workflow Analyst | `feature/<name>` | R10 | ⏳ | `docs/releases/workflow-report-vX.Y.Z.html` | Per-agent and gate evaluation generated and linked |
-| R13 | Final human gate and release action | Human + Release Manager | `feature/<name>` | R11,R12 | ⏳ | Approval record | GO/NO-GO recorded |
+| R13 | Release closeout — update meta-documents | Documentation Writer | `feature/<name>` | R9 | ⏳ | Updated CLAUDE.md, agent-briefing.md Quick-Start, requirements.md header, models.py docstrings | All drift-prone reference documents reflect the released version |
+| R14 | Final human gate and release action | Human + Release Manager | `feature/<name>` | R11,R12,R13 | ⏳ | Approval record | GO/NO-GO recorded |
 
 ---
 

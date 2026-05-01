@@ -5,6 +5,22 @@ Read the originals only when you need detailed rationale or full mapping tables.
 
 ---
 
+## Quick-Start Context
+
+> Keep this section current at every release (G7 Documentation Writer deliverable + G8 Release Manager checklist item).
+
+| Property | Value |
+|----------|-------|
+| **Current version** | `0.6.0` (source of truth: `pyproject.toml`) |
+| **Supported formats** | 5: `spdx`, `spdx-tv`, `spdx-yaml`, `spdx3-jsonld`, `cyclonedx` |
+| **Source modules** | 17: 12 in `src/sbom_validator/` + 5 parsers in `parsers/` |
+| **Test count** | 711 collected (run `poetry run pytest --co -q` for current count) |
+| **Coverage target** | ≥ 90% (`poetry run pytest --cov=sbom_validator --cov-fail-under=90`) |
+| **ADR count** | 10 (ADR-001 through ADR-010) |
+| **Python** | 3.11+ (3.11 and 3.12 tested in CI) |
+
+---
+
 ## Workflow Entry Point
 
 For end-to-end execution order, gate ownership, escalation policy, and human approval checkpoints, read:

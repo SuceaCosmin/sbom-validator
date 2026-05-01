@@ -20,8 +20,8 @@ PRIMARY MODE: EXPLANATION — User-facing documentation (README, user guide, CLI
 
 ## Project Context
 
-- Tool: `sbom-validator` — a CLI that validates SPDX 2.3 (JSON, YAML, Tag-Value) and CycloneDX 1.3–1.6 (JSON, XML) SBOM files
-- Supported formats: SPDX 2.3 JSON/YAML/Tag-Value, CycloneDX 1.3–1.6 JSON/XML
+- Tool: `sbom-validator` — a CLI that validates SPDX 2.3 (JSON, YAML, Tag-Value), SPDX 3.x (JSON-LD), and CycloneDX 1.3–1.6 (JSON, XML) SBOM files
+- Supported formats: SPDX 2.3 JSON/YAML/Tag-Value, SPDX 3.x JSON-LD, CycloneDX 1.3–1.6 JSON/XML
 - NTIA minimum elements: 7 required fields per the NTIA guidance
 - CLI entry point: `sbom-validator validate <FILE> [--format text|json] [--log-level LEVEL] [--report-dir PATH]`
 - Exit codes: 0 (PASS), 1 (validation FAIL), 2 (tool ERROR)
@@ -50,6 +50,22 @@ grep -rn "your-org\|your-repo\|<YOUR\|TODO\|FIXME\|placeholder" docs/ README.md 
 If any match is found, replace it with the real value before handing off. Real GitHub repository: `https://github.com/SuceaCosmin/sbom-validator`.
 
 ## Required Documentation
+
+### `docs/agent-briefing.md` (mandatory at G7 — every release)
+
+Update on every release that changes any of the following:
+- A public function signature in any module
+- A supported format (detection, schema, or parsing)
+- The NormalizedSBOM field contract
+- An ADR decision (new ADR or amendment)
+
+Specifically verify and update:
+- ADR summary table (confirm ADR count and entries match `docs/architecture/ADR-*.md`)
+- Module Map and Canonical Function Signatures block
+- NormalizedSBOM Field Contract tables
+- NTIA Field Mapping table
+
+This file is the highest-read document in the workflow — every agent reads it before acting. Stale facts here propagate to every agent on every dispatch.
 
 ### `README.md`
 - One-paragraph description
