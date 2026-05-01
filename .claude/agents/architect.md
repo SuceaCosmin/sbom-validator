@@ -100,6 +100,15 @@ def function_name(param: Type) -> ReturnType: ...
 
 When in doubt, create a new ADR. Amending decisions in place obscures the decision history.
 
+## Schema Limitation Documentation (when an ADR involves schema validation)
+
+When an ADR mandates validation against a vendor-provided, externally-generated, or third-party schema file, the **Consequences** section must include:
+
+1. **Known structural limitations** — document any known quirks of the schema file (e.g., generated `if/then/else` branches, `$ref AnyClass` catch-alls, schema generator artifacts) that could force a deviation from the intended validation approach.
+2. **Explicit deviation gate** — include this sentence verbatim in the Consequences section: *"Any deviation from the validation approach described in this ADR requires Architect approval and a formal ADR amendment before the deviating code is committed."*
+
+The rationale: when a developer discovers a schema incompatibility mid-implementation, the ADR's Consequences section is the first place they look for guidance. A pre-documented limitation reduces the probability of a silent workaround being implemented and committed without Architect consultation — the failure mode that caused G4 M-01 in v0.6.0.
+
 ## Output Quality Bar
 
 - Every decision must reference a requirement (FR-XX or NFR-XX) where applicable

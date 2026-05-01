@@ -65,7 +65,7 @@ class NormalizedRelationship:
 class NormalizedSBOM:
     """Format-agnostic internal representation of an SBOM."""
 
-    format: str  # "spdx" or "cyclonedx"
+    format: str  # one of "spdx", "spdx-tv", "spdx-yaml", "spdx3-jsonld", "cyclonedx"
     author: str | None = None
     timestamp: str | None = None
     components: tuple[NormalizedComponent, ...] = field(default_factory=tuple)

@@ -157,6 +157,8 @@ def _validate_json_schema(
     raw_doc: dict[str, Any], schema: dict[str, Any], rule: str
 ) -> list[ValidationIssue]:
     """Validate a JSON document against a Draft 7 schema and return ValidationIssue items."""
+    # registry= is mandatory: without it jsonschema falls back to remote HTTP fetches
+    # for any $ref it cannot resolve locally, violating the no-network-calls invariant.
     validator = jsonschema.Draft7Validator(schema, registry=_build_cdx_registry())
     issues: list[ValidationIssue] = []
     for error in validator.iter_errors(raw_doc):
@@ -181,6 +183,10 @@ def _validate_json_schema_2020(
     SPDX 3.x uses JSON Schema Draft 2020-12, which requires a dedicated validator
     class — Draft7Validator does not understand the 2020-12 dialect keywords.
     """
+    # registry=Registry() is an empty isolating registry: the SPDX 3.x envelope schema
+    # has no external $ref targets, so no resources need to be pre-loaded.  The explicit
+    # argument is still required to prevent jsonschema from attempting network fetches
+    # for any $ref it cannot resolve, which would violate the no-network-calls invariant.
     validator = jsonschema.Draft202012Validator(schema, registry=Registry())
     issues: list[ValidationIssue] = []
     for error in validator.iter_errors(raw_doc):

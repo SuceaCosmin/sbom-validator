@@ -73,6 +73,7 @@ Never leave merged feature branches open locally or remotely. A branch that has 
 3. Read `docs/agent-briefing.md` — it contains the canonical function signatures.
 4. Verify your planned function signatures match the briefing exactly before writing a single line of code.
 5. Check the relevant ADR file in `docs/architecture/` for the module you are implementing.
+6. **ADR deviation rule** — if your implementation requires departing from *any* decision in the governing ADR (schema structural incompatibility, library limitation, performance constraint, etc.), **stop**. Raise the deviation to the Architect agent and obtain a formal ADR amendment before committing any deviating code. Do not implement a workaround and document it retroactively — that leaves the ADR temporarily wrong and forces a rework loop at G4. The correct sequence is: discover incompatibility → raise to Architect → Architect amends ADR → implement per amended ADR.
 
 ---
 
@@ -100,6 +101,7 @@ Never leave merged feature branches open locally or remotely. A branch that has 
 - No `eval()`, no shell injection, no unsafe file path handling
 - Use `pathlib.Path` for all file operations (never `os.path` strings)
 - Line length: 100 characters (configured in `pyproject.toml`)
+- **jsonschema validators must always include `registry=`** — never instantiate `Draft7Validator`, `Draft202012Validator`, or any other jsonschema validator without an explicit `registry=` argument. Without it, the validator falls back to remote HTTP reference resolution, violating the "no network calls at runtime" invariant (ADR-003) and causing non-deterministic failures in air-gapped environments. Use `registry=_build_cdx_registry()` for CycloneDX validators; use `registry=Registry()` (empty, isolating registry) for schemas that have no external `$ref` targets.
 - **Import ordering (isort / ruff I001)** — always write imports in this exact order, with a blank line between each group:
   1. `from __future__ import annotations`
   2. Standard library (`import json`, `from pathlib import Path`, …)
@@ -151,6 +153,7 @@ Do not run the full suite after every individual edit. Run the targeted test fil
 2. Full suite passes (phase end): `poetry run pytest`
 3. **Mandatory lint gate passes** (see top of this file — no exceptions)
 4. The implemented module can be imported without error
+5. **ADR conformance check** — for each ADR governing the module you implemented, answer: *"Does my implementation exactly match the ADR's design approach and interface contract?"* If the answer is no for any reason (schema structural incompatibility, library limitation, performance constraint), **stop — do not commit**. Raise the deviation to the Architect agent and obtain a formal ADR amendment. Implementing first and documenting the deviation retroactively forces a rework loop at G4; the correct sequence is: discover incompatibility → raise to Architect → Architect amends ADR → implement per amended ADR.
 
 > **After any rebase or merge**: the lint gate must be re-run from scratch. Pre-commit hooks do not fire automatically during `git rebase`, so fixes applied at commit time can be lost. Run the full gate again and create a new commit if any issues are found before pushing.
 
