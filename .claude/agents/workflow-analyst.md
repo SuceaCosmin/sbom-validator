@@ -27,7 +27,13 @@ Read these files to reconstruct the release cycle:
 - `.claude/agents/*.md` (all agent definitions — to evaluate against their stated responsibilities)
 - Git log between the two release tags
 
-### Telemetry inputs (measured — use for agent efficiency assessment)
+### Telemetry inputs (measured — use for agent efficiency assessment only)
+
+> **Data boundary:** The workflow analyst uses telemetry for *efficiency signals* (session
+> timing, turn counts, tool-call patterns).  **Do NOT report specific token totals or
+> per-agent token costs** — those are the exclusive domain of the token analyst.
+> Reference `docs/releases/token-report-vX.Y.Z.html` for token numbers; do not derive
+> your own from the DB.
 
 **`~/.claude/usage.db`** — SQLite database with per-session and per-turn token + timing data. Query with Python `sqlite3`.
 
@@ -169,6 +175,7 @@ A workflow analysis deliverable is complete when:
 ## Methodology Rules
 
 - **Prefer telemetry over inference.** Use `usage.db` session/turn counts and subagent `.meta.json` labels as primary evidence for agent effort and task coverage. These are measured facts, not estimates.
+- **Do not report token costs.** Session turn counts and tool-call patterns are your efficiency signals. Token cost totals and per-agent token breakdowns are the token analyst's responsibility. Reference the token report rather than computing your own numbers from the DB.
 - **Agent-task mapping.** Match subagent descriptions (e.g. `"2.B1 — SPDX parser TDD tests"`) to TASKS tracker entries. If a task has no matching subagent, it was either done inline (check turn counts in the parent session) or skipped.
 - **Turn count as effort proxy.** A session with 294 turns drove significantly more work than one with 38. Use turn counts alongside output tokens to gauge relative agent effort and identify unexpectedly large sessions (potential rework signals).
 - **Session timing.** `first_timestamp` and `last_timestamp` per session give wall-clock duration. Sessions running several hours may indicate re-work loops — cross-check with TASKS gate evidence.
