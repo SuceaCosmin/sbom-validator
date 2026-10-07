@@ -1,32 +1,15 @@
 # CLAUDE.md — sbom-validator
+<!-- hil-team contract_version: 1 -->
 
 > Auto-loaded at every session start. Keep this concise and decision-critical.
-> For full details, read the linked reference files.
+> This repository is worked on by the **hil-team** plugin (`/hil-team:deliver`, `/hil-team:plan`, …).
+> Agent roles, gates and human approvals live in the plugin; project facts live here and in `.agent-kb/`.
 
-## If You Are an AI Agent
+## Overview
 
-During activities in the project be sure to consider the following:
-- Challenge ambiguous or wrong prompts.
-- Before implementing any non-trivial feature or refactor suggested by the user, raise at least one concrete question about the value or scope it adds.
-- Say it if anything is unclear so that we can further clarify it.
-- When evaluating an issue, perform a root cause analysis. Identify multiple hypotheses before settling on one; surface alternatives when the root cause is ambiguous. Ask which to pursue only when you cannot determine the most likely cause yourself — otherwise proceed.
+`sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. It is intended for CI/CD pipelines. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
 
-### OUTPUT RULES:
-- Feedback, confirmations, status: max 5 lines, no elaboration
-- Code: full verbosity always — comments, docstrings, descriptive names
-- Explanations when user asks to understand something: full verbosity
-- Never explain what you are about to do before doing it
-- Never summarize what you just did after doing it
-- No filler phrases: "Certainly!", "Great question", "Of course", "I'll now..."
-
-## Project Identity
-
-`sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
-
-- **GitHub:** https://github.com/SuceaCosmin/sbom-validator
-- **Current version:** `0.6.0` (source of truth: `pyproject.toml`)
-- **Python:** 3.11+ (3.11 and 3.12 tested in CI)
-- **Package manager:** Poetry (src layout)
+- **Current version:** `0.6.0` (source of truth: `pyproject.toml`; mirrored in `src/sbom_validator/__init__.py`)
 
 ### Supported Formats
 
@@ -36,7 +19,63 @@ During activities in the project be sure to consider the following:
 | SPDX 3.x | 3.0.1 | JSON-LD |
 | CycloneDX | 1.3, 1.4, 1.5, 1.6 | JSON, XML |
 
-## CLI Contract (backward-compatibility locked)
+## Stack
+
+- Python 3.11+ (3.11 and 3.12 tested in CI); Poetry (src layout)
+- Runtime: click, jsonschema, xmlschema, pyyaml, spdx-tools, cyclonedx-bom
+- Tests: pytest + pytest-cov · Lint/format: ruff (line length 100) · Types: mypy strict
+- Binary: PyInstaller ≥ 6.0 (`sbom_validator.spec`) · pre-commit runs `ruff check --fix` and `ruff format`
+
+## Commands
+
+```yaml
+install: poetry install --with dev
+build: poetry build
+test: poetry run pytest
+test_targeted: poetry run pytest tests/unit/test_<module>.py -v
+coverage: poetry run pytest --cov=sbom_validator --cov-fail-under=90 --cov-report=term
+lint: poetry run ruff check src/ tests/
+format_check: poetry run ruff format --check src/ tests/
+typecheck: poetry run mypy src/
+quality_gate: poetry run ruff check src/ tests/ && poetry run ruff format --check src/ tests/ && poetry run mypy src/
+lint_tests: poetry run ruff check tests/ && poetry run ruff format --check tests/
+run: poetry run sbom-validator validate <FILE> [--format text|json]
+package: poetry build
+smoke_test: bash scripts/smoke-test-binary.sh ./dist/sbom-validator   # .exe on Windows; see runbook
+```
+
+Run targeted tests during development; the full suite with coverage at phase end. CI rejects anything failing `quality_gate`.
+
+## Conventions
+
+- **Import ordering (ruff I001) — the #1 CI failure cause.** Four groups separated by blank lines, written correctly from the start (don't rely on `ruff --fix`):
+  1. `from __future__ import annotations`
+  2. Standard library
+  3. Third-party (`pytest`, `click`, …)
+  4. First-party (`from sbom_validator… import …`) — never mixed with third-party
+- Line length 100; mypy strict; type annotations on all public functions and classes.
+- `pathlib.Path` for all file operations (never `os.path` strings).
+- No magic strings: format names, rule codes and version strings come from `src/sbom_validator/constants.py`.
+- All data models are frozen dataclasses — never mutate.
+- Test files: `test_<module>_<concern>.py`, split at ~400 lines; shared fixtures in `tests/unit/conftest.py`.
+- Every test that covers a requirement references its FR-XX ID (`docs/requirements.md`).
+
+## Branching & PR rules
+
+| Branch | Purpose |
+|--------|---------|
+| `master` | Stable releases only — never commit directly |
+| `develop` | Integration branch — receives completed feature branches |
+| `feature/<kebab-case>` | All new work — branched from `develop`, merged back via PR |
+
+- Start: `git checkout develop && git pull && git checkout -b feature/<name>`
+- Finish: `git push -u origin feature/<name>`, open PR `feature/<name>` → `develop`. The human reviews and merges.
+- Releases: `develop` → `master` via PR per `.agent-kb/runbooks/release.md`.
+- Post-merge cleanup: GitHub deletes the remote head branch automatically; delete the local branch (`git checkout develop && git pull origin develop && git branch -d feature/<name>`). Never leave merged branches.
+
+## Compatibility Contract
+
+Backward-compatibility locked — any change needs an ADR + Architect + human approval, changelog and migration notes:
 
 ```
 sbom-validator validate <FILE> [--format text|json] [--log-level DEBUG|INFO|WARNING|ERROR] [--report-dir PATH]
@@ -49,136 +88,74 @@ sbom-validator --version
 | 1 | FAIL (validation issues found) |
 | 2 | ERROR (tool could not process the file) |
 
-- `--format json` output goes to **stdout**; all log output goes to **stderr only** (never mix)
-- Breaking changes to exit codes, JSON output keys, or CLI options require explicit Architect + human approval
+- JSON output keys are stable: `status`, `file`, `format_detected`, `issues`.
+- `--format json` output goes to **stdout**; all log output goes to **stderr only** (never mix).
+- `--report-dir` writes `sbom-report-<basename>.html/.json` (fixed names, no timestamp).
+- Command and option names/semantics are stable.
 
-## Branching Strategy
+## Agent Team Settings
 
-| Branch | Purpose |
-|--------|---------|
-| `master` | Stable releases only — never commit directly |
-| `develop` | Integration branch — receives completed feature branches |
-| `feature/<kebab-case>` | All new work — branched from `develop`, merged back via PR |
-
-All work goes through feature branches and PRs.
-
-## Mandatory Quality Gate
-
-**Every task must pass these before completion — no exceptions:**
-
-```bash
-poetry run ruff check src/ tests/ && poetry run ruff format --check src/ tests/ && poetry run mypy src/
+```yaml
+contract_version: 1
+project_name: sbom-validator
+repo_url: https://github.com/SuceaCosmin/sbom-validator
+integration_branch: develop
+protected_branches: [master, develop]
+release_flow: same-branch
+adr_dir: docs/architecture
+requirements_source: docs/requirements.md      # FR-01..FR-15, NFR-01..NFR-05, NTIA mapping
+release_tracker_dir: docs/releases
+global_task_file: TASKS.md
+analytics: enabled                              # CI (release.yml) enforces token + workflow reports before tagging
+analytics_reports_dir: docs/releases
+architecture_triggers:
+  - A new module or file is introduced in src/sbom_validator/
+  - A public function signature is added or changed
+  - A new runtime dependency is added to pyproject.toml
+  - The NormalizedSBOM data model or any frozen dataclass is modified
+  - A new design pattern not already established in the codebase is adopted
+interface_stub_language: python
+interface_source_of_truth:
+  - src/sbom_validator/cli.py                   # _render_text() is the source of truth for text output
+docs_map:
+  - README.md                                   # description, badges, install (pip/pipx/Poetry), 3-command quick start, links
+  - docs/user-guide.md                          # install, quick start, formats, NTIA elements, CLI reference, output examples, CI examples (GitHub Actions, GitLab CI, shell), troubleshooting
+  - docs/architecture/architecture-overview.md  # system overview, pipeline, how to add a new SBOM format
+  - CHANGELOG.md
+docs_audience: Developers and DevOps engineers integrating SBOM validation into CI/CD pipelines
+drift_prone_docs:
+  - CLAUDE.md                                   # version, Supported Formats table
+  - .agent-kb/architecture.md                   # Quick-Start Context, module map, ADR count
+  - docs/requirements.md                        # header version/status/date, JSON output example version strings
+  - src/sbom_validator/models.py                # NormalizedSBOM.format docstring
+version_files:
+  - pyproject.toml
+  - src/sbom_validator/__init__.py
+changelog_format: keep-a-changelog
+dependency_manifest: [pyproject.toml, poetry.lock]
+ci_provider: github-actions
+ci_files:
+  - .github/workflows/ci.yml
+  - .github/workflows/release.yml
+  - .github/workflows/sbom-dry-run.yml
+required_checks:
+  - "test (3.11)"                               # ci.yml job: ruff check, ruff format --check, mypy, pytest --cov-fail-under=90
+  - "test (3.12)"
+security_posture: >
+  Python CLI used as a gate in CI/CD pipelines. Security impact: integrity of validation
+  outcomes used in gates, trustworthiness of distributed artifacts (wheels, binaries, SBOMs),
+  and reliable behaviour in automated pipelines. No network calls at runtime.
+retry_budget: 2
+max_parallel_tracks: 4
 ```
 
-CI will reject anything that doesn't pass. Run targeted tests during development, full suite at phase end:
-
-```bash
-# Targeted (during development):
-poetry run pytest tests/unit/test_<module>.py -v
-
-# Full suite (phase end):
-poetry run pytest --cov=sbom_validator --cov-fail-under=90
-```
-
-## Import Ordering (ruff I001)
-
-This is the #1 CI failure cause. Always write imports in this exact order with blank lines between groups:
-
-1. `from __future__ import annotations`
-2. Standard library (`import json`, `from pathlib import Path`)
-3. Third-party packages (`import pytest`, `from click.testing import CliRunner`)
-4. First-party / project imports (`from sbom_validator.models import ...`)
-
-Never mix third-party and first-party imports in the same block.
-
-## Architecture Constraints
-
-- **Four-stage pipeline:** format detection → schema validation → parsing → NTIA checking
-- **Schema failure blocks NTIA stage entirely** (ADR-003)
-- **NTIA checker only operates on `NormalizedSBOM`** — never imports from parsers
-- **All data models are frozen dataclasses** — do not mutate (ADR-004)
-- **No magic strings** — use constants from `src/sbom_validator/constants.py`
-- **JSON schemas are bundled** at `src/sbom_validator/schemas/` — no network calls at runtime
-- **`validator.py` never raises** — all errors return as `ValidationResult(status=ERROR)`
-
-## Agent Operating Model
-
-This project uses a 12-agent, 11-gate delivery pipeline. Key rules:
-
-- **Gate order is strict** — no skipping. See `docs/agent-operating-model.md` for full model.
-- **Gates G4 (Review) and G5 (Security)** require independent agent dispatch — never inline.
-- **Gates G9 (Token Analytics) and G10 (Workflow Evaluation)** must complete before release tag push.
-- **Retry budget:** 2 attempts per failed gate, then escalate to human.
-- **Immediate escalation** (no retries): backward-compatibility breaks, security-critical findings, ADR conflicts.
-- Every release must have a tracker at `docs/releases/TASKS-vX.Y.Z.md`.
-
-### Agent Dispatch Quick Reference
-
-| Agent | When to invoke |
-|-------|---------------|
-| `orchestrator` | End-to-end delivery coordination |
-| `planner` | Task decomposition at feature start |
-| `architect` | New module, signature change, new dependency, data model change |
-| `tester` | Write tests BEFORE implementation (TDD) |
-| `developer` | Implementation after tests exist |
-| `reviewer` | Independent code review (G4 — always separate agent) |
-| `security-reviewer` | Security/compliance gate (G5 — always separate agent) |
-| `ci-ops` | CI failure triage |
-| `documentation-writer` | User-facing docs, README, CHANGELOG |
-| `release-manager` | Version/changelog/artifact validation |
-| `token-analyst` | Token usage reports (G9) |
-| `workflow-analyst` | Workflow evaluation reports (G10) |
-
-## Key Reference Files
-
-**Read `docs/agent-briefing.md` before implementing anything** — it contains canonical function signatures and an ADR summary.
+## Knowledge Base
 
 | File | Purpose |
 |------|---------|
-| `docs/agent-briefing.md` | Canonical function signatures and ADR summary |
-| `docs/agent-operating-model.md` | Full gate model, retry policy, approval checkpoints |
-| `docs/requirements.md` | FR-01 to FR-14, NFR-01 to NFR-05, NTIA mapping |
-| `docs/architecture/ADR-*.md` | Full architectural decisions (10 ADRs) |
-| `docs/releases/README.md` | Release tracker naming and lifecycle |
-| `.claude/agents/*.md` | Per-agent role definitions and checklists |
-| `src/sbom_validator/constants.py` | All format names, rule codes, version strings |
-
-## Module Map
-
-```
-src/sbom_validator/
-  cli.py               # Click entry point
-  validator.py          # Pipeline orchestrator (only module touching filesystem)
-  format_detector.py    # Returns "spdx3-jsonld", "spdx", "spdx-tv", "spdx-yaml", or "cyclonedx"
-  schema_validator.py   # JSON schema + XSD validation
-  ntia_checker.py       # 7 NTIA minimum element checks (FR-04 to FR-10)
-  models.py             # Frozen dataclasses: ValidationResult, NormalizedSBOM, etc.
-  constants.py          # Central format/rule code definitions
-  exceptions.py         # ParseError, UnsupportedFormatError
-  presentation.py       # Humanize field paths and messages for text output
-  report_writer.py      # HTML + JSON report generation (string.Template)
-  logging_config.py     # stdlib logging, stderr only
-  parsers/
-    spdx_parser.py      # SPDX JSON (shared _parse_spdx_document helper)
-    spdx_yaml_parser.py # SPDX YAML
-    spdx_tv_parser.py      # SPDX Tag-Value
-    spdx3_jsonld_parser.py # SPDX 3.x JSON-LD (two-pass @graph traversal)
-    cyclonedx_parser.py    # CycloneDX JSON + XML (multi-version)
-```
-
-## Test Structure
-
-```
-tests/
-  unit/          # Per-module tests, split by concern at ~400 lines
-  integration/   # End-to-end CLI tests via CliRunner
-  fixtures/      # SPDX + CycloneDX valid/invalid SBOM files
-```
-
-- Coverage target: >= 90% (run `poetry run pytest --cov=sbom_validator --cov-report=term` to see current numbers)
-- TDD discipline: tests written before implementation
-- Test file naming: `test_<module>_<concern>.py`
-- Shared fixtures in `tests/unit/conftest.py`
-
-
-
+| `.agent-kb/architecture.md` | Canonical signatures, module map, invariants, NormalizedSBOM + NTIA mapping, coverage, test scenarios — **read before implementing anything** |
+| `.agent-kb/domain-glossary.md` | SBOM / SPDX / CycloneDX / NTIA vocabulary |
+| `.agent-kb/decisions/README.md` | Pointer + index for ADRs in `docs/architecture/` |
+| `.agent-kb/gotchas.md` | Known traps (import ordering, jsonschema registry, fixtures, rebase) |
+| `.agent-kb/runbooks/release.md` | Artifacts, release gates, smoke test, tag flow |
+| `docs/requirements.md` | FR-01..FR-15, NFR-01..NFR-05 |
