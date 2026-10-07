@@ -70,7 +70,7 @@
 | 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
 | 5.S1 | Fix `sbom_validator.spec`: bundle all `src/sbom_validator/schemas/*` (glob); make `scripts/smoke-test-binary.sh` also assert missing-file `--format json` → exit 2 + valid JSON ERROR (Test 5b equivalent); rebuild binary locally and get BOTH smoke scripts fully green; CHANGELOG `Fixed` entry | Developer | `feature/click-path-exists` | 5.H1 | ✅ | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | Local binary smoke 0 failures; spec bundles all 13 schema files |
 | 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ✅ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
-| 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); re-run after 5.S2 | Release Manager | `feature/click-path-exists` | 5.S2 | ❌ | Release brief | All gates pass |
+| 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); attempt 2 GO | Release Manager | `feature/click-path-exists` | 5.S2 | ✅ | Release brief | All gates pass |
 | 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ⏳ | `docs/releases/token-report-v0.6.1.html` | Generated |
 | 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
 | 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
@@ -126,6 +126,7 @@
 
 ### G6 CI Stability
 - Evidence: CI-ops agent dispatched (separate invocation). Draft PR #23, run 37682088825: `test (3.11)` pass (ruff, format, mypy 18 files clean, 732 passed, cov 96.15%), `test (3.12)` pass. No fixes needed. NOTE: smoke Test 5b is NOT run by PR CI — `scripts/smoke-test-binary.sh` only runs in release.yml on `v*.*.*` tag pushes; needs a local binary smoke run as pre-tag evidence (G8). Deviation recorded: PR opened as draft before closeout (human-approved) so CI could run.
+- Re-run on HEAD 7f4ca5b (ci-ops agent, separate invocation): run 37684971706, `test (3.11)` pass 46s, `test (3.12)` pass 43s → STABLE. Non-blocking: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19; Node 20 deprecation warnings.
 - Status: ✅
 
 ### G7 Docs Sync
@@ -134,7 +135,8 @@
 
 ### G8 Release Readiness
 - Evidence: Release-manager agent dispatched (separate invocation). Verdict: **NO-GO**. Locally built Windows binary (PyInstaller) passes version/compat checks and smoke Test 5b (missing file + `--format json` → exit 2, valid JSON, ERROR), but `scripts/smoke-test-binary.sh` = 5 pass / 9 fail: `FileNotFoundError _MEI*/schemas/spdx.schema.json`. Orchestrator confirmed `sbom_validator.spec` `datas` bundles only 4 of 13 files in `src/sbom_validator/schemas/` (missing `spdx.schema.json`, `jsf-0.82.schema.json`, `spdx-3.0.1.schema.json`, CDX 1.3/1.4/1.5). Pre-existing (spec untouched by this branch; likely present in the v0.6.0 binary) and would fail `release.yml` smoke at tag time. Also: Test 5b exists only in `tests/smoke/test_binary_smoke.sh`, which no workflow calls. Orchestrator note: the report's claim that this diff touches `schema_validator.py`/`test_schema_bundle.py` is wrong (diff is cli.py, tests, smoke script, version).
-- Status: ❌ attempt 1. Human decision 2026-10-07: fix in v0.6.1 (tasks 5.S1/5.S2 added); G8 to be re-run.
+- Attempt 2 (release-manager agent, separate invocation, HEAD 7f4ca5b): **GO** on technical gates. Rebuilt Windows binary: `smoke-test-binary.sh` 24 pass/0 fail, `test_binary_smoke.sh` all passed; pytest 732 passed, cov 96.15%; ruff clean; `poetry build` (out-of-tree) wheel+sdist 0.6.1 OK; release.yml smoke steps use `scripts/smoke-test-binary.sh`; CI green. Pending by design: CHANGELOG `[Unreleased]`→`[0.6.1]` + drift_prone_docs (6.J1); G9/G10 reports must be committed before tag. Only Windows binary built locally; Linux covered by release.yml at tag time.
+- Status: ✅ (attempt 1 ❌ NO-GO; human decision 2026-10-07: fix in v0.6.1, tasks 5.S1/5.S2)
 
 ### G9 Token Analytics
 - Evidence:
