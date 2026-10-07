@@ -9,7 +9,7 @@
 - **Base branch:** `develop`
 - **Target merge branch:** `develop` (via PR), then `master` per `.agent-kb/runbooks/release.md`
 - **Owner:** Orchestrator
-- **Status:** `✅ Ready for Release` (H1 approved 2026-10-07; G0–G10 and closeout PASS; awaiting H2 PR review and H3)
+- **Status:** `✅ Ready for Release` (H1 approved 2026-10-07; G0–G10 and closeout PASS; H2 done 2026-10-07; H3 GO 2026-10-08; release PR to master open, tag pending)
 
 ## Status Legend
 
@@ -75,7 +75,7 @@
 | 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
 | 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
 | 6.J1 | Release closeout: update `drift_prone_docs` (CLAUDE.md version, `.agent-kb/architecture.md`, `docs/requirements.md` header + JSON example versions, `models.py` docstring) | Documentation Writer | `feature/click-path-exists` | 6.I1 | ✅ | Listed files | No stale version numbers |
-| 7.K1 | Final human gate (H3) and release action | Human + Release Manager | `feature/click-path-exists` | 5.H2, 6.I3, 6.I4, 6.J1 | ⏳ | Approval record | GO/NO-GO recorded |
+| 7.K1 | Final human gate (H3) and release action | Human + Release Manager | `feature/click-path-exists` | 5.H2, 6.I3, 6.I4, 6.J1 | ✅ | Approval record | H3: GO recorded 2026-10-08 (human); see Final Verdict. Tag/publication pending human merge of release PR |
 
 ---
 
@@ -164,7 +164,10 @@
 
 ## Final Verdict
 
-- **Recommendation:**
-- **Approved by (Human):**
-- **Date:**
-- **Notes:**
+- **H2 (PR review):** Human merged PR #23 (`feature/click-path-exists` -> `develop`), merge commit `a1766f6`, 2026-10-07T21:06Z.
+- **H3 (release approval):** GO, given by the human on 2026-10-08, on Release Manager recommendation GO.
+- **Recommendation:** GO
+- **Approved by (Human):** Human (H3)
+- **Date:** 2026-10-08
+- **Notes:** G8 attempt 1 was NO-GO (`sbom_validator.spec` bundled only 4 of 13 schema files; binary smoke failed with `FileNotFoundError _MEI*/schemas/...`). After human-approved scope change the spec was fixed (sorted glob of `.json`/`.xsd`), smoke script extended 14 to 24 checks, G4/G5 re-run, and G8 attempt 2 was GO. F-1 deferred (binary smoke not run by PR CI; Test 5b not in any workflow; no test asserting all schemas are bundled) as LOW process improvement. Residual risks: (1) the Linux binary is first built at tag time by `release.yml` (only Windows built locally); (2) the published v0.6.0 standalone binaries still carry the schema-bundling bug (JSON validation fails with exit 1; pip/pipx unaffected) - consider flagging the v0.6.0 GitHub release with a note pointing to v0.6.1.
+- **Tag / release URL:** pending (set after human merges the release PR and the tag is pushed)
