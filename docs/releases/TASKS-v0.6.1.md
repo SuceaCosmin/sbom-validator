@@ -59,9 +59,9 @@
 | 1.B1 | Design: interception of `click.Path(exists=True)` failure; decide directory behaviour (`dir_okay`); write ADR-005 Amendment 1 and correct ADR-005 text; update ADR summary row in `.agent-kb/architecture.md` if needed | Architect | `feature/click-path-exists` | 0.A2 | ✅ | `docs/architecture/ADR-005-cli-design.md`; interface stub for the path type; note if locked surface would change (then HX escalation) | ADR matches intended code; contract unchanged; no locked-surface change |
 | 2.C1 | Write failing tests: missing file JSON (valid JSON, status ERROR, keys status/file/format_detected/issues, nothing on stdout other than JSON), missing file text, exit 2, `--report-dir` + missing file writes `sbom-report-<basename>.html/.json`, directory as FILE, existing file still PASS/FAIL; unit tests of the path type; fix stale comment at `test_cli_json_output.py:423`; FR-11/12/13 (+ report-dir FR, tester to confirm ID in requirements.md) referenced | Tester | `feature/click-path-exists` | 1.B1 | ✅ | New `tests/unit/test_cli_missing_file.py`; touch `tests/unit/test_cli_json_output.py`, `tests/unit/test_cli_text_output.py` as needed | New tests fail for the right reason; existing tests unchanged in intent; ruff clean |
 | 2.C2 | Implement path type/interception in `cli.py`; update `validate_cmd` docs/help | Developer | `feature/click-path-exists` | 2.C1 | ✅ | `src/sbom_validator/cli.py` | All CLI tests pass; `quality_gate` clean; `cli.py` coverage >= 85% |
-| 2.D1 | Extend binary smoke: keep test 5 (exit 2), add JSON-on-stdout assertion for missing file | Tester | `feature/click-path-exists` | 2.C2 | ⏳ | `tests/smoke/test_binary_smoke.sh` | Script passes against a built binary (or CI) |
-| 2.D2 | Verify `tests/integration/test_integration.py::TestErrorPipeline::test_nonexistent_file_exits_two` and unit tests (`tests/unit/test_cli_*.py`) pass; full suite + coverage >= 90 | Tester | `feature/click-path-exists` | 2.C2 | ⏳ | Test run evidence | `test`, `coverage` commands green |
-| 3.E1 | Docs sync: CHANGELOG `[0.6.1]`; `docs/user-guide.md` troubleshooting (missing file / directory); mark R-12 resolved in `docs/release-checklist-v0.1.0.md` (lines 41, 79) and `TASKS.md:143`; ADR-005 consistency check | Documentation Writer | `feature/click-path-exists` | 2.C2 | ⏳ | `CHANGELOG.md`, `docs/user-guide.md`, `docs/release-checklist-v0.1.0.md`, `TASKS.md` | Docs match behaviour; keep-a-changelog format |
+| 2.D1 | Extend binary smoke: keep test 5 (exit 2), add JSON-on-stdout assertion for missing file | Tester | `feature/click-path-exists` | 2.C2 | ✅ | `tests/smoke/test_binary_smoke.sh` | Script passes against a built binary (or CI) |
+| 2.D2 | Verify `tests/integration/test_integration.py::TestErrorPipeline::test_nonexistent_file_exits_two` and unit tests (`tests/unit/test_cli_*.py`) pass; full suite + coverage >= 90 | Tester | `feature/click-path-exists` | 2.C2 | ✅ | Test run evidence | `test`, `coverage` commands green |
+| 3.E1 | Docs sync: CHANGELOG `[0.6.1]`; `docs/user-guide.md` troubleshooting (missing file / directory); mark R-12 resolved in `docs/release-checklist-v0.1.0.md` (lines 41, 79) and `TASKS.md:143`; ADR-005 consistency check | Documentation Writer | `feature/click-path-exists` | 2.C2 | ✅ | `CHANGELOG.md`, `docs/user-guide.md`, `docs/release-checklist-v0.1.0.md`, `TASKS.md` | Docs match behaviour; keep-a-changelog format |
 | 3.F1 | Independent quality review (G4) | Reviewer | `feature/click-path-exists` | 2.D2, 3.E1 | ⏳ | Findings + verdict | No open CRITICAL/MAJOR |
 | 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ⏳ | Findings + verdict | APPROVED/CONDITIONAL |
 | 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ⏳ | CI report | `test (3.11)`, `test (3.12)` green |
@@ -106,7 +106,8 @@
 ### G3 TDD Build
 - Evidence (2.C1, tester agent, separate invocation): new `tests/unit/test_cli_missing_file.py` (21 tests). 6 `_LenientExistingPath` unit tests fail for the right reason (AttributeError: no attribute `_LenientExistingPath`); 15 behavioural regression guards pass. `test_cli_json_output.py` stale comment fixed. ruff check/format on tests clean. No FR ID exists for `--report-dir`; tests tagged FR-01/11/12/13. Report file names use the file stem (e.g. `sbom-report-no-such-file.spdx.html`), tests assert that.
 - Evidence (2.C2, developer agent, separate invocation): `_LenientExistingPath` added to `cli.py`; targeted 70 passed; full suite 732 passed, coverage 96.15% (`cli.py` 99%); ruff check + format clean. mypy: 3 `yaml` import-untyped errors (format_detector.py, spdx_yaml_parser.py, validator.py) — orchestrator verified they are identical on the stashed baseline (pre-existing; `types-pyyaml` is declared in pyproject but not installed in this local env), none in `cli.py`. CI must confirm mypy green at G6.
-- Status: ✅ (2.D1 smoke and 2.D2 verification follow)
+- Evidence (2.D1/2.D2, tester agent, separate invocation): smoke Test 5b added (missing file + `--format json` → exit 2, valid JSON, status ERROR); `bash -n` OK; NOT executed (no built binary) — deferred to CI. Full suite 732 passed, coverage 96.15% (lowest module validator.py 90%).
+- Status: ✅
 
 ### G4 Quality Review
 - Evidence:
@@ -121,8 +122,8 @@
 - Status:
 
 ### G7 Docs Sync
-- Evidence:
-- Status:
+- Evidence (3.E1, documentation-writer agent, separate invocation): CHANGELOG (entry under `[Unreleased]`; closeout must rename to 0.6.1 + date), `docs/user-guide.md` troubleshooting (extended row + new "Cannot read file" row), R-12 resolved notes in `docs/release-checklist-v0.1.0.md` and `TASKS.md`; ADR-005 consistent with code. KB write-back: `.agent-kb/gotchas.md` (lenient Click path contract). ADR/architecture row written at G2.
+- Status: ✅
 
 ### G8 Release Readiness
 - Evidence:

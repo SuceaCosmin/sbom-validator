@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Planned as 0.6.1 (PATCH). The release closeout renames this heading and sets the date.
+
+### Changed
+- The `validate` command's `FILE` argument is now declared with an `exists=True` path type, so `--help` and shell completion describe it as an existing path. A missing file or a directory passed as `FILE` still produces the structured `ERROR` result: exit code `2`, text or JSON output on stdout, and reports written when `--report-dir` is given. There is no change in observable behaviour and no migration is needed. (Review item R-12)
+
+### Fixed
+- ADR-005 incorrectly stated that `FILE` used `click.Path(exists=True)` while the code used `exists=False`. The ADR is corrected by Amendment 1, which documents the lenient path type that preserves the structured `ERROR` contract.
+
 ## [0.6.0] - 2026-04-30
 
 ### Added

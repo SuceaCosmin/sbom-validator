@@ -38,7 +38,7 @@ All findings from `docs/code-review-notes.md` resolved:
 | R-09 | MINOR | Deferred to v0.2.0 (ISO 8601 timestamp validation) |
 | R-10 | MINOR | ✅ Fixed — `NormalizedComponent.name` typed as `str`, type: ignore removed |
 | R-11 | MINOR | ✅ Fixed — `except Exception:` blocks now include exception message in issue |
-| R-12 | INFO | Deferred (click.Path exists=True requires test updates) |
+| R-12 | INFO | Deferred (click.Path exists=True requires test updates). **Resolved in v0.6.1** (see ADR-005 Amendment 1) |
 | R-13 | INFO | ✅ Fixed — replaced `len(...) == 0` with `not ...` idiom |
 
 No open CRITICAL or MAJOR findings.
@@ -76,7 +76,7 @@ No open CRITICAL or MAJOR findings.
 | R-04/R-05 | Refactor parser and format_detector signatures to accept `dict` instead of `Path` per ADR-001/ADR-002 |
 | R-08 | Emit format-specific field paths in NTIA issues (e.g., `packages[N].supplier` for SPDX) |
 | R-09 | Validate timestamp is a valid ISO 8601 date-time string |
-| R-12 | Change `click.Path(exists=False)` to `click.Path(exists=True)` with updated tests |
+| R-12 | Change `click.Path(exists=False)` to `click.Path(exists=True)` with updated tests. **Resolved in v0.6.1** (ADR-005 Amendment 1) |
 
 ---
 

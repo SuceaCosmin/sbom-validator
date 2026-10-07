@@ -161,6 +161,32 @@ else
     fail "validate nonexistent file → expected exit 2, got $MISSING_EXIT"
 fi
 
+# Test 5b (R-12): nonexistent file with --format json -> valid JSON on stdout, status ERROR, exit 2
+echo ""
+echo "TEST: validate nonexistent file with --format json prints JSON status ERROR and exits 2"
+MISSING_JSON_EXIT=0
+MISSING_JSON_OUTPUT=""
+MISSING_JSON_OUTPUT=$("$BINARY" validate nonexistent-file.json --format json 2>/dev/null) \
+    || MISSING_JSON_EXIT=$?
+if [[ "$MISSING_JSON_EXIT" -eq 2 ]]; then
+    pass "nonexistent file --format json -> exit 2"
+else
+    fail "nonexistent file --format json -> expected exit 2, got $MISSING_JSON_EXIT"
+fi
+
+if echo "$MISSING_JSON_OUTPUT" | python3 -c "import sys, json; json.load(sys.stdin)" 2>/dev/null; then
+    pass "nonexistent file --format json stdout is valid JSON"
+else
+    fail "nonexistent file --format json stdout is not valid JSON; got: $(echo "$MISSING_JSON_OUTPUT" | head -5)"
+fi
+
+if echo "$MISSING_JSON_OUTPUT" \
+    | python3 -c "import sys, json; sys.exit(0 if json.load(sys.stdin).get('status') == 'ERROR' else 1)" 2>/dev/null; then
+    pass "nonexistent file --format json has status ERROR"
+else
+    fail "nonexistent file --format json status is not ERROR"
+fi
+
 # ---------------------------------------------------------------------------
 # Test 6: validate with --format json → exit 0 and output is valid JSON
 # ---------------------------------------------------------------------------

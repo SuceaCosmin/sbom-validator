@@ -27,6 +27,10 @@
 - **Cause:** generated schema artefacts (e.g. `if/then/else` branches, `$ref AnyClass` catch-alls) blocked the ADR's approach mid-implementation.
 - **Rule:** stop, raise to the architect, amend the ADR, then implement (see ADR-010 Amendment 1).
 
+## Click path validation must not pre-empt the structured ERROR contract (v0.6.1, R-12)
+- **Symptom:** a plain `click.Path(exists=True)` on `FILE` makes a missing file a Click usage error (exit 2, stderr, no JSON on stdout, no reports).
+- **Rule:** keep `_LenientExistingPath` in `cli.py`; it swallows only `click.BadParameter` and passes the raw argument to `validate()`. Re-verify this on any Click major upgrade (see ADR-005 Amendment 1).
+
 ## Binary builds need frozen-mode paths
 - **Symptom:** the binary cannot find schemas.
 - **Cause:** schema paths resolved relative to source files break under PyInstaller.

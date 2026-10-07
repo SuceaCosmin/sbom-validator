@@ -140,7 +140,7 @@
 | 4.4 | Static analysis pass (mypy + ruff + black) | Reviewer | ✅ | Zero errors; 25 ruff fixes, 5 black reformats, RefResolver deprecated API removed |
 | 4.5 | Code review + fixes | Reviewer + Developer | ✅ | `docs/code-review-notes.md`; 7 findings fixed (R-01 to R-13) |
 
-**Deferred to future release:** R-04/R-05 (parser signature refactor), R-08 (format-specific NTIA field paths), R-09 (ISO 8601 validation), R-12 (click.Path exists=True).
+**Deferred to future release:** R-04/R-05 (parser signature refactor), R-08 (format-specific NTIA field paths), R-09 (ISO 8601 validation), R-12 (click.Path exists=True; **resolved in v0.6.1**, see ADR-005 Amendment 1).
 
 > Tasks 4.1, 4.2, and 4.4 can run in parallel. 4.3 depends on 4.1+4.2. 4.5 depends on 4.4.
 
