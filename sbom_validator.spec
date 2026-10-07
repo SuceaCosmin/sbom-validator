@@ -10,10 +10,14 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 src_root = Path(SPECPATH)
 schemas_dir = src_root / "src" / "sbom_validator" / "schemas"
 
-# Bundle EVERY bundled schema (sorted, files only) so a newly added schema can never be
-# silently omitted from the binary. An empty directory means a broken checkout: fail the build.
+# Bundle EVERY schema file (*.json / *.xsd, sorted, non-recursive) so a newly added schema can
+# never be silently omitted from the binary; placeholders such as .gitkeep are excluded. No
+# schema files means a broken checkout: fail the build.
+_SCHEMA_SUFFIXES = {".json", ".xsd"}
 _schema_datas = [
-    (str(path), "schemas") for path in sorted(schemas_dir.iterdir()) if path.is_file()
+    (str(path), "schemas")
+    for path in sorted(schemas_dir.iterdir())
+    if path.is_file() and path.suffix in _SCHEMA_SUFFIXES
 ]
 if not _schema_datas:
     raise SystemExit(f"sbom_validator.spec: no schema files found in {schemas_dir}")

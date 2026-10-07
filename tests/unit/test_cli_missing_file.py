@@ -1,6 +1,7 @@
 """Unit tests for CLI handling of missing/non-file FILE arguments (ADR-005 Amendment 1).
 
-Requirement coverage: FR-01 (unreadable input is an ERROR), FR-11 (valid JSON on stdout even
+Requirement coverage: FR-01 (Format Auto-Detection; the code reuses rule ``"FR-01"`` for
+read-failure ERROR issues, so those tests are tagged FR-01), FR-11 (valid JSON on stdout even
 on failure), FR-12 (text output), FR-13 (exit code 2). ``--report-dir`` has no dedicated FR ID
 in docs/requirements.md; its tests are tagged FR-11/FR-13 (stable output contract).
 """
@@ -122,7 +123,7 @@ class TestCliMissingFileReportDir:
         runner.invoke(main, ["validate", _missing(tmp_path), "--report-dir", str(report_dir)])
         stem = Path(_missing(tmp_path)).stem
         data = json.loads((report_dir / f"sbom-report-{stem}.json").read_text(encoding="utf-8"))
-        assert "ERROR" in json.dumps(data)
+        assert data["status"] == "ERROR"
 
 
 class TestCliDirectoryAsFile:

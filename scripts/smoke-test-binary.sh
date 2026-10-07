@@ -8,9 +8,12 @@
 #   bash scripts/smoke-test-binary.sh ./dist/sbom-validator          (Linux)
 #   bash scripts/smoke-test-binary.sh ./dist/sbom-validator.exe      (Windows/CI)
 #
-# Exit: 0 if all checks pass, 1 on first failure.
+# Exit: 0 if all checks pass. All checks always run; exits 1 if any check failed.
 
 set -uo pipefail
+
+# Interpreter for the JSON checks (python3 is absent on some Windows setups).
+PY=$(command -v python3 || command -v python) || { echo "ERROR: python3/python not found" >&2; exit 1; }
 
 BINARY="${1:?Usage: $0 <path-to-binary>}"
 FIXTURES="tests/fixtures"
@@ -94,7 +97,7 @@ if [ "$MISSING_JSON_EXIT" -eq 2 ]; then
 else
   fail "missing file --format json — expected exit 2, got $MISSING_JSON_EXIT"
 fi
-MISSING_JSON_STATUS=$(echo "$MISSING_JSON_OUTPUT"   | python3 -c "import sys, json; print(json.load(sys.stdin).get('status'))" 2>/dev/null || true)
+MISSING_JSON_STATUS=$(echo "$MISSING_JSON_OUTPUT"   | "$PY" -c "import sys, json; print(json.load(sys.stdin).get('status'))" 2>/dev/null || true)
 if [ "$MISSING_JSON_STATUS" = "ERROR" ]; then
   ok "missing file --format json → stdout is valid JSON with status ERROR"
 else

@@ -34,7 +34,7 @@
 ## Binary builds need frozen-mode paths
 - **Symptom:** the binary cannot find schemas.
 - **Cause:** schema paths resolved relative to source files break under PyInstaller.
-- **Rule:** keep `_schemas_dir()` `sys._MEIPASS`-compatible and schemas listed in `datas` in `sbom_validator.spec` (ADR-008).
+- **Rule:** keep `_schemas_dir()` `sys._MEIPASS`-compatible and schemas bundled via `datas` in `sbom_validator.spec`, which globs every `*.json`/`*.xsd` from `src/sbom_validator/schemas/` (the build fails if none are found), so new schemas need no spec edit (ADR-008).
 
 ## Version drift across meta-documents every release
 - **Symptom:** stale version numbers / format tables after release.
