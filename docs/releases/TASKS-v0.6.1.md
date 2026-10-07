@@ -9,7 +9,7 @@
 - **Base branch:** `develop`
 - **Target merge branch:** `develop` (via PR), then `master` per `.agent-kb/runbooks/release.md`
 - **Owner:** Orchestrator
-- **Status:** `⏳ Planning` (H1 approved 2026-10-07; ready for G2)
+- **Status:** `🔄 In Progress` (H1 approved 2026-10-07; G0–G10 and closeout PASS; awaiting H2 PR review and H3)
 
 ## Status Legend
 
@@ -74,7 +74,7 @@
 | 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ✅ | `docs/releases/token-report-v0.6.1.html` | Generated |
 | 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
 | 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
-| 6.J1 | Release closeout: update `drift_prone_docs` (CLAUDE.md version, `.agent-kb/architecture.md`, `docs/requirements.md` header + JSON example versions, `models.py` docstring) | Documentation Writer | `feature/click-path-exists` | 6.I1 | ⏳ | Listed files | No stale version numbers |
+| 6.J1 | Release closeout: update `drift_prone_docs` (CLAUDE.md version, `.agent-kb/architecture.md`, `docs/requirements.md` header + JSON example versions, `models.py` docstring) | Documentation Writer | `feature/click-path-exists` | 6.I1 | ✅ | Listed files | No stale version numbers |
 | 7.K1 | Final human gate (H3) and release action | Human + Release Manager | `feature/click-path-exists` | 5.H2, 6.I3, 6.I4, 6.J1 | ⏳ | Approval record | GO/NO-GO recorded |
 
 ---
@@ -122,15 +122,18 @@
 ### G5 Security
 - Evidence: Security-reviewer agent dispatched (separate invocation, parallel with G4); verdict: APPROVED. No CRITICAL/MAJOR; INFO only. No fail-open path (probed directory, /dev/null, empty string, 5000-char name, nul → all ERROR exit 2). No dependency/workflow diff. FIFO blocking read is pre-existing, LOW.
 - Re-review of 5.S1 (commit 36c112d): Security-reviewer agent dispatched (separate invocation, parallel); verdict APPROVED, no CRITICAL/MAJOR. Fail-closed before fix (crash exit 1 never a false PASS). MINOR: CHANGELOG should state v0.6.0 standalone binaries fail JSON validation with exit 1 (can be mistaken for validation FAIL; pip/pipx unaffected) — confirm v0.6.0 impact; optional: exclude symlinks/.gitkeep from glob.
+- Delta review of 7f4ca5b (landed after the 5.S2 verdicts; flagged by G10): Reviewer agent dispatched (separate invocation) — APPROVED, 0 findings above INFO.
 - Status: ✅
 
 ### G6 CI Stability
 - Evidence: CI-ops agent dispatched (separate invocation). Draft PR #23, run 37682088825: `test (3.11)` pass (ruff, format, mypy 18 files clean, 732 passed, cov 96.15%), `test (3.12)` pass. No fixes needed. NOTE: smoke Test 5b is NOT run by PR CI — `scripts/smoke-test-binary.sh` only runs in release.yml on `v*.*.*` tag pushes; needs a local binary smoke run as pre-tag evidence (G8). Deviation recorded: PR opened as draft before closeout (human-approved) so CI could run.
 - Re-run on HEAD 7f4ca5b (ci-ops agent, separate invocation): run 37684971706, `test (3.11)` pass 46s, `test (3.12)` pass 43s → STABLE. Non-blocking: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19; Node 20 deprecation warnings.
+- Delta review of 7f4ca5b (parallel with delta G4): Security-reviewer agent dispatched (separate invocation) — APPROVED, INFO only (optional: assert bundled schema count == source count; state in the v0.6.0 note that exit 1 does not mean the SBOM is invalid).
 - Status: ✅
 
 ### G7 Docs Sync
 - Evidence (3.E1, documentation-writer agent, separate invocation): CHANGELOG (entry under `[Unreleased]`; closeout must rename to 0.6.1 + date), `docs/user-guide.md` troubleshooting (extended row + new "Cannot read file" row), R-12 resolved notes in `docs/release-checklist-v0.1.0.md` and `TASKS.md`; ADR-005 consistent with code. KB write-back: `.agent-kb/gotchas.md` (lenient Click path contract). ADR/architecture row written at G2.
+- Closeout 6.J1 (documentation-writer agent, separate invocation, 2026-10-08): CHANGELOG `[Unreleased]`→`[0.6.1] - 2026-10-08` + compare links; `CLAUDE.md` version 0.6.1; `.agent-kb/architecture.md` version 0.6.1 (+ test count 711→732, orchestrator fix); `docs/requirements.md` header + `tool_version` examples 0.6.1. `models.py`, agent-briefing, agent-operating-model not stale. KB write-backs: `.agent-kb/gotchas.md` (G7), `.agent-kb/architecture.md`.
 - Status: ✅
 
 ### G8 Release Readiness
@@ -153,6 +156,7 @@
 | ID | Description | Severity | Deferral Reason | Planned Release |
 |----|-------------|----------|-----------------|-----------------|
 | R-12 | Closed by this release (was deferred in v0.1.0) | INFO | Resolved here | v0.6.1 |
+| F-1 | Binary smoke not run by PR CI (only on tag); Test 5b in `tests/smoke/test_binary_smoke.sh` not run by any workflow; no test asserts every `schemas/` file is bundled by the spec | LOW | Process/CI improvements from G10 — out of scope for this PATCH | TBD |
 | R-04/R-05, R-08, R-09 | Remain deferred (parser signature refactor, format-specific NTIA paths, ISO 8601 validation) | INFO | Out of scope | TBD |
 
 ---

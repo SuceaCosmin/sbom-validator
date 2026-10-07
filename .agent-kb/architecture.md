@@ -7,10 +7,10 @@
 
 | Property | Value |
 |----------|-------|
-| **Current version** | `0.6.0` (source of truth: `pyproject.toml`) |
+| **Current version** | `0.6.1` (source of truth: `pyproject.toml`) |
 | **Supported formats** | 5: `spdx`, `spdx-tv`, `spdx-yaml`, `spdx3-jsonld`, `cyclonedx` |
 | **Source modules** | 17: 12 in `src/sbom_validator/` + 5 parsers in `parsers/` |
-| **Test count** | 711 collected (run `poetry run pytest --co -q` for the current count) |
+| **Test count** | 732 collected (run `poetry run pytest --co -q` for the current count) |
 | **Coverage target** | ≥ 90% (`poetry run pytest --cov=sbom_validator --cov-fail-under=90`) |
 | **ADR count** | 10 (ADR-001 through ADR-010) in `docs/architecture/` |
 | **Python** | 3.11+ (3.11 and 3.12 tested in CI) |

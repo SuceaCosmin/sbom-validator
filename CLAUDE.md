@@ -9,7 +9,7 @@
 
 `sbom-validator` is a Python CLI tool that validates SBOM files against format schemas and NTIA minimum element requirements. It is intended for CI/CD pipelines. Published as a pip/pipx package AND standalone binaries (Linux + Windows amd64) via GitHub Releases.
 
-- **Current version:** `0.6.0` (source of truth: `pyproject.toml`; mirrored in `src/sbom_validator/__init__.py`)
+- **Current version:** `0.6.1` (source of truth: `pyproject.toml`; mirrored in `src/sbom_validator/__init__.py`)
 
 ### Supported Formats
 

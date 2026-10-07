@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Planned as 0.6.1 (PATCH). The release closeout renames this heading and sets the date.
+## [0.6.1] - 2026-10-08
 
 ### Changed
 - The `validate` command's `FILE` argument is now declared with an `exists=True` path type, so `--help` and shell completion describe it as an existing path. A missing file or a directory passed as `FILE` still produces the structured `ERROR` result: exit code `2`, text or JSON output on stdout, and reports written when `--report-dir` is given. There is no change in observable behaviour and no migration is needed. (Review item R-12)
@@ -165,7 +165,9 @@ Planned as 0.6.1 (PATCH). The release closeout renames this heading and sets the
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...v0.3.0
