@@ -126,8 +126,8 @@
 - Status: ✅
 
 ### G8 Release Readiness
-- Evidence:
-- Status:
+- Evidence: Release-manager agent dispatched (separate invocation). Verdict: **NO-GO**. Locally built Windows binary (PyInstaller) passes version/compat checks and smoke Test 5b (missing file + `--format json` → exit 2, valid JSON, ERROR), but `scripts/smoke-test-binary.sh` = 5 pass / 9 fail: `FileNotFoundError _MEI*/schemas/spdx.schema.json`. Orchestrator confirmed `sbom_validator.spec` `datas` bundles only 4 of 13 files in `src/sbom_validator/schemas/` (missing `spdx.schema.json`, `jsf-0.82.schema.json`, `spdx-3.0.1.schema.json`, CDX 1.3/1.4/1.5). Pre-existing (spec untouched by this branch; likely present in the v0.6.0 binary) and would fail `release.yml` smoke at tag time. Also: Test 5b exists only in `tests/smoke/test_binary_smoke.sh`, which no workflow calls. Orchestrator note: the report's claim that this diff touches `schema_validator.py`/`test_schema_bundle.py` is wrong (diff is cli.py, tests, smoke script, version).
+- Status: ❌ (awaiting human scope decision)
 
 ### G9 Token Analytics
 - Evidence:
