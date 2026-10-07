@@ -69,7 +69,7 @@
 | 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ✅ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
 | 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
 | 5.S1 | Fix `sbom_validator.spec`: bundle all `src/sbom_validator/schemas/*` (glob); make `scripts/smoke-test-binary.sh` also assert missing-file `--format json` → exit 2 + valid JSON ERROR (Test 5b equivalent); rebuild binary locally and get BOTH smoke scripts fully green; CHANGELOG `Fixed` entry | Developer | `feature/click-path-exists` | 5.H1 | ✅ | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | Local binary smoke 0 failures; spec bundles all 13 schema files |
-| 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ⏳ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
+| 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ✅ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
 | 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); re-run after 5.S2 | Release Manager | `feature/click-path-exists` | 5.S2 | ❌ | Release brief | All gates pass |
 | 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ⏳ | `docs/releases/token-report-v0.6.1.html` | Generated |
 | 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
@@ -116,10 +116,12 @@
 
 ### G4 Quality Review
 - Evidence: Reviewer agent dispatched (separate invocation, parallel with G5); verdict: APPROVED. 0 critical, 0 major, 3 minor, 3 info. Minors (non-blocking, carried as follow-ups): (a) tests tag FR-01 for read-failure ERROR while requirements.md defines FR-01 as Format Auto-Detection; (b) `test_missing_file_report_json_records_error_status` uses weak `"ERROR" in json.dumps(data)`; (c) `TestLenientExistingPath` tagged FR-13 though it tests param-type internals. Compatibility Contract preserved.
+- Re-review of 5.S1 (commit 36c112d): Reviewer agent dispatched (separate invocation); verdict APPROVED, 0 critical/major, 2 minor (spec glob also bundles `.gitkeep` → filter `.json`/`.xsd`; smoke script needs `python3` on PATH → add `python` fallback), gotchas.md wording optional tweak.
 - Status: ✅
 
 ### G5 Security
 - Evidence: Security-reviewer agent dispatched (separate invocation, parallel with G4); verdict: APPROVED. No CRITICAL/MAJOR; INFO only. No fail-open path (probed directory, /dev/null, empty string, 5000-char name, nul → all ERROR exit 2). No dependency/workflow diff. FIFO blocking read is pre-existing, LOW.
+- Re-review of 5.S1 (commit 36c112d): Security-reviewer agent dispatched (separate invocation, parallel); verdict APPROVED, no CRITICAL/MAJOR. Fail-closed before fix (crash exit 1 never a false PASS). MINOR: CHANGELOG should state v0.6.0 standalone binaries fail JSON validation with exit 1 (can be mistaken for validation FAIL; pip/pipx unaffected) — confirm v0.6.0 impact; optional: exclude symlinks/.gitkeep from glob.
 - Status: ✅
 
 ### G6 CI Stability
