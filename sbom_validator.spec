@@ -10,6 +10,14 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 src_root = Path(SPECPATH)
 schemas_dir = src_root / "src" / "sbom_validator" / "schemas"
 
+# Bundle EVERY bundled schema (sorted, files only) so a newly added schema can never be
+# silently omitted from the binary. An empty directory means a broken checkout: fail the build.
+_schema_datas = [
+    (str(path), "schemas") for path in sorted(schemas_dir.iterdir()) if path.is_file()
+]
+if not _schema_datas:
+    raise SystemExit(f"sbom_validator.spec: no schema files found in {schemas_dir}")
+
 # Bundle data files from packages that use non-Python assets at runtime
 _extra_datas = (
     collect_data_files("rfc3987_syntax")
@@ -22,12 +30,7 @@ a = Analysis(
     [str(src_root / "src" / "sbom_validator" / "cli.py")],
     pathex=[str(src_root / "src")],
     binaries=[],
-    datas=[
-        (str(schemas_dir / "spdx-2.3.schema.json"), "schemas"),
-        (str(schemas_dir / "cyclonedx-1.6.schema.json"), "schemas"),
-        (str(schemas_dir / "cyclonedx-1.6.schema.xsd"), "schemas"),
-        (str(schemas_dir / "cyclonedx-spdx.xsd"), "schemas"),
-    ] + _extra_datas,
+    datas=_schema_datas + _extra_datas,
     hiddenimports=[
         "jsonschema.validators",
         "jsonschema._format",

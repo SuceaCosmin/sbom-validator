@@ -73,8 +73,33 @@ run "CDX XML valid-full       → PASS exit 0"  0 "PASS"  validate "$FIXTURES/cy
 run "CDX XML invalid-schema   → FAIL exit 1"  1 "FAIL"  validate "$FIXTURES/cyclonedx/invalid-schema.cdx.xml"
 run "CDX XML missing-supplier → FAIL exit 1"  1 "FAIL"  validate "$FIXTURES/cyclonedx/missing-supplier.cdx.xml"
 
+# --- SPDX 3.x JSON-LD (spdx-3.0.1 schema must be bundled) ---
+run "SPDX3 valid-minimal   → PASS exit 0"     0 "PASS"  validate "$FIXTURES/spdx/valid-minimal.spdx3.jsonld"
+run "SPDX3 missing-supplier → FAIL exit 1"    1 "FAIL"  validate "$FIXTURES/spdx/missing-supplier.spdx3.jsonld"
+
+# --- CycloneDX 1.3 / 1.4 / 1.5 (their JSON and XSD schemas must be bundled) ---
+for CDX_VERSION in 1.3 1.4 1.5; do
+  run "CDX $CDX_VERSION JSON valid-minimal → PASS exit 0" 0 "PASS"     validate "$FIXTURES/cyclonedx/valid-minimal-$CDX_VERSION.cdx.json"
+  run "CDX $CDX_VERSION XML valid-minimal  → PASS exit 0" 0 "PASS"     validate "$FIXTURES/cyclonedx/valid-minimal-$CDX_VERSION.cdx.xml"
+done
+
 # --- JSON output format ---
 run "JSON output contains 'status' key"       0 '"status"'  validate --format json "$FIXTURES/spdx/valid-full.spdx.json"
+
+# --- Missing file with --format json (R-12): exit 2, valid JSON on stdout, status ERROR ---
+MISSING_JSON_EXIT=0
+MISSING_JSON_OUTPUT=$("$BINARY" validate nonexistent-file.json --format json 2>/dev/null)   || MISSING_JSON_EXIT=$?
+if [ "$MISSING_JSON_EXIT" -eq 2 ]; then
+  ok "missing file --format json → exit 2"
+else
+  fail "missing file --format json — expected exit 2, got $MISSING_JSON_EXIT"
+fi
+MISSING_JSON_STATUS=$(echo "$MISSING_JSON_OUTPUT"   | python3 -c "import sys, json; print(json.load(sys.stdin).get('status'))" 2>/dev/null || true)
+if [ "$MISSING_JSON_STATUS" = "ERROR" ]; then
+  ok "missing file --format json → stdout is valid JSON with status ERROR"
+else
+  fail "missing file --format json — stdout not valid JSON with status ERROR: $MISSING_JSON_OUTPUT"
+fi
 
 # --- Report generation ---
 REPORT_TMP=$(mktemp -d)
