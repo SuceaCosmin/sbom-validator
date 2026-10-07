@@ -64,7 +64,7 @@
 | 3.E1 | Docs sync: CHANGELOG `[0.6.1]`; `docs/user-guide.md` troubleshooting (missing file / directory); mark R-12 resolved in `docs/release-checklist-v0.1.0.md` (lines 41, 79) and `TASKS.md:143`; ADR-005 consistency check | Documentation Writer | `feature/click-path-exists` | 2.C2 | ✅ | `CHANGELOG.md`, `docs/user-guide.md`, `docs/release-checklist-v0.1.0.md`, `TASKS.md` | Docs match behaviour; keep-a-changelog format |
 | 3.F1 | Independent quality review (G4) | Reviewer | `feature/click-path-exists` | 2.D2, 3.E1 | ✅ | Findings + verdict | No open CRITICAL/MAJOR |
 | 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ✅ | Findings + verdict | APPROVED/CONDITIONAL |
-| 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ⏳ | CI report | `test (3.11)`, `test (3.12)` green |
+| 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ✅ | CI report | `test (3.11)`, `test (3.12)` green |
 | 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ⏳ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
 | 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
 | 6.I1 | Release readiness (G8) | Release Manager | `feature/click-path-exists` | 5.H1 | ⏳ | Release brief | All gates pass |
@@ -118,8 +118,8 @@
 - Status: ✅
 
 ### G6 CI Stability
-- Evidence:
-- Status:
+- Evidence: CI-ops agent dispatched (separate invocation). Draft PR #23, run 37682088825: `test (3.11)` pass (ruff, format, mypy 18 files clean, 732 passed, cov 96.15%), `test (3.12)` pass. No fixes needed. NOTE: smoke Test 5b is NOT run by PR CI — `scripts/smoke-test-binary.sh` only runs in release.yml on `v*.*.*` tag pushes; needs a local binary smoke run as pre-tag evidence (G8). Deviation recorded: PR opened as draft before closeout (human-approved) so CI could run.
+- Status: ✅
 
 ### G7 Docs Sync
 - Evidence (3.E1, documentation-writer agent, separate invocation): CHANGELOG (entry under `[Unreleased]`; closeout must rename to 0.6.1 + date), `docs/user-guide.md` troubleshooting (extended row + new "Cannot read file" row), R-12 resolved notes in `docs/release-checklist-v0.1.0.md` and `TASKS.md`; ADR-005 consistent with code. KB write-back: `.agent-kb/gotchas.md` (lenient Click path contract). ADR/architecture row written at G2.
