@@ -62,8 +62,8 @@
 | 2.D1 | Extend binary smoke: keep test 5 (exit 2), add JSON-on-stdout assertion for missing file | Tester | `feature/click-path-exists` | 2.C2 | ✅ | `tests/smoke/test_binary_smoke.sh` | Script passes against a built binary (or CI) |
 | 2.D2 | Verify `tests/integration/test_integration.py::TestErrorPipeline::test_nonexistent_file_exits_two` and unit tests (`tests/unit/test_cli_*.py`) pass; full suite + coverage >= 90 | Tester | `feature/click-path-exists` | 2.C2 | ✅ | Test run evidence | `test`, `coverage` commands green |
 | 3.E1 | Docs sync: CHANGELOG `[0.6.1]`; `docs/user-guide.md` troubleshooting (missing file / directory); mark R-12 resolved in `docs/release-checklist-v0.1.0.md` (lines 41, 79) and `TASKS.md:143`; ADR-005 consistency check | Documentation Writer | `feature/click-path-exists` | 2.C2 | ✅ | `CHANGELOG.md`, `docs/user-guide.md`, `docs/release-checklist-v0.1.0.md`, `TASKS.md` | Docs match behaviour; keep-a-changelog format |
-| 3.F1 | Independent quality review (G4) | Reviewer | `feature/click-path-exists` | 2.D2, 3.E1 | ⏳ | Findings + verdict | No open CRITICAL/MAJOR |
-| 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ⏳ | Findings + verdict | APPROVED/CONDITIONAL |
+| 3.F1 | Independent quality review (G4) | Reviewer | `feature/click-path-exists` | 2.D2, 3.E1 | ✅ | Findings + verdict | No open CRITICAL/MAJOR |
+| 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ✅ | Findings + verdict | APPROVED/CONDITIONAL |
 | 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ⏳ | CI report | `test (3.11)`, `test (3.12)` green |
 | 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ⏳ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
 | 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
@@ -110,12 +110,12 @@
 - Status: ✅
 
 ### G4 Quality Review
-- Evidence:
-- Status:
+- Evidence: Reviewer agent dispatched (separate invocation, parallel with G5); verdict: APPROVED. 0 critical, 0 major, 3 minor, 3 info. Minors (non-blocking, carried as follow-ups): (a) tests tag FR-01 for read-failure ERROR while requirements.md defines FR-01 as Format Auto-Detection; (b) `test_missing_file_report_json_records_error_status` uses weak `"ERROR" in json.dumps(data)`; (c) `TestLenientExistingPath` tagged FR-13 though it tests param-type internals. Compatibility Contract preserved.
+- Status: ✅
 
 ### G5 Security
-- Evidence:
-- Status:
+- Evidence: Security-reviewer agent dispatched (separate invocation, parallel with G4); verdict: APPROVED. No CRITICAL/MAJOR; INFO only. No fail-open path (probed directory, /dev/null, empty string, 5000-char name, nul → all ERROR exit 2). No dependency/workflow diff. FIFO blocking read is pre-existing, LOW.
+- Status: ✅
 
 ### G6 CI Stability
 - Evidence:
