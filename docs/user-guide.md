@@ -350,7 +350,8 @@ fi
 | Error | Cause | Fix |
 |---|---|---|
 | `Status: ERROR` — Unrecognized or unsupported SBOM format | File is SPDX 2.2, CycloneDX 1.2, or another format/version not supported | Regenerate the SBOM targeting SPDX 2.3 (JSON, YAML, or Tag-Value) or CycloneDX 1.3–1.6 (JSON or XML) |
-| `Status: ERROR` — file not found | The path passed to `validate` does not exist or is misspelled | Verify the path with `ls` or `dir`; use an absolute path if in doubt |
+| `Status: ERROR` — file not found | The path passed to `validate` does not exist or is misspelled | Verify the path with `ls` or `dir`; use an absolute path if in doubt. The tool still exits `2`, prints the ERROR result (text or JSON) to stdout, and writes reports if `--report-dir` is set |
+| `Status: ERROR` — Cannot read file | The path passed to `validate` is a directory, or the file is not readable | Pass the path of the SBOM file itself, not its directory, and check read permissions. Exit code is `2`, same as a missing file |
 | `Status: ERROR` — invalid JSON | The file is not valid JSON (truncated, BOM prefix, encoding issue) | Validate the JSON separately with `python -m json.tool <file>` |
 | `Status: FAIL` — FR-02 or FR-03 schema errors | The SBOM does not conform to the SPDX 2.3 or CycloneDX 1.6 JSON schema | Read the reported field paths and fix the structural errors in the SBOM; NTIA checks are skipped until schema passes |
 | `Status: FAIL` — FR-04 missing supplier | One or more packages lack a `supplier` field, or the value is `NOASSERTION` | Add a `supplier` field in the form `"Organization: <name>"` or `"Tool: <name>"` to every package |

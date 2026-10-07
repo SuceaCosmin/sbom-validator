@@ -420,9 +420,8 @@ class TestCliJsonOutputError:
                 "json",
             ],
         )
-        # Click's Path(exists=True) fires before our code; we still need valid JSON
-        # output. If Click has not yet been wired to produce JSON on path errors,
-        # this test will fail until the developer handles the case.
+        # A missing file must still yield valid JSON on stdout (structured ERROR result,
+        # FR-11); the FILE argument type defers path problems to validate().
         data = json.loads(result.output)
         assert isinstance(data, dict)
 

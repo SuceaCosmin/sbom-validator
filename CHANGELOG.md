@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-08
+
+### Changed
+- The `validate` command's `FILE` argument is now declared with an `exists=True` path type, so `--help` and shell completion describe it as an existing path. A missing file or a directory passed as `FILE` still produces the structured `ERROR` result: exit code `2`, text or JSON output on stdout, and reports written when `--report-dir` is given. There is no change in observable behaviour and no migration is needed. (Review item R-12)
+
+### Fixed
+- Standalone binaries now bundle all JSON schemas. Previously `sbom_validator.spec` listed only four schema files, so JSON validation crashed in the binary with `FileNotFoundError` for `schemas/spdx.schema.json` (and the SPDX 3.x, CycloneDX 1.3/1.4/1.5 and `jsf-0.82` schemas were missing too). The v0.6.0 standalone binaries were affected: their spec did not bundle `spdx.schema.json` or the SPDX 3.x and CycloneDX 1.3/1.4/1.5 schemas, so JSON validation failed with exit code `1` and a crash trace, which can be mistaken for a validation `FAIL` in CI. pip/pipx installs were not affected. Upgrade to 0.6.1.
+- ADR-005 incorrectly stated that `FILE` used `click.Path(exists=True)` while the code used `exists=False`. The ADR is corrected by Amendment 1, which documents the lenient path type that preserves the structured `ERROR` contract.
+
 ## [0.6.0] - 2026-04-30
 
 ### Added
@@ -156,7 +165,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 358 unit and integration tests with 97% code coverage
 - Zero mypy errors, zero ruff lint errors
 
-[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/SuceaCosmin/sbom-validator/compare/v0.2.2...v0.3.0

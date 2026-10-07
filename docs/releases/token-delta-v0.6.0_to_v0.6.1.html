@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Token Delta Report — v0.6.0 to v0.6.1</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2937; background: #f8fafc; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 0.5rem; vertical-align: top; }
+    th { background: #eff6ff; }
+    .muted { color: #6b7280; font-size: 0.9rem; }
+    .tag-est { color: #b45309; font-size: 0.8rem; font-weight: bold; }
+    .tag-measured { color: #166534; font-size: 0.8rem; font-weight: bold; }
+    .bar-outer { background: #e5e7eb; border-radius: 4px; height: 12px; width: 100%; }
+    .bar-inner { background: #3b82f6; border-radius: 4px; height: 12px; }
+    .bar-inner-orange { background: #f59e0b; border-radius: 4px; height: 12px; }
+    .verdict-improved { color: #166534; font-weight: bold; }
+    .verdict-flat { color: #b45309; font-weight: bold; }
+    .verdict-regressed { color: #dc2626; font-weight: bold; }
+    ul li { margin-bottom: 0.3rem; }
+    .session-label { font-weight: bold; color: #1e3a8a; }
+    .subtotal-row { background: #f0f9ff; font-weight: bold; }
+    .total-row { background: #dbeafe; font-weight: bold; }
+    .note-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 0.6rem 0.8rem; margin-top: 0.6rem; font-size: 0.9rem; color: #78350f; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+<h1>Token Delta Report — v0.6.0 to v0.6.1</h1>
+<p class="muted">Measured v0.6.1 (telemetry) vs v0.6.0 (orchestrator estimates). Cutoff 2026-10-07T20:54:39Z.</p>
+<div class="card"><h2>Comparison Metadata</h2><ul>
+<li>Previous release: <strong>v0.6.0</strong>: new format feature (SPDX 3.x JSON-LD), 2 sessions, 19 dispatches, ~600,000 tokens <span class="tag-est">EST</span> (input+output basis, no telemetry)</li>
+<li>Current release: <strong>v0.6.1</strong>: patch (R-12 lenient <code>click.Path</code>, plus human-approved binary-spec scope change), 1 session, 17 dispatches, <span class="tag-measured">MEASURED</span></li>
+<li>Scope note: <strong>not like-for-like</strong>. New-format feature vs one-parameter patch; the patch grew a packaging fix after the G8 NO-GO.</li>
+<li><strong>Basis mismatch:</strong> v0.6.0 totals were estimated on a fresh input+output basis, split into ranges. v0.6.1 is measured. I compare fresh in+out directly (best available common basis) and report cost-weighted input-eq for v0.6.1 only. Treat deltas as directional.</li></ul></div>
+<div class="card"><h2>Topline Delta</h2><table><tr><th>Metric</th><th>Previous (v0.6.0)</th><th>Current (v0.6.1)</th><th>Delta</th><th>Notes</th></tr>
+<tr><td>Total tokens (fresh in+out)</td><td>~600,000 <span class="tag-est">EST</span></td><td>110,801 <span class="tag-measured">MEASURED</span></td><td>about -82%</td><td>Fresh basis excludes cache. The v0.6.0 estimate may have included some cached traffic, so the true drop may be smaller.</td></tr>
+<tr><td>Cost-weighted input-equivalent</td><td>not available</td><td>4,221,334 <span class="tag-measured">MEASURED</span></td><td>n/c</td><td>Cache read 20,284,450; cache creation 1,753,738.</td></tr>
+<tr><td>Agent dispatches</td><td>19</td><td>17</td><td>-2</td><td>A patch release still needed 17 dispatches; 6 were rework.</td></tr>
+<tr><td>Sessions</td><td>2</td><td>1</td><td>-1</td><td>No session-boundary reload penalty (v0.6.0: ~30 to 50k <span class="tag-est">EST</span>).</td></tr>
+<tr><td>Rework tokens</td><td>~60,000 to 90,000 <span class="tag-est">EST</span> (fresh basis)</td><td>718,799 input-eq <span class="tag-measured">MEASURED</span> (fresh in+out of the 6 rework dispatches: 1,081)</td><td>n/c on tokens</td><td>Different bases; see the ratio row.</td></tr>
+<tr><td>Rework ratio</td><td>~10 to 15% <span class="tag-est">EST</span></td><td>17.0% of total; 27.7% of subagent spend</td><td>Regressed</td><td>Driven by the G8 NO-GO chain. Roughly +2 to +7 pts on a total basis.</td></tr>
+<tr><td>CI/release failure overhead</td><td>0 CI cycles; no G8 NO-GO (rolled into 6.M1)</td><td>CI: 0 failing runs (115,003 for 2 ci-ops dispatches). G8: NO-GO 190,186 + re-run 109,550</td><td>Regressed on release gate</td><td>CI clean again; the release gate cost a NO-GO cycle.</td></tr>
+<tr><td>Orchestrator share</td><td>not separated</td><td>38.6% of input-eq</td><td>n/c</td><td>First release where the main thread is measured; it is the largest single sink.</td></tr></table></div>
+<div class="card"><h2>Per-Gate Delta</h2><table><tr><th>Gate</th><th>v0.6.0 (EST, fresh)</th><th>v0.6.1 input-eq (MEASURED)</th><th>Comment</th></tr>
+<tr><td>G1 Planning</td><td>~18,000 to 22,000</td><td>509,107</td><td>Cache creation dominates; output only 1,214.</td></tr>
+<tr><td>G2 Architecture</td><td>~45,000 to 55,000 (3 dispatches)</td><td>227,472 (1 dispatch)</td><td>Single dispatch this time.</td></tr>
+<tr><td>G3 TDD Build</td><td>~235,000 to 256,000</td><td>329,436</td><td>Patch scope: 3 dispatches vs ~10.</td></tr>
+<tr><td>G4 Quality</td><td>~100,000 to 126,000 incl. fix loop</td><td>213,157 (review + re-review)</td><td>Fix-round cost tracked separately.</td></tr>
+<tr><td>G5 Security</td><td>~50,000 to 62,000</td><td>195,695</td><td>Includes re-review.</td></tr>
+<tr><td>G6 CI</td><td>folded into fix loop</td><td>115,003</td><td>Separate ci-ops dispatches now.</td></tr>
+<tr><td>G7 Docs</td><td>~22,000 to 28,000</td><td>242,270</td><td>Heavier than v0.6.0 despite smaller scope (20 turns).</td></tr>
+<tr><td>G8 Release</td><td>~22,000 to 28,000</td><td>299,736</td><td>Two attempts; real defect found.</td></tr>
+<tr><td>Scope change + fix round</td><td>n/a</td><td>412,872</td><td>New in v0.6.1.</td></tr></table></div>
+<div class="card"><h2>Per-Agent Delta</h2><p class="muted">v0.6.0 shown as EST ranges (fresh basis); v0.6.1 as measured input-eq and output tokens. Not directly subtractable; read shares and dispatch counts.</p><table><tr><th>Agent</th><th>v0.6.0 (EST)</th><th>v0.6.1 input-eq / output (MEASURED)</th><th>Dispatches</th><th>Comment</th></tr><tr><td>developer</td><td>~183-226k</td><td>572,011 / 2,070 out</td><td>~10 to 4</td><td>Includes rework dispatches 5.S1 and fix round.</td></tr><tr><td>planner</td><td>~18-22k</td><td>509,107 / 1,214 out</td><td>1 to 1</td><td>Same count; v0.6.1 cache load is disproportionate to scope.</td></tr><tr><td>release-manager</td><td>~22-28k</td><td>299,736 / 675 out</td><td>1 to 2</td><td>G8 NO-GO + GO.</td></tr><tr><td>documentation-writer</td><td>~22-28k</td><td>242,270 / 1,618 out</td><td>1 to 1</td><td>Heavier relative to scope.</td></tr><tr><td>architect</td><td>~45-55k</td><td>227,472 / 1,176 out</td><td>3 to 1</td><td>Fewer dispatches; ADR amendment only.</td></tr><tr><td>tester</td><td>~97-118k</td><td>216,247 / 5,578 out</td><td>5 to 2</td><td>Smaller patch scope.</td></tr><tr><td>reviewer</td><td>~55-68k</td><td>213,157 / 403 out</td><td>1 to 2</td><td>Re-review of the 5.S1 diff added a dispatch.</td></tr><tr><td>security-reviewer</td><td>~50-62k</td><td>195,695 / 123 out</td><td>1 to 2</td><td>Re-review added a dispatch.</td></tr><tr><td>ci-ops</td><td>(inside dev fix loop)</td><td>115,003 / 443 out</td><td>0 to 2</td><td>New separate ci-ops dispatches (initial + re-run).</td></tr><tr><td>Orchestrator</td><td>not separated</td><td>1,630,634 / 96,785 out</td><td>n/a</td><td>Largest sink.</td></tr><tr><td>Token analyst</td><td>~25-35k</td><td>not yet measured</td><td>1 to 1</td><td>Outside cutoff.</td></tr></table></div><div class="card"><h2>Adopted Improvements and Regressions</h2><h3>Adopted</h3><ul>
+<li>Measured telemetry replaces estimated session totals (resolves the long-standing "record dispatch tokens" recommendation).</li>
+<li>Architect consolidated to a single dispatch (v0.6.0 used 3).</li>
+<li>Single session; no context-reload penalty.</li>
+<li>Zero CI lint/format cycles for the sixth consecutive release; no reactive doc fix dispatch.</li></ul>
+<h3>Regressions / New Friction</h3><ul>
+<li>G8 NO-GO on a pre-existing spec defect, followed by a six-dispatch rework chain; measured rework ratio is above v0.6.0's estimate.</li>
+<li>Two cold-started re-reviews of the 5.S1 diff, then a separate minors fix round and a second G8/G6, all repeating the same verification.</li>
+<li>Planner and docs-writer cost is disproportionate for a patch (planner is the largest subagent dispatch).</li>
+<li>Orchestrator main thread is 38.6% of spend, with output dominated by long tracker evidence.</li></ul></div>
+<div class="card"><h2>Efficiency Verdict and Forecast</h2>
+<p>Verdict: <span class="verdict-flat">Flat</span> (scope-normalised). Absolute spend fell sharply and there was no session boundary penalty, but the scope was a patch, so that drop is expected. On indicators that do not depend on scope the picture is mixed: rework ratio regressed (17.0% measured vs ~10 to 15% estimated), the release gate cost a NO-GO cycle, and the orchestrator and planner are heavy for the work. Confidence: Low to Medium (basis mismatch).</p>
+<p>Projected next-release token range <span class="tag-est">EST</span>: a similar patch with the PR-time binary smoke in place and minors batched: <strong>~2.6M to 3.6M input-eq</strong> (~80k to 110k fresh in+out). A v0.6.0-scale feature release on the measured basis: <strong>~8M to 14M input-eq</strong> (extrapolated; there is no prior measured feature release, so low confidence).</p></div>
+<div class="card"><h2>Methodology and Confidence</h2><p class="muted">v0.6.1 values: <span class="tag-measured">MEASURED</span> from <code>telemetry-v0.6.1.json</code> (session 17e6ceae, cutoff 2026-10-07T20:54:39Z; G9 itself, G10 and closeout excluded). v0.6.0 values: <span class="tag-est">EST</span> as published in <code>token-report-v0.6.0.html</code> (orchestrator summaries apportioned; +/-15 to 25% per agent). Assumptions: (a) main-thread session totals and subagent totals are disjoint (inferred from cache_creation magnitudes); (b) input-equivalent = input + 0.10 cache_read + 1.25 cache_creation; (c) rework classification (5.S1, 2 x 5.S2, fix round, G8 attempt 2, G6 re-run) is analyst judgment. The percent change in the topline row compares different bases and is directional only. Forecast ranges are estimates.</p></div>
+</div>
+</body>
+</html>
