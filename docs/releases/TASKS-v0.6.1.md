@@ -55,7 +55,7 @@
 
 | ID | Task | Agent | Branch | Dependencies | Status | Deliverables | Acceptance Criteria |
 |----|------|-------|--------|--------------|--------|--------------|---------------------|
-| 0.A1 | Create branch `feature/click-path-exists` from `develop` (`git checkout develop && git pull && git checkout -b ...`) | Developer | `feature/click-path-exists` | None | ⏳ | Local branch | Branch exists, based on up-to-date develop (done: branched from `6d72d63`, which adds the hil-team migration commit on top of develop, per human decision) |
+| 0.A1 | Create branch `feature/click-path-exists` from `develop` (`git checkout develop && git pull && git checkout -b ...`) | Developer | `feature/click-path-exists` | None | ✅ | Local branch | Branch exists, based on up-to-date develop (done: branched from `6d72d63`, which adds the hil-team migration commit on top of develop, per human decision) |
 | 0.A2 | Create `docs/releases/TASKS-v0.6.1.md` (committed with branch) | Planner | `feature/click-path-exists` | 0.A1 | ✅ | This file | Mirrors every task |
 | 1.B1 | Design: interception of `click.Path(exists=True)` failure; decide directory behaviour (`dir_okay`); write ADR-005 Amendment 1 and correct ADR-005 text; update ADR summary row in `.agent-kb/architecture.md` if needed | Architect | `feature/click-path-exists` | 0.A2 | ✅ | `docs/architecture/ADR-005-cli-design.md`; interface stub for the path type; note if locked surface would change (then HX escalation) | ADR matches intended code; contract unchanged; no locked-surface change |
 | 2.C1 | Write failing tests: missing file JSON (valid JSON, status ERROR, keys status/file/format_detected/issues, nothing on stdout other than JSON), missing file text, exit 2, `--report-dir` + missing file writes `sbom-report-<basename>.html/.json`, directory as FILE, existing file still PASS/FAIL; unit tests of the path type; fix stale comment at `test_cli_json_output.py:423`; FR-11/12/13 (+ report-dir FR, tester to confirm ID in requirements.md) referenced | Tester | `feature/click-path-exists` | 1.B1 | ✅ | New `tests/unit/test_cli_missing_file.py`; touch `tests/unit/test_cli_json_output.py`, `tests/unit/test_cli_text_output.py` as needed | New tests fail for the right reason; existing tests unchanged in intent; ruff clean |
@@ -73,7 +73,7 @@
 | 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); attempt 2 GO | Release Manager | `feature/click-path-exists` | 5.S2 | ✅ | Release brief | All gates pass |
 | 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ✅ | `docs/releases/token-report-v0.6.1.html` | Generated |
 | 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
-| 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
+| 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
 | 6.J1 | Release closeout: update `drift_prone_docs` (CLAUDE.md version, `.agent-kb/architecture.md`, `docs/requirements.md` header + JSON example versions, `models.py` docstring) | Documentation Writer | `feature/click-path-exists` | 6.I1 | ⏳ | Listed files | No stale version numbers |
 | 7.K1 | Final human gate (H3) and release action | Human + Release Manager | `feature/click-path-exists` | 5.H2, 6.I3, 6.I4, 6.J1 | ⏳ | Approval record | GO/NO-GO recorded |
 
@@ -143,8 +143,8 @@
 - Status: ✅
 
 ### G10 Workflow Evaluation
-- Evidence:
-- Status:
+- Evidence: Workflow-analyst agent dispatched (separate invocation). Report: `docs/releases/workflow-report-v0.6.1.html`. Verdict NEEDS ATTENTION (not Critical): all separate-agent gates dispatched; 0 CI lint/format cycles; G4 MAJOR findings 2→0 vs v0.6.0. Gaps: pre-existing spec defect found only at G8 (PR CI never builds the binary); rework 17%; planner 12.1% of spend on a one-parameter change; **fix commit 7f4ca5b changed the spec glob after the 5.S2 verdicts with no G4/G5 delta pass** (orchestrator action: delta re-review dispatched, see below); smoke Test 5b in `tests/smoke/test_binary_smoke.sh` is not run by any workflow. Nine ranked recommendations (repo + plugin) in the report.
+- Status: ✅
 
 ---
 
