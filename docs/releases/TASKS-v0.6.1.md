@@ -9,7 +9,7 @@
 - **Base branch:** `develop`
 - **Target merge branch:** `develop` (via PR), then `master` per `.agent-kb/runbooks/release.md`
 - **Owner:** Orchestrator
-- **Status:** `🔄 In Progress` (H1 approved 2026-10-07; G0–G10 and closeout PASS; awaiting H2 PR review and H3)
+- **Status:** `✅ Ready for Release` (H1 approved 2026-10-07; G0–G10 and closeout PASS; awaiting H2 PR review and H3)
 
 ## Status Legend
 
@@ -67,7 +67,7 @@
 | 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ✅ | Findings + verdict | APPROVED/CONDITIONAL |
 | 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ✅ | CI report | `test (3.11)`, `test (3.12)` green |
 | 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ✅ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
-| 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
+| 5.H2 | (PR #23 opened early as draft for CI, human-approved; now ready for review) Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ✅ | PR URL | PR open; human reviews (H2) |
 | 5.S1 | Fix `sbom_validator.spec`: bundle all `src/sbom_validator/schemas/*` (glob); make `scripts/smoke-test-binary.sh` also assert missing-file `--format json` → exit 2 + valid JSON ERROR (Test 5b equivalent); rebuild binary locally and get BOTH smoke scripts fully green; CHANGELOG `Fixed` entry | Developer | `feature/click-path-exists` | 5.H1 | ✅ | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | Local binary smoke 0 failures; spec bundles all 13 schema files |
 | 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ✅ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
 | 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); attempt 2 GO | Release Manager | `feature/click-path-exists` | 5.S2 | ✅ | Release brief | All gates pass |
@@ -129,6 +129,7 @@
 - Evidence: CI-ops agent dispatched (separate invocation). Draft PR #23, run 37682088825: `test (3.11)` pass (ruff, format, mypy 18 files clean, 732 passed, cov 96.15%), `test (3.12)` pass. No fixes needed. NOTE: smoke Test 5b is NOT run by PR CI — `scripts/smoke-test-binary.sh` only runs in release.yml on `v*.*.*` tag pushes; needs a local binary smoke run as pre-tag evidence (G8). Deviation recorded: PR opened as draft before closeout (human-approved) so CI could run.
 - Re-run on HEAD 7f4ca5b (ci-ops agent, separate invocation): run 37684971706, `test (3.11)` pass 46s, `test (3.12)` pass 43s → STABLE. Non-blocking: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19; Node 20 deprecation warnings.
 - Delta review of 7f4ca5b (parallel with delta G4): Security-reviewer agent dispatched (separate invocation) — APPROVED, INFO only (optional: assert bundled schema count == source count; state in the v0.6.0 note that exit 1 does not mean the SBOM is invalid).
+- Final CI on closeout HEAD 9da9e73: run 37686745799, `test (3.11)` pass, `test (3.12)` pass.
 - Status: ✅
 
 ### G7 Docs Sync
