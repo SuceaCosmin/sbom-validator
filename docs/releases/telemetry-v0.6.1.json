@@ -1,0 +1,200 @@
+{
+  "generated_at": "2026-10-07T20:54:39.545297+00:00",
+  "release": "v0.6.1",
+  "session_source": "transcripts",
+  "sessions": [
+    {
+      "session_id": "17e6ceae-b10c-4cb4-846b-8ba619d4be69",
+      "project_name": "repos/sbom-validator",
+      "first_timestamp": "2026-10-07T20:12:39.870Z",
+      "last_timestamp": "2026-10-07T20:54:37.793Z",
+      "git_branch": "feature/click-path-exists",
+      "total_input_tokens": 332,
+      "total_output_tokens": 96785,
+      "total_cache_read": 12477775,
+      "total_cache_creation": 306020,
+      "model": "claude-sonnet-5-5",
+      "turn_count": 122,
+      "subagents": [
+        {
+          "agent_id": "agent-a1215a58cc39578f5",
+          "agent_type": "hil-team:release-manager",
+          "description": "G8 release readiness 6.I1",
+          "input_tokens": 36,
+          "output_tokens": 499,
+          "cache_read_tokens": 834547,
+          "cache_creation_tokens": 85356,
+          "turns": 18
+        },
+        {
+          "agent_id": "agent-a1227b0aefc3ec190",
+          "agent_type": "hil-team:planner",
+          "description": "Plan v0.6.1 R-12",
+          "input_tokens": 28,
+          "output_tokens": 1214,
+          "cache_read_tokens": 344080,
+          "cache_creation_tokens": 379737,
+          "turns": 14
+        },
+        {
+          "agent_id": "agent-a12be386c6e47eb25",
+          "agent_type": "hil-team:reviewer",
+          "description": "G4 re-review 5.S2",
+          "input_tokens": 14,
+          "output_tokens": 54,
+          "cache_read_tokens": 275065,
+          "cache_creation_tokens": 34011,
+          "turns": 7
+        },
+        {
+          "agent_id": "agent-a203c3aca2efaeaca",
+          "agent_type": "hil-team:documentation-writer",
+          "description": "3.E1 docs sync v0.6.1",
+          "input_tokens": 40,
+          "output_tokens": 1618,
+          "cache_read_tokens": 869921,
+          "cache_creation_tokens": 124190,
+          "turns": 20
+        },
+        {
+          "agent_id": "agent-a2561da914667ac6c",
+          "agent_type": "hil-team:ci-ops",
+          "description": "G6 CI stability 4.G1",
+          "input_tokens": 12,
+          "output_tokens": 304,
+          "cache_read_tokens": 201774,
+          "cache_creation_tokens": 41770,
+          "turns": 6
+        },
+        {
+          "agent_id": "agent-a40e9797cd76e383b",
+          "agent_type": "hil-team:developer",
+          "description": "G3b implement 2.C2",
+          "input_tokens": 20,
+          "output_tokens": 1305,
+          "cache_read_tokens": 386553,
+          "cache_creation_tokens": 59611,
+          "turns": 10
+        },
+        {
+          "agent_id": "agent-a41844614ea795889",
+          "agent_type": "hil-team:developer",
+          "description": "5.H1 version bump 0.6.1",
+          "input_tokens": 10,
+          "output_tokens": 246,
+          "cache_read_tokens": 176672,
+          "cache_creation_tokens": 22618,
+          "turns": 5
+        },
+        {
+          "agent_id": "agent-a44d8e4135a8d17b5",
+          "agent_type": "hil-team:security-reviewer",
+          "description": "G5 re-review 5.S2",
+          "input_tokens": 10,
+          "output_tokens": 73,
+          "cache_read_tokens": 165016,
+          "cache_creation_tokens": 53784,
+          "turns": 5
+        },
+        {
+          "agent_id": "agent-a54c1f469e64ae0b3",
+          "agent_type": "hil-team:developer",
+          "description": "5.S1 fix binary spec schemas",
+          "input_tokens": 24,
+          "output_tokens": 154,
+          "cache_read_tokens": 464299,
+          "cache_creation_tokens": 93204,
+          "turns": 12
+        },
+        {
+          "agent_id": "agent-a7e18e2aa4209d44a",
+          "agent_type": "hil-team:tester",
+          "description": "G3a failing tests 2.C1",
+          "input_tokens": 30,
+          "output_tokens": 5469,
+          "cache_read_tokens": 701263,
+          "cache_creation_tokens": 73799,
+          "turns": 15
+        },
+        {
+          "agent_id": "agent-a8296179d2a44c3f4",
+          "agent_type": "hil-team:ci-ops",
+          "description": "G6 CI re-run on PR 23",
+          "input_tokens": 8,
+          "output_tokens": 139,
+          "cache_read_tokens": 135958,
+          "cache_creation_tokens": 23198,
+          "turns": 4
+        },
+        {
+          "agent_id": "agent-a8398251e04b9e8bd",
+          "agent_type": "hil-team:architect",
+          "description": "G2 architecture 1.B1",
+          "input_tokens": 40,
+          "output_tokens": 1176,
+          "cache_read_tokens": 863025,
+          "cache_creation_tokens": 112904,
+          "turns": 20
+        },
+        {
+          "agent_id": "agent-a8b3de2c1b14788fa",
+          "agent_type": "hil-team:developer",
+          "description": "Combined fix round for minors",
+          "input_tokens": 42,
+          "output_tokens": 365,
+          "cache_read_tokens": 915436,
+          "cache_creation_tokens": 126662,
+          "turns": 21
+        },
+        {
+          "agent_id": "agent-a8d2c117c31f2a841",
+          "agent_type": "hil-team:security-reviewer",
+          "description": "G5 security review 3.F2",
+          "input_tokens": 14,
+          "output_tokens": 50,
+          "cache_read_tokens": 292473,
+          "cache_creation_tokens": 66154,
+          "turns": 7
+        },
+        {
+          "agent_id": "agent-a9824bf93089e86d4",
+          "agent_type": "hil-team:release-manager",
+          "description": "G8 re-run release readiness",
+          "input_tokens": 22,
+          "output_tokens": 176,
+          "cache_read_tokens": 435005,
+          "cache_creation_tokens": 52822,
+          "turns": 11
+        },
+        {
+          "agent_id": "agent-aa3375c5f1d7e47a7",
+          "agent_type": "hil-team:reviewer",
+          "description": "G4 quality review 3.F1",
+          "input_tokens": 22,
+          "output_tokens": 349,
+          "cache_read_tokens": 524399,
+          "cache_creation_tokens": 72529,
+          "turns": 11
+        },
+        {
+          "agent_id": "agent-aadb6a45e4e7b3595",
+          "agent_type": "hil-team:tester",
+          "description": "2.D1 smoke + 2.D2 verify",
+          "input_tokens": 12,
+          "output_tokens": 109,
+          "cache_read_tokens": 221189,
+          "cache_creation_tokens": 25369,
+          "turns": 6
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "session_count": 1,
+    "total_input_tokens": 332,
+    "total_output_tokens": 96785,
+    "total_cache_read": 12477775,
+    "total_cache_creation": 306020,
+    "agent_dispatch_count": 17
+  }
+}

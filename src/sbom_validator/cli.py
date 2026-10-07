@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,34 @@ from sbom_validator.report_writer import write_reports
 from sbom_validator.validator import validate
 
 logger = logging.getLogger(__name__)
+
+
+class _LenientExistingPath(click.Path):
+    """click.Path(exists=True) that defers path problems to validate().
+
+    Declaring exists=True documents the argument as an existing path (help
+    metavar, shell completion), but a missing or unreadable path must not abort
+    argument parsing: Click would emit a usage error (exit 2, stderr, no JSON,
+    no reports) and break the structured ERROR contract. The raw argument is
+    passed through unchanged so validate() reports an ERROR result (exit 2,
+    output on stdout, reports written). See ADR-005 Amendment 1.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(exists=True, file_okay=True, dir_okay=True)
+
+    def convert(
+        self,
+        value: str | os.PathLike[str],
+        param: click.Parameter | None,
+        ctx: click.Context | None,
+    ) -> str:
+        try:
+            super().convert(value, param, ctx)
+        except click.BadParameter:
+            # Intentionally swallowed: validate() produces the structured ERROR.
+            pass
+        return os.fspath(value)
 
 
 def _result_to_dict(result: ValidationResult) -> dict[str, Any]:
@@ -91,7 +120,7 @@ def main() -> None:
 
 
 @main.command(name="validate")
-@click.argument("file", type=click.Path(exists=False))
+@click.argument("file", type=_LenientExistingPath())
 @click.option(
     "--format",
     "output_format",

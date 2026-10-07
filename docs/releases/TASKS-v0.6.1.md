@@ -1,0 +1,173 @@
+# SBOM Validator — Release Task Tracker (v0.6.1)
+
+> Canonical execution tracker for the v0.6.1 release cycle (patch: closes deferral R-12).
+
+## Release Metadata
+
+- **Release:** `v0.6.1` (SemVer PATCH — no Compatibility Contract change; **confirm at H1**)
+- **Branch:** `feature/click-path-exists`
+- **Base branch:** `develop`
+- **Target merge branch:** `develop` (via PR), then `master` per `.agent-kb/runbooks/release.md`
+- **Owner:** Orchestrator
+- **Status:** `✅ Ready for Release` (H1 approved 2026-10-07; G0–G10 and closeout PASS; H2 done 2026-10-07; H3 GO 2026-10-08; release PR to master open, tag pending)
+
+## Status Legend
+
+| Symbol | Meaning |
+|--------|---------|
+| ✅ | Complete |
+| 🔄 | In Progress |
+| ⏳ | Pending |
+| 🔒 | Blocked |
+| ❌ | Failed / Needs Rework |
+
+---
+
+## Scope
+
+### In Scope
+- Close R-12: the `FILE` argument of `validate` (`src/sbom_validator/cli.py:94`) moves from `click.Path(exists=False)` to an `exists=True`-based path type.
+- Human decision 1: keep structured ERROR behaviour. Missing file: exit 2, ERROR result as text or valid JSON on stdout, `--report-dir` reports still written. Plain `exists=True` would make Click abort before the command body (usage error on stderr, no JSON), so the design intercepts that failure and routes it into the existing ERROR path.
+- Human decision 2: align docs: ADR-005 (Amendment + corrected text), CHANGELOG `[0.6.1]`, `docs/user-guide.md` troubleshooting, R-12 mentions in `docs/release-checklist-v0.1.0.md` and `TASKS.md`.
+- Tests: JSON/text/`--report-dir` with a missing file, directory passed as FILE, preserve existing tests, smoke test 5; FR IDs referenced.
+- **Scope change (human-approved 2026-10-07, after G8 NO-GO):** fix `sbom_validator.spec` to bundle every file in `src/sbom_validator/schemas/`; wire smoke Test 5b into the CI smoke path; CHANGELOG Fixed entry; re-run G4/G5 on the new diff and re-run G8.
+- Version bump 0.6.0 -> 0.6.1 (`pyproject.toml`, `src/sbom_validator/__init__.py`) and drift-prone docs closeout; analytics (G9/G10).
+
+### Out of Scope
+- Any change to option names, exit codes, JSON keys, stdout/stderr split, `--report-dir` file names.
+- Other deferrals (R-04/R-05, R-08, R-09).
+- Editing historical `docs/repo-review-report.html`, `docs/code-review-notes.md` (snapshots).
+
+### Risks / Constraints
+
+| ID | Risk | Mitigation | Status |
+|----|------|------------|--------|
+| K1 | Plain `exists=True` loses JSON/--report-dir on missing file (exit code 2 coincidentally preserved, stdout contract broken) | Intercepting path type/class designed at 1.B1; contract tests at 2.C1 | OPEN |
+| K2 | Intercepting makes `exists=True` effectively behavior-neutral; value is semantic/documentation + single code path. Human should know. | Surfaced at H1 | OPEN |
+| K3 | Directory as FILE: current behaviour of `validate()` on a directory unverified; `dir_okay=False` would otherwise yield a usage error | Decide at 1.B1: same interception, result ERROR exit 2; verify at 2.C1 | OPEN |
+| K4 | Click version differences in `BadParameter` / `Path.convert` signature; mypy strict on subclass | Developer verifies against locked click in poetry.lock | OPEN |
+| K5 | Binary (PyInstaller) smoke behaviour must not change | Smoke test 5 kept, JSON assertion added (2.D1) | OPEN |
+| K6 | Architecture trigger: new design pattern (ParamType subclass) in cli.py, no new module | Architect task + ADR-005 Amendment 1 | OPEN |
+
+---
+
+## Task Breakdown
+
+| ID | Task | Agent | Branch | Dependencies | Status | Deliverables | Acceptance Criteria |
+|----|------|-------|--------|--------------|--------|--------------|---------------------|
+| 0.A1 | Create branch `feature/click-path-exists` from `develop` (`git checkout develop && git pull && git checkout -b ...`) | Developer | `feature/click-path-exists` | None | ✅ | Local branch | Branch exists, based on up-to-date develop (done: branched from `6d72d63`, which adds the hil-team migration commit on top of develop, per human decision) |
+| 0.A2 | Create `docs/releases/TASKS-v0.6.1.md` (committed with branch) | Planner | `feature/click-path-exists` | 0.A1 | ✅ | This file | Mirrors every task |
+| 1.B1 | Design: interception of `click.Path(exists=True)` failure; decide directory behaviour (`dir_okay`); write ADR-005 Amendment 1 and correct ADR-005 text; update ADR summary row in `.agent-kb/architecture.md` if needed | Architect | `feature/click-path-exists` | 0.A2 | ✅ | `docs/architecture/ADR-005-cli-design.md`; interface stub for the path type; note if locked surface would change (then HX escalation) | ADR matches intended code; contract unchanged; no locked-surface change |
+| 2.C1 | Write failing tests: missing file JSON (valid JSON, status ERROR, keys status/file/format_detected/issues, nothing on stdout other than JSON), missing file text, exit 2, `--report-dir` + missing file writes `sbom-report-<basename>.html/.json`, directory as FILE, existing file still PASS/FAIL; unit tests of the path type; fix stale comment at `test_cli_json_output.py:423`; FR-11/12/13 (+ report-dir FR, tester to confirm ID in requirements.md) referenced | Tester | `feature/click-path-exists` | 1.B1 | ✅ | New `tests/unit/test_cli_missing_file.py`; touch `tests/unit/test_cli_json_output.py`, `tests/unit/test_cli_text_output.py` as needed | New tests fail for the right reason; existing tests unchanged in intent; ruff clean |
+| 2.C2 | Implement path type/interception in `cli.py`; update `validate_cmd` docs/help | Developer | `feature/click-path-exists` | 2.C1 | ✅ | `src/sbom_validator/cli.py` | All CLI tests pass; `quality_gate` clean; `cli.py` coverage >= 85% |
+| 2.D1 | Extend binary smoke: keep test 5 (exit 2), add JSON-on-stdout assertion for missing file | Tester | `feature/click-path-exists` | 2.C2 | ✅ | `tests/smoke/test_binary_smoke.sh` | Script passes against a built binary (or CI) |
+| 2.D2 | Verify `tests/integration/test_integration.py::TestErrorPipeline::test_nonexistent_file_exits_two` and unit tests (`tests/unit/test_cli_*.py`) pass; full suite + coverage >= 90 | Tester | `feature/click-path-exists` | 2.C2 | ✅ | Test run evidence | `test`, `coverage` commands green |
+| 3.E1 | Docs sync: CHANGELOG `[0.6.1]`; `docs/user-guide.md` troubleshooting (missing file / directory); mark R-12 resolved in `docs/release-checklist-v0.1.0.md` (lines 41, 79) and `TASKS.md:143`; ADR-005 consistency check | Documentation Writer | `feature/click-path-exists` | 2.C2 | ✅ | `CHANGELOG.md`, `docs/user-guide.md`, `docs/release-checklist-v0.1.0.md`, `TASKS.md` | Docs match behaviour; keep-a-changelog format |
+| 3.F1 | Independent quality review (G4) | Reviewer | `feature/click-path-exists` | 2.D2, 3.E1 | ✅ | Findings + verdict | No open CRITICAL/MAJOR |
+| 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ✅ | Findings + verdict | APPROVED/CONDITIONAL |
+| 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ✅ | CI report | `test (3.11)`, `test (3.12)` green |
+| 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ✅ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
+| 5.H2 | (PR #23 opened early as draft for CI, human-approved; now ready for review) Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ✅ | PR URL | PR open; human reviews (H2) |
+| 5.S1 | Fix `sbom_validator.spec`: bundle all `src/sbom_validator/schemas/*` (glob); make `scripts/smoke-test-binary.sh` also assert missing-file `--format json` → exit 2 + valid JSON ERROR (Test 5b equivalent); rebuild binary locally and get BOTH smoke scripts fully green; CHANGELOG `Fixed` entry | Developer | `feature/click-path-exists` | 5.H1 | ✅ | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | Local binary smoke 0 failures; spec bundles all 13 schema files |
+| 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ✅ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
+| 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); attempt 2 GO | Release Manager | `feature/click-path-exists` | 5.S2 | ✅ | Release brief | All gates pass |
+| 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ✅ | `docs/releases/token-report-v0.6.1.html` | Generated |
+| 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
+| 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
+| 6.J1 | Release closeout: update `drift_prone_docs` (CLAUDE.md version, `.agent-kb/architecture.md`, `docs/requirements.md` header + JSON example versions, `models.py` docstring) | Documentation Writer | `feature/click-path-exists` | 6.I1 | ✅ | Listed files | No stale version numbers |
+| 7.K1 | Final human gate (H3) and release action | Human + Release Manager | `feature/click-path-exists` | 5.H2, 6.I3, 6.I4, 6.J1 | ✅ | Approval record | H3: GO recorded 2026-10-08 (human); see Final Verdict. Tag/publication pending human merge of release PR |
+
+---
+
+## Scope-Lock
+
+| Task | Files created/modified | External resources | Assumptions | Unverified |
+|------|------------------------|--------------------|-------------|------------|
+| 1.B1 | ADR-005, `.agent-kb/architecture.md` (maybe) | None | Interception can be done inside `cli.py` | Click version in poetry.lock supports subclassing `click.Path.convert` — verify |
+| 2.C1 | `tests/unit/test_cli_missing_file.py` (new), edits to `test_cli_json_output.py`, `test_cli_text_output.py` | None | CliRunner separates stdout/stderr per project fixtures | Behaviour of `validate()` on a directory not verified; `--report-dir` FR ID not verified |
+| 2.C2 | `src/sbom_validator/cli.py` | None | No change to `validator.py`/models | `file` echoed in result equals the raw argument string — verify identical to today |
+| 2.D1 | `tests/smoke/test_binary_smoke.sh` | Built binary | Script has JSON parsing tool available on Linux/Windows runners | jq/python availability in smoke environment |
+| 3.E1 | CHANGELOG, user-guide, release-checklist-v0.1.0, TASKS.md | None | Troubleshooting section exists in user-guide | Section heading not verified |
+| 5.H1 | pyproject.toml, `__init__.py` | None | Only two version files | poetry.lock unaffected |
+| 5.S1 | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | PyInstaller local build | Glob of `schemas/*` is sufficient for runtime schema loading | Whether other missing data files exist beyond schemas (check smoke result) |
+| 6.J1 | See `drift_prone_docs` | None | — | — |
+
+---
+
+## Gate Evidence
+
+### G1 Planning
+- Evidence: tracker created by planner agent (separate invocation); plan and scope-lock presented to human
+- Status: ✅
+
+### H1 Plan Approval
+- Decision: APPROVED (2026-10-07) — plan and scope-lock as written. Confirmed: directory as FILE → structured ERROR exit 2; PATCH release; PR opened after closeout and before H3; historical review docs untouched. K2 (behaviour-neutral change) acknowledged.
+
+### G2 Architecture
+- Evidence: Architect agent dispatched (separate invocation). ADR-005 Amendment 1 written (private `click.Path` subclass `_LenientExistingPath`, `exists=True, dir_okay=True`, `convert()` catches `click.BadParameter` and returns raw string); rejected `click.Command` subclass (would swallow real usage errors). Verified against click 8.3.2. Directory → structured ERROR (FR-01), missing file → ERROR; no Compatibility Contract change. Files: `docs/architecture/ADR-005-cli-design.md`, `.agent-kb/architecture.md` (ADR row). mypy not yet run (verify at 2.C2).
+- Status: ✅
+
+### G3 TDD Build
+- Evidence (5.S1, developer agent, separate invocation, after G8 NO-GO): `sbom_validator.spec` now bundles every file under `schemas/` via sorted glob (SystemExit if empty); `scripts/smoke-test-binary.sh` 14→24 checks (SPDX 3.x, CDX 1.3/1.4/1.5 JSON+XML, missing-file JSON ERROR); CHANGELOG Fixed bullet. Rebuilt local Windows binary: `smoke-test-binary.sh` 24 pass/0 fail; `tests/smoke/test_binary_smoke.sh` all passed; pytest 732 passed; ruff clean. Combined fix round (developer agent) applied all G4/G5 minors: spec glob limited to .json/.xsd; smoke script python fallback + header; CHANGELOG notes v0.6.0 binaries (verified via `git show v0.6.0:sbom_validator.spec`: only 4 schemas bundled) failed JSON validation with exit 1; gotchas.md reworded; weak test assertion → `data["status"] == "ERROR"` and FR-01 docstring. Rebuilt: smoke 24/0, test_binary_smoke all passed, pytest 732 passed, ruff clean. Reviewer note (resolved): `gotchas.md` 'Binary builds need frozen-mode paths' wording should say all schemas bundled via glob.
+- Evidence (2.C1, tester agent, separate invocation): new `tests/unit/test_cli_missing_file.py` (21 tests). 6 `_LenientExistingPath` unit tests fail for the right reason (AttributeError: no attribute `_LenientExistingPath`); 15 behavioural regression guards pass. `test_cli_json_output.py` stale comment fixed. ruff check/format on tests clean. No FR ID exists for `--report-dir`; tests tagged FR-01/11/12/13. Report file names use the file stem (e.g. `sbom-report-no-such-file.spdx.html`), tests assert that.
+- Evidence (2.C2, developer agent, separate invocation): `_LenientExistingPath` added to `cli.py`; targeted 70 passed; full suite 732 passed, coverage 96.15% (`cli.py` 99%); ruff check + format clean. mypy: 3 `yaml` import-untyped errors (format_detector.py, spdx_yaml_parser.py, validator.py) — orchestrator verified they are identical on the stashed baseline (pre-existing; `types-pyyaml` is declared in pyproject but not installed in this local env), none in `cli.py`. CI must confirm mypy green at G6.
+- Evidence (2.D1/2.D2, tester agent, separate invocation): smoke Test 5b added (missing file + `--format json` → exit 2, valid JSON, status ERROR); `bash -n` OK; NOT executed (no built binary) — deferred to CI. Full suite 732 passed, coverage 96.15% (lowest module validator.py 90%).
+- Status: ✅
+
+### G4 Quality Review
+- Evidence: Reviewer agent dispatched (separate invocation, parallel with G5); verdict: APPROVED. 0 critical, 0 major, 3 minor, 3 info. Minors (non-blocking, carried as follow-ups): (a) tests tag FR-01 for read-failure ERROR while requirements.md defines FR-01 as Format Auto-Detection; (b) `test_missing_file_report_json_records_error_status` uses weak `"ERROR" in json.dumps(data)`; (c) `TestLenientExistingPath` tagged FR-13 though it tests param-type internals. Compatibility Contract preserved.
+- Re-review of 5.S1 (commit 36c112d): Reviewer agent dispatched (separate invocation); verdict APPROVED, 0 critical/major, 2 minor (spec glob also bundles `.gitkeep` → filter `.json`/`.xsd`; smoke script needs `python3` on PATH → add `python` fallback), gotchas.md wording optional tweak.
+- Status: ✅
+
+### G5 Security
+- Evidence: Security-reviewer agent dispatched (separate invocation, parallel with G4); verdict: APPROVED. No CRITICAL/MAJOR; INFO only. No fail-open path (probed directory, /dev/null, empty string, 5000-char name, nul → all ERROR exit 2). No dependency/workflow diff. FIFO blocking read is pre-existing, LOW.
+- Re-review of 5.S1 (commit 36c112d): Security-reviewer agent dispatched (separate invocation, parallel); verdict APPROVED, no CRITICAL/MAJOR. Fail-closed before fix (crash exit 1 never a false PASS). MINOR: CHANGELOG should state v0.6.0 standalone binaries fail JSON validation with exit 1 (can be mistaken for validation FAIL; pip/pipx unaffected) — confirm v0.6.0 impact; optional: exclude symlinks/.gitkeep from glob.
+- Delta review of 7f4ca5b (landed after the 5.S2 verdicts; flagged by G10): Reviewer agent dispatched (separate invocation) — APPROVED, 0 findings above INFO.
+- Status: ✅
+
+### G6 CI Stability
+- Evidence: CI-ops agent dispatched (separate invocation). Draft PR #23, run 37682088825: `test (3.11)` pass (ruff, format, mypy 18 files clean, 732 passed, cov 96.15%), `test (3.12)` pass. No fixes needed. NOTE: smoke Test 5b is NOT run by PR CI — `scripts/smoke-test-binary.sh` only runs in release.yml on `v*.*.*` tag pushes; needs a local binary smoke run as pre-tag evidence (G8). Deviation recorded: PR opened as draft before closeout (human-approved) so CI could run.
+- Re-run on HEAD 7f4ca5b (ci-ops agent, separate invocation): run 37684971706, `test (3.11)` pass 46s, `test (3.12)` pass 43s → STABLE. Non-blocking: ubuntu-latest migrates to Ubuntu 26 on 2026-10-19; Node 20 deprecation warnings.
+- Delta review of 7f4ca5b (parallel with delta G4): Security-reviewer agent dispatched (separate invocation) — APPROVED, INFO only (optional: assert bundled schema count == source count; state in the v0.6.0 note that exit 1 does not mean the SBOM is invalid).
+- Final CI on closeout HEAD 9da9e73: run 37686745799, `test (3.11)` pass, `test (3.12)` pass.
+- Status: ✅
+
+### G7 Docs Sync
+- Evidence (3.E1, documentation-writer agent, separate invocation): CHANGELOG (entry under `[Unreleased]`; closeout must rename to 0.6.1 + date), `docs/user-guide.md` troubleshooting (extended row + new "Cannot read file" row), R-12 resolved notes in `docs/release-checklist-v0.1.0.md` and `TASKS.md`; ADR-005 consistent with code. KB write-back: `.agent-kb/gotchas.md` (lenient Click path contract). ADR/architecture row written at G2.
+- Closeout 6.J1 (documentation-writer agent, separate invocation, 2026-10-08): CHANGELOG `[Unreleased]`→`[0.6.1] - 2026-10-08` + compare links; `CLAUDE.md` version 0.6.1; `.agent-kb/architecture.md` version 0.6.1 (+ test count 711→732, orchestrator fix); `docs/requirements.md` header + `tool_version` examples 0.6.1. `models.py`, agent-briefing, agent-operating-model not stale. KB write-backs: `.agent-kb/gotchas.md` (G7), `.agent-kb/architecture.md`.
+- Status: ✅
+
+### G8 Release Readiness
+- Evidence: Release-manager agent dispatched (separate invocation). Verdict: **NO-GO**. Locally built Windows binary (PyInstaller) passes version/compat checks and smoke Test 5b (missing file + `--format json` → exit 2, valid JSON, ERROR), but `scripts/smoke-test-binary.sh` = 5 pass / 9 fail: `FileNotFoundError _MEI*/schemas/spdx.schema.json`. Orchestrator confirmed `sbom_validator.spec` `datas` bundles only 4 of 13 files in `src/sbom_validator/schemas/` (missing `spdx.schema.json`, `jsf-0.82.schema.json`, `spdx-3.0.1.schema.json`, CDX 1.3/1.4/1.5). Pre-existing (spec untouched by this branch; likely present in the v0.6.0 binary) and would fail `release.yml` smoke at tag time. Also: Test 5b exists only in `tests/smoke/test_binary_smoke.sh`, which no workflow calls. Orchestrator note: the report's claim that this diff touches `schema_validator.py`/`test_schema_bundle.py` is wrong (diff is cli.py, tests, smoke script, version).
+- Attempt 2 (release-manager agent, separate invocation, HEAD 7f4ca5b): **GO** on technical gates. Rebuilt Windows binary: `smoke-test-binary.sh` 24 pass/0 fail, `test_binary_smoke.sh` all passed; pytest 732 passed, cov 96.15%; ruff clean; `poetry build` (out-of-tree) wheel+sdist 0.6.1 OK; release.yml smoke steps use `scripts/smoke-test-binary.sh`; CI green. Pending by design: CHANGELOG `[Unreleased]`→`[0.6.1]` + drift_prone_docs (6.J1); G9/G10 reports must be committed before tag. Only Windows binary built locally; Linux covered by release.yml at tag time.
+- Status: ✅ (attempt 1 ❌ NO-GO; human decision 2026-10-07: fix in v0.6.1, tasks 5.S1/5.S2)
+
+### G9 Token Analytics
+- Evidence: Telemetry collected from Claude Code transcripts (`docs/releases/telemetry-v0.6.1.json`; usage.db lacked this session; cutoff 2026-10-07T20:54:39Z; 1 session, 17 subagent dispatches). Token-analyst agent dispatched (separate invocation). Reports: `docs/releases/token-report-v0.6.1.html`, `docs/releases/token-delta-v0.6.0_to_v0.6.1.html`. Measured: 110,801 fresh in+out; 4.22M cost-weighted input-equivalent (orchestrator 38.6%, subagents 61.4%); rework dispatches 17.0% of total (G8 NO-GO chain). Delta verdict Flat (v0.6.0 baseline was estimated, directional only). Analyst's tail estimate for post-cutoff work: ~0.4–0.9M (EST).
+- Status: ✅
+
+### G10 Workflow Evaluation
+- Evidence: Workflow-analyst agent dispatched (separate invocation). Report: `docs/releases/workflow-report-v0.6.1.html`. Verdict NEEDS ATTENTION (not Critical): all separate-agent gates dispatched; 0 CI lint/format cycles; G4 MAJOR findings 2→0 vs v0.6.0. Gaps: pre-existing spec defect found only at G8 (PR CI never builds the binary); rework 17%; planner 12.1% of spend on a one-parameter change; **fix commit 7f4ca5b changed the spec glob after the 5.S2 verdicts with no G4/G5 delta pass** (orchestrator action: delta re-review dispatched, see below); smoke Test 5b in `tests/smoke/test_binary_smoke.sh` is not run by any workflow. Nine ranked recommendations (repo + plugin) in the report.
+- Status: ✅
+
+---
+
+## Deferrals (if any)
+
+| ID | Description | Severity | Deferral Reason | Planned Release |
+|----|-------------|----------|-----------------|-----------------|
+| R-12 | Closed by this release (was deferred in v0.1.0) | INFO | Resolved here | v0.6.1 |
+| F-1 | Binary smoke not run by PR CI (only on tag); Test 5b in `tests/smoke/test_binary_smoke.sh` not run by any workflow; no test asserts every `schemas/` file is bundled by the spec | LOW | Process/CI improvements from G10 — out of scope for this PATCH | TBD |
+| R-04/R-05, R-08, R-09 | Remain deferred (parser signature refactor, format-specific NTIA paths, ISO 8601 validation) | INFO | Out of scope | TBD |
+
+---
+
+## Final Verdict
+
+- **H2 (PR review):** Human merged PR #23 (`feature/click-path-exists` -> `develop`), merge commit `a1766f6`, 2026-10-07T21:06Z.
+- **H3 (release approval):** GO, given by the human on 2026-10-08, on Release Manager recommendation GO.
+- **Recommendation:** GO
+- **Approved by (Human):** Human (H3)
+- **Date:** 2026-10-08
+- **Notes:** G8 attempt 1 was NO-GO (`sbom_validator.spec` bundled only 4 of 13 schema files; binary smoke failed with `FileNotFoundError _MEI*/schemas/...`). After human-approved scope change the spec was fixed (sorted glob of `.json`/`.xsd`), smoke script extended 14 to 24 checks, G4/G5 re-run, and G8 attempt 2 was GO. F-1 deferred (binary smoke not run by PR CI; Test 5b not in any workflow; no test asserting all schemas are bundled) as LOW process improvement. Residual risks: (1) the Linux binary is first built at tag time by `release.yml` (only Windows built locally); (2) the published v0.6.0 standalone binaries still carry the schema-bundling bug (JSON validation fails with exit 1; pip/pipx unaffected) - consider flagging the v0.6.0 GitHub release with a note pointing to v0.6.1.
+- **Tag / release URL:** pending (set after human merges the release PR and the tag is pushed)
