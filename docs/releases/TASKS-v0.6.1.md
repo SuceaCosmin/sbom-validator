@@ -71,8 +71,8 @@
 | 5.S1 | Fix `sbom_validator.spec`: bundle all `src/sbom_validator/schemas/*` (glob); make `scripts/smoke-test-binary.sh` also assert missing-file `--format json` → exit 2 + valid JSON ERROR (Test 5b equivalent); rebuild binary locally and get BOTH smoke scripts fully green; CHANGELOG `Fixed` entry | Developer | `feature/click-path-exists` | 5.H1 | ✅ | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | Local binary smoke 0 failures; spec bundles all 13 schema files |
 | 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ✅ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
 | 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); attempt 2 GO | Release Manager | `feature/click-path-exists` | 5.S2 | ✅ | Release brief | All gates pass |
-| 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ⏳ | `docs/releases/token-report-v0.6.1.html` | Generated |
-| 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
+| 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ✅ | `docs/releases/token-report-v0.6.1.html` | Generated |
+| 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ✅ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
 | 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
 | 6.J1 | Release closeout: update `drift_prone_docs` (CLAUDE.md version, `.agent-kb/architecture.md`, `docs/requirements.md` header + JSON example versions, `models.py` docstring) | Documentation Writer | `feature/click-path-exists` | 6.I1 | ⏳ | Listed files | No stale version numbers |
 | 7.K1 | Final human gate (H3) and release action | Human + Release Manager | `feature/click-path-exists` | 5.H2, 6.I3, 6.I4, 6.J1 | ⏳ | Approval record | GO/NO-GO recorded |
@@ -139,8 +139,8 @@
 - Status: ✅ (attempt 1 ❌ NO-GO; human decision 2026-10-07: fix in v0.6.1, tasks 5.S1/5.S2)
 
 ### G9 Token Analytics
-- Evidence:
-- Status:
+- Evidence: Telemetry collected from Claude Code transcripts (`docs/releases/telemetry-v0.6.1.json`; usage.db lacked this session; cutoff 2026-10-07T20:54:39Z; 1 session, 17 subagent dispatches). Token-analyst agent dispatched (separate invocation). Reports: `docs/releases/token-report-v0.6.1.html`, `docs/releases/token-delta-v0.6.0_to_v0.6.1.html`. Measured: 110,801 fresh in+out; 4.22M cost-weighted input-equivalent (orchestrator 38.6%, subagents 61.4%); rework dispatches 17.0% of total (G8 NO-GO chain). Delta verdict Flat (v0.6.0 baseline was estimated, directional only). Analyst's tail estimate for post-cutoff work: ~0.4–0.9M (EST).
+- Status: ✅
 
 ### G10 Workflow Evaluation
 - Evidence:
