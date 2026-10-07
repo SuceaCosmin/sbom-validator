@@ -65,7 +65,7 @@
 | 3.F1 | Independent quality review (G4) | Reviewer | `feature/click-path-exists` | 2.D2, 3.E1 | ✅ | Findings + verdict | No open CRITICAL/MAJOR |
 | 3.F2 | Security review (G5) — parallel with 3.F1 | Security Reviewer | `feature/click-path-exists` | 2.D2 | ✅ | Findings + verdict | APPROVED/CONDITIONAL |
 | 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ✅ | CI report | `test (3.11)`, `test (3.12)` green |
-| 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ⏳ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
+| 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ✅ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
 | 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
 | 6.I1 | Release readiness (G8) | Release Manager | `feature/click-path-exists` | 5.H1 | ⏳ | Release brief | All gates pass |
 | 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ⏳ | `docs/releases/token-report-v0.6.1.html` | Generated |
