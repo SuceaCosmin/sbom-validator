@@ -156,7 +156,7 @@ ADRs live in `docs/architecture/ADR-*.md`.
 | ADR-002 | Parsers accept a file path and return `NormalizedSBOM`. NTIA checker only receives `NormalizedSBOM`; no imports from the parser layer. |
 | ADR-003 | Two-stage pipeline: schema validation (collect-all), then NTIA (collect-all, 7 independent checks). Schema failure blocks NTIA. |
 | ADR-004 | Frozen dataclasses for all result types; `ValidationStatus`/`IssueSeverity` inherit from `str`. |
-| ADR-005 | Click CLI: `sbom-validator validate <FILE> [--format text\|json]`; exit codes 0/1/2. |
+| ADR-005 | Click CLI: `sbom-validator validate <FILE> [--format text\|json]`; exit codes 0/1/2. Amendment 1 (v0.6.1): `FILE` uses a private `click.Path(exists=True)` subclass in `cli.py` that swallows `click.BadParameter` and passes the raw string through, so missing files/directories still yield structured ERROR (exit 2). |
 | ADR-006 | stdlib `logging`; `--log-level` (default WARNING); stderr only; hierarchy `sbom_validator.<module>`; `configure_logging(level)` once at startup; at INFO/DEBUG the first line is `sbom-validator <version>`. |
 | ADR-007 | `--report-dir PATH` writes paired HTML + JSON reports (`sbom-report-<basename>.{html,json}`); `string.Template`; `OSError` non-fatal in `cli.py`. |
 | ADR-008 | PyInstaller ≥ 6.0 `--onefile`; Linux + Windows amd64; schemas bundled via `datas` in `sbom_validator.spec`; `spdx-tools` and `cyclonedx-bom` excluded from binary; release on `v*.*.*` tags. |
