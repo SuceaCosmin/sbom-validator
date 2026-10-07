@@ -30,6 +30,7 @@
 - Human decision 1: keep structured ERROR behaviour. Missing file: exit 2, ERROR result as text or valid JSON on stdout, `--report-dir` reports still written. Plain `exists=True` would make Click abort before the command body (usage error on stderr, no JSON), so the design intercepts that failure and routes it into the existing ERROR path.
 - Human decision 2: align docs: ADR-005 (Amendment + corrected text), CHANGELOG `[0.6.1]`, `docs/user-guide.md` troubleshooting, R-12 mentions in `docs/release-checklist-v0.1.0.md` and `TASKS.md`.
 - Tests: JSON/text/`--report-dir` with a missing file, directory passed as FILE, preserve existing tests, smoke test 5; FR IDs referenced.
+- **Scope change (human-approved 2026-10-07, after G8 NO-GO):** fix `sbom_validator.spec` to bundle every file in `src/sbom_validator/schemas/`; wire smoke Test 5b into the CI smoke path; CHANGELOG Fixed entry; re-run G4/G5 on the new diff and re-run G8.
 - Version bump 0.6.0 -> 0.6.1 (`pyproject.toml`, `src/sbom_validator/__init__.py`) and drift-prone docs closeout; analytics (G9/G10).
 
 ### Out of Scope
@@ -67,7 +68,9 @@
 | 4.G1 | CI stabilization (G6) | CI Ops | `feature/click-path-exists` | 3.F1, 3.F2 | ✅ | CI report | `test (3.11)`, `test (3.12)` green |
 | 5.H1 | Version bump to 0.6.1 | Developer | `feature/click-path-exists` | 4.G1 | ✅ | `pyproject.toml`, `src/sbom_validator/__init__.py` | Versions consistent |
 | 5.H2 | Push branch and open PR `feature/click-path-exists` -> `develop` | Developer | `feature/click-path-exists` | 5.H1, 6.J1 | ⏳ | PR URL | PR open; human reviews (H2) |
-| 6.I1 | Release readiness (G8) | Release Manager | `feature/click-path-exists` | 5.H1 | ⏳ | Release brief | All gates pass |
+| 5.S1 | Fix `sbom_validator.spec`: bundle all `src/sbom_validator/schemas/*` (glob); make `scripts/smoke-test-binary.sh` also assert missing-file `--format json` → exit 2 + valid JSON ERROR (Test 5b equivalent); rebuild binary locally and get BOTH smoke scripts fully green; CHANGELOG `Fixed` entry | Developer | `feature/click-path-exists` | 5.H1 | ⏳ | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | Local binary smoke 0 failures; spec bundles all 13 schema files |
+| 5.S2 | Re-review of 5.S1 diff (G4 ∥ G5, separate agents) | Reviewer + Security Reviewer | `feature/click-path-exists` | 5.S1 | ⏳ | Findings + verdicts | APPROVED/CONDITIONAL, no open CRITICAL/MAJOR |
+| 6.I1 | Release readiness (G8) — attempt 1 NO-GO (spec missing schemas); re-run after 5.S2 | Release Manager | `feature/click-path-exists` | 5.S2 | ❌ | Release brief | All gates pass |
 | 6.I2 | Collect telemetry; token report | Token Analyst | `feature/click-path-exists` | 6.I1 | ⏳ | `docs/releases/token-report-v0.6.1.html` | Generated |
 | 6.I3 | Token delta report | Token Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/token-delta-v0.6.0_to_v0.6.1.html` | Generated |
 | 6.I4 | Workflow evaluation report | Workflow Analyst | `feature/click-path-exists` | 6.I2 | ⏳ | `docs/releases/workflow-report-v0.6.1.html` | Generated |
@@ -86,6 +89,7 @@
 | 2.D1 | `tests/smoke/test_binary_smoke.sh` | Built binary | Script has JSON parsing tool available on Linux/Windows runners | jq/python availability in smoke environment |
 | 3.E1 | CHANGELOG, user-guide, release-checklist-v0.1.0, TASKS.md | None | Troubleshooting section exists in user-guide | Section heading not verified |
 | 5.H1 | pyproject.toml, `__init__.py` | None | Only two version files | poetry.lock unaffected |
+| 5.S1 | `sbom_validator.spec`, `scripts/smoke-test-binary.sh`, `CHANGELOG.md` | PyInstaller local build | Glob of `schemas/*` is sufficient for runtime schema loading | Whether other missing data files exist beyond schemas (check smoke result) |
 | 6.J1 | See `drift_prone_docs` | None | — | — |
 
 ---
@@ -127,7 +131,7 @@
 
 ### G8 Release Readiness
 - Evidence: Release-manager agent dispatched (separate invocation). Verdict: **NO-GO**. Locally built Windows binary (PyInstaller) passes version/compat checks and smoke Test 5b (missing file + `--format json` → exit 2, valid JSON, ERROR), but `scripts/smoke-test-binary.sh` = 5 pass / 9 fail: `FileNotFoundError _MEI*/schemas/spdx.schema.json`. Orchestrator confirmed `sbom_validator.spec` `datas` bundles only 4 of 13 files in `src/sbom_validator/schemas/` (missing `spdx.schema.json`, `jsf-0.82.schema.json`, `spdx-3.0.1.schema.json`, CDX 1.3/1.4/1.5). Pre-existing (spec untouched by this branch; likely present in the v0.6.0 binary) and would fail `release.yml` smoke at tag time. Also: Test 5b exists only in `tests/smoke/test_binary_smoke.sh`, which no workflow calls. Orchestrator note: the report's claim that this diff touches `schema_validator.py`/`test_schema_bundle.py` is wrong (diff is cli.py, tests, smoke script, version).
-- Status: ❌ (awaiting human scope decision)
+- Status: ❌ attempt 1. Human decision 2026-10-07: fix in v0.6.1 (tasks 5.S1/5.S2 added); G8 to be re-run.
 
 ### G9 Token Analytics
 - Evidence:
